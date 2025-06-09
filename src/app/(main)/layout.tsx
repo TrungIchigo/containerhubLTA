@@ -9,12 +9,14 @@ export default function MainLayout({
 }) {
   return (
     <AuthGuard requireAuth={true}>
-      <div className="min-h-screen bg-background">
+      <div className="main-content">
         <Header />
-        <div className="flex">
+        <div className="flex min-h-screen">
           <Sidebar />
-          <main className="flex-1 p-6">
-            {children}
+          <main className="flex-1 p-4 bg-background">
+            <div className="space-y-4">
+              {children}
+            </div>
           </main>
         </div>
       </div>

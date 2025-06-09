@@ -1,14 +1,28 @@
 'use client'
 
+import Link from 'next/link'
+import Image from 'next/image'
 import UserNav from './UserNav'
+import { LOGO_URL, APP_CONFIG, ROUTES } from '@/lib/constants'
 
 export default function Header() {
   return (
-    <header className="bg-background border-b border-border px-6 py-4">
+    <header className="header px-4 py-3 shadow-card">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-primary">i-ContainerHub@LTA</h1>
-        </div>
+        <Link href={ROUTES.DASHBOARD} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+          <Image
+            src={LOGO_URL}
+            alt="i-ContainerHub Logo"
+            width={60}
+            height={60}
+            className="rounded-full"
+            priority
+          />
+          <div>
+            <h1 className="text-lg font-bold text-primary">{APP_CONFIG.name}</h1>
+            <p className="text-xs text-text-secondary">Logistics Technology Authority</p>
+          </div>
+        </Link>
         <UserNav />
       </div>
     </header>

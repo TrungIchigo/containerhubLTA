@@ -2,79 +2,88 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Inter font for typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @layer base {
   :root {
-    /* Primary colors - Green for logistics/approval actions */
-    --primary: 0 0% 9%;
-    --primary-dark: 56 142 60;
-    --primary-light: 200 230 201;
+    /* Primary Colors - Green Logistics Theme */
+    --primary: 122 47 80;      /* #4CAF50 converted to HSL */
+    --primary-dark: 113 38 60; /* #388E3C */
+    --primary-light: 140 46 80; /* #C8E6C9 */
+    --primary-foreground: 0 0 100; /* White text on primary */
     
-    /* Secondary colors - Navy blue for professional/structural elements */
-    --secondary: 0 0% 96.1%;
-    --secondary-dark: 33 47 61;
-    --secondary-light: 133 146 160;
+    /* Secondary Colors - Navy Blue for Professional Feel */
+    --secondary: 210 29 24;    /* #2C3E50 */
+    --secondary-dark: 210 26 18; /* #212F3D */
+    --secondary-light: 210 18 58; /* #8592A0 */
+    --secondary-foreground: 0 0 100; /* White text on secondary */
     
-    /* Accent colors - Amber for pending/warning states */
-    --accent: 0 0% 96.1%;
-    --accent-dark: 255 160 0;
-    --accent-light: 255 236 179;
+    /* Accent Colors - Amber for Attention */
+    --accent: 45 100 51;       /* #FFC107 */
+    --accent-dark: 45 100 50;  /* #FFA000 */
+    --accent-light: 45 74 85;  /* #FFECB3 */
+    --accent-foreground: 220 13 18; /* Dark text on accent */
     
-    /* Status colors */
-    --success: 76 175 80;
-    --warning: 255 193 7;
-    --danger: 244 67 54;
-    --info: 33 150 243;
+    /* Status Colors */
+    --success: 122 47 80;      /* #4CAF50 - same as primary */
+    --warning: 45 100 51;      /* #FFC107 - same as accent */
+    --danger: 4 90 58;         /* #F44336 */
+    --info: 207 90 54;         /* #2196F3 */
     
-    /* Neutral colors */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --border: 0 0% 89.8%;
+    /* Neutral Colors for Layout */
+    --background: 210 20 97;   /* #F4F7F9 - light gray background */
+    --foreground: 0 0 100;     /* #FFFFFF - white for cards, modals */
+    --border: 210 16 91;       /* #E5E7EB - light border */
     
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    /* Text Colors */
+    --text-primary: 220 13 18; /* #111827 - almost black */
+    --text-secondary: 220 9 46; /* #6B7280 - gray for secondary text */
+    
+    /* Shadcn/ui compatible variables */
+    --card: 0 0 100;           /* White cards */
+    --card-foreground: 220 13 18; /* Dark text on cards */
+    --popover: 0 0 100;        /* White popover */
+    --popover-foreground: 220 13 18; /* Dark text on popover */
+    --muted: 210 20 97;        /* Same as background */
+    --muted-foreground: 220 9 46; /* Gray text */
+    --destructive: 4 90 58;    /* Red for destructive actions */
+    --destructive-foreground: 0 0 100; /* White text on destructive */
+    --input: 210 16 91;        /* Light border for inputs */
+    --ring: 122 47 80;         /* Primary color for focus rings */
+    
+    /* Chart colors for data visualization */
+    --chart-1: 122 47 80;      /* Primary green */
+    --chart-2: 45 100 51;      /* Accent amber */
+    --chart-3: 4 90 58;        /* Danger red */
+    --chart-4: 207 90 54;      /* Info blue */
+    --chart-5: 210 29 24;      /* Secondary navy */
+    
+    /* Border radius for modern design */
+    --radius: 0.5rem;          /* 8px default radius */
   }
+  
+  /* Dark mode support (future enhancement) */
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 210 29 24;   /* Dark navy background */
+    --foreground: 0 0 95;      /* Light text */
+    --card: 210 26 18;         /* Darker navy for cards */
+    --card-foreground: 0 0 95; /* Light text on dark cards */
+    --popover: 210 26 18;      /* Dark popover */
+    --popover-foreground: 0 0 95; /* Light text on dark popover */
+    --primary: 122 47 80;      /* Keep primary green */
+    --primary-foreground: 0 0 100; /* White text on primary */
+    --secondary: 210 18 58;    /* Lighter navy for secondary */
+    --secondary-foreground: 0 0 95; /* Light text on secondary */
+    --muted: 210 26 18;        /* Dark muted */
+    --muted-foreground: 210 18 58; /* Gray text */
+    --accent: 45 100 51;       /* Keep accent amber */
+    --accent-foreground: 220 13 18; /* Dark text on accent */
+    --destructive: 4 90 58;    /* Keep destructive red */
+    --destructive-foreground: 0 0 100; /* White text on destructive */
+    --border: 210 18 32;       /* Darker border */
+    --input: 210 18 32;        /* Darker input border */
+    --ring: 122 47 80;         /* Keep primary for focus rings */
   }
 }
 
@@ -83,56 +92,195 @@
     @apply border-border;
   }
   
+  html {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
   body {
-    @apply bg-background text-text-primary;
+    @apply bg-background text-text-primary antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    font-variation-settings: 'opsz' 32;
   }
   
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold;
-  }
-  
+  /* Typography following adjusted scale */
   h1 {
-    @apply text-3xl;
+    @apply text-h1 text-text-primary tracking-tight;
   }
   
   h2 {
-    @apply text-2xl;
+    @apply text-h2 text-text-primary tracking-tight;
   }
   
   h3 {
-    @apply text-xl;
+    @apply text-h3 text-text-primary tracking-tight;
+  }
+  
+  p {
+    @apply text-body text-text-primary leading-relaxed;
+  }
+  
+  /* Focus states with primary color */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply ring-2 ring-primary ring-offset-2 outline-none;
+  }
+  
+  button:focus-visible {
+    @apply ring-2 ring-primary ring-offset-2 outline-none;
   }
 }
 
 @layer components {
+  /* Button Components - more compact */
   .btn-primary {
-    @apply bg-primary text-primary-foreground px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors;
+    @apply bg-primary text-primary-foreground px-3 py-2 rounded-button font-medium text-label;
+    @apply hover:bg-primary-dark focus:ring-2 focus:ring-primary focus:ring-offset-2;
+    @apply transition-all duration-200 shadow-button;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    min-height: 36px; /* Reduced from 40px */
   }
   
   .btn-secondary {
-    @apply bg-secondary text-secondary-foreground border border-border px-4 py-2 rounded-lg font-medium hover:bg-secondary/80 transition-colors;
+    @apply bg-foreground text-text-primary border border-border px-3 py-2 rounded-button font-medium text-label;
+    @apply hover:bg-gray-50 focus:ring-2 focus:ring-primary focus:ring-offset-2;
+    @apply transition-all duration-200 shadow-button;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    min-height: 36px;
   }
   
   .btn-danger {
-    @apply bg-destructive text-destructive-foreground px-4 py-2 rounded-lg font-medium hover:bg-destructive/90 transition-colors;
+    @apply bg-danger text-white px-3 py-2 rounded-button font-medium text-label;
+    @apply hover:bg-red-600 focus:ring-2 focus:ring-danger focus:ring-offset-2;
+    @apply transition-all duration-200 shadow-button;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    min-height: 36px;
   }
   
+  .btn-accent {
+    @apply bg-accent text-accent-foreground px-3 py-2 rounded-button font-medium text-label;
+    @apply hover:bg-accent-dark focus:ring-2 focus:ring-accent focus:ring-offset-2;
+    @apply transition-all duration-200 shadow-button;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    min-height: 36px;
+  }
+  
+  /* Card Components - more compact */
   .card {
-    @apply bg-card text-card-foreground rounded-lg border border-border p-6 shadow-sm;
+    @apply bg-foreground border border-border rounded-card p-4 shadow-card;
+    @apply hover:shadow-card-hover transition-shadow duration-200;
   }
   
-  .status-badge {
-    @apply px-3 py-1 rounded-full text-sm font-medium;
+  .card-compact {
+    @apply bg-foreground border border-border rounded-card p-3 shadow-card;
+    @apply hover:shadow-card-hover transition-shadow duration-200;
   }
-}
-
-
-
-@layer base {
-  * {
-    @apply border-border;
+  
+  /* Status Badges */
+  .status-pending {
+    @apply bg-accent-light text-accent-foreground px-2 py-1 rounded-full text-body-small font-medium;
   }
-  body {
-    @apply bg-background text-foreground;
+  
+  .status-approved {
+    @apply bg-primary-light text-primary px-2 py-1 rounded-full text-body-small font-medium;
+  }
+  
+  .status-declined {
+    @apply bg-red-100 text-danger px-2 py-1 rounded-full text-body-small font-medium;
+  }
+  
+  .status-confirmed {
+    @apply bg-primary-light text-primary px-2 py-1 rounded-full text-body-small font-medium;
+  }
+  
+  /* Form Components - more compact */
+  .form-input {
+    @apply w-full bg-foreground border border-border rounded-input px-3 py-2 text-body;
+    @apply focus:ring-2 focus:ring-primary focus:border-transparent;
+    @apply placeholder:text-text-secondary transition-all duration-200;
+    min-height: 36px; /* Reduced from 40px */
+  }
+  
+  /* Password input with icon */
+  .form-input-password {
+    @apply w-full bg-foreground border border-border rounded-input px-3 py-2 text-body;
+    @apply focus:ring-2 focus:ring-primary focus:border-transparent;
+    @apply placeholder:text-text-secondary transition-all duration-200;
+    min-height: 36px;
+    padding-right: 40px; /* Space for eye icon */
+  }
+  
+  /* Select elements styling */
+  select.form-input {
+    @apply w-full bg-foreground border border-border rounded-input px-3 py-2 text-body;
+    @apply focus:ring-2 focus:ring-primary focus:border-transparent;
+    @apply transition-all duration-200 appearance-none;
+    min-height: 36px;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 8px center;
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    padding-right: 32px;
+  }
+  
+  .form-label {
+    @apply text-label text-text-primary font-medium mb-2 block;
+  }
+  
+  .form-error {
+    @apply text-danger text-body-small mt-1;
+  }
+  
+  /* Table Components - more compact */
+  .table-header {
+    @apply bg-gray-50 border-b border-border px-3 py-2 text-label text-text-secondary font-medium text-left;
+  }
+  
+  .table-cell {
+    @apply px-3 py-3 text-body text-text-primary border-b border-border;
+  }
+  
+  .table-row {
+    @apply hover:bg-gray-50 transition-colors duration-150;
+  }
+  
+  /* Layout Components */
+  .sidebar {
+    @apply bg-secondary-dark text-secondary-foreground;
+  }
+  
+  .header {
+    @apply bg-foreground border-b border-border;
+  }
+  
+  .main-content {
+    @apply bg-background min-h-screen;
+  }
+  
+  /* KPI Cards - more compact */
+  .kpi-card {
+    @apply bg-foreground border border-border rounded-card p-4 shadow-card;
+    @apply hover:shadow-card-hover transition-all duration-200;
+  }
+  
+  .kpi-value {
+    @apply text-xl font-bold text-text-primary mb-1; /* Reduced from h2 */
+  }
+  
+  .kpi-label {
+    @apply text-body-small text-text-secondary;
+  }
+  
+  /* Container styles for more reasonable spacing */
+  .container-spacing {
+    @apply space-y-4; /* Reduced from 24px to 16px */
+  }
+  
+  .section-spacing {
+    @apply space-y-3; /* Reduced from 16px to 12px */
+  }
+  
+  .element-spacing {
+    @apply space-y-2; /* Keep at 8px */
   }
 } 

@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
+import { LOGO_URL } from '@/lib/constants'
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({
@@ -75,11 +77,16 @@ export default function LoginForm() {
 
   return (
     <Card className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg">
-      <CardHeader className="text-center pb-8">
+      <CardHeader className="text-center pb-6">
         <div className="mx-auto mb-4">
-          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center">
-            <span className="text-white font-bold text-xl">iC</span>
-          </div>
+          <Image
+            src={LOGO_URL}
+            alt="i-ContainerHub Logo"
+            width={200}
+            height={200}
+            className="rounded-full"
+            priority
+          />
         </div>
         <h1 className="text-2xl font-bold text-text-primary mb-2">Đăng Nhập</h1>
         <p className="text-text-secondary">
@@ -90,11 +97,11 @@ export default function LoginForm() {
         </p>
       </CardHeader>
       
-      <CardContent className="px-8 pb-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <CardContent className="px-6 pb-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email */}
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium text-text-primary">
+          <div>
+            <label htmlFor="email" className="form-label">
               Địa chỉ email
             </label>
             <Input
@@ -103,15 +110,15 @@ export default function LoginForm() {
               type="email"
               value={formData.email}
               onChange={handleInputChange}
-              placeholder="email@congty.com"
-              className="border-border focus:border-primary"
+              placeholder="dispatcher@vantai-abc.com"
+              className="form-input"
               required
             />
           </div>
 
           {/* Mật khẩu */}
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium text-text-primary">
+          <div>
+            <label htmlFor="password" className="form-label">
               Mật khẩu
             </label>
             <div className="relative">
@@ -122,15 +129,15 @@ export default function LoginForm() {
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="••••••••"
-                className="border-border focus:border-primary pr-10"
+                className="form-input-password"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-text-primary"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-text-primary transition-colors"
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
@@ -145,7 +152,7 @@ export default function LoginForm() {
           {/* Nút Đăng Nhập */}
           <Button 
             type="submit" 
-            className="w-full bg-primary hover:bg-primary-dark text-white font-medium py-3"
+            className="btn-primary w-full"
             disabled={isLoading}
           >
             {isLoading ? (

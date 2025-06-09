@@ -30,7 +30,20 @@ export default function AuthGuard({
         if (requireAuth && !user) {
           router.push(redirectTo)
         } else if (!requireAuth && user && (window.location.pathname === '/login' || window.location.pathname === '/register')) {
-          router.push('/dashboard')
+          // Get user profile to redirect to correct dashboard
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+          
+          if (profile?.role === 'DISPATCHER') {
+            router.push('/dispatcher')
+          } else if (profile?.role === 'CARRIER_ADMIN') {
+            router.push('/carrier-admin')
+          } else {
+            router.push('/dashboard')
+          }
         }
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
