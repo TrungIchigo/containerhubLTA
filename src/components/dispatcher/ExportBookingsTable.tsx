@@ -34,9 +34,9 @@ export default function ExportBookingsTable({ bookings }: ExportBookingsTablePro
     <Card className="mb-8">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-text-primary">Quản lý Booking Xuất Khẩu</CardTitle>
+          <CardTitle className="text-text-primary">Quản lý Lệnh Lấy Rỗng</CardTitle>
           <p className="text-sm text-text-secondary mt-1">
-            Tổng cộng: {bookings.length} booking
+            Tổng cộng: {bookings.length} lệnh
           </p>
         </div>
         <AddExportBookingForm />
@@ -45,8 +45,8 @@ export default function ExportBookingsTable({ bookings }: ExportBookingsTablePro
       <CardContent>
         {bookings.length === 0 ? (
           <div className="text-center py-8 text-text-secondary">
-            <p>Chưa có booking xuất khẩu nào.</p>
-            <p className="text-sm mt-2">Hãy thêm booking đầu tiên để bắt đầu.</p>
+            <p>Chưa có lệnh lấy rỗng nào.</p>
+            <p className="text-sm mt-2">Hãy thêm lệnh đầu tiên để bắt đầu.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

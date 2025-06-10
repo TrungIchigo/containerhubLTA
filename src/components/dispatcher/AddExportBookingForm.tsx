@@ -67,13 +67,13 @@ export default function AddExportBookingForm() {
       <DialogTrigger asChild>
         <Button className="bg-primary hover:bg-primary-dark text-white">
           <Plus className="mr-2 h-4 w-4" />
-          Thêm Booking Xuất
+          Thêm Lệnh Lấy Rỗng
         </Button>
       </DialogTrigger>
       
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-text-primary">Thêm Booking Xuất Khẩu</DialogTitle>
+          <DialogTitle className="text-text-primary">Thêm Lệnh Lấy Rỗng</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">

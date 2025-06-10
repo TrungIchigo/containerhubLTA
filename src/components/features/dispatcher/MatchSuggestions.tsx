@@ -4,7 +4,7 @@ export default function MatchSuggestions() {
   return (
     <div className="space-y-4">
       <p className="text-muted-foreground">
-        Không có gợi ý ghép nối nào. Hãy thêm container nhập khẩu và booking xuất khẩu để xem các cơ hội Street-Turn.
+        Không có gợi ý tái sử dụng nào. Hãy thêm lệnh giao trả và lệnh lấy rỗng để xem các cơ hội tái sử dụng container.
       </p>
       
       {/* Placeholder for match suggestions table */}

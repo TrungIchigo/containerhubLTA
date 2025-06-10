@@ -49,11 +49,17 @@ export async function getStreetTurnRequests(filters: StreetTurnRequestFilters = 
         pick_up_location,
         needed_by_datetime
       ),
-      approving_org:organizations!street_turn_requests_approving_org_id_fkey(
+      approving_org:organizations!approving_org_id(
+        name
+      ),
+      dropoff_trucking_org:organizations!dropoff_trucking_org_id(
+        name
+      ),
+      pickup_trucking_org:organizations!pickup_trucking_org_id(
         name
       )
     `)
-    .eq('requesting_org_id', profile.organization_id)
+    .or(`pickup_trucking_org_id.eq.${profile.organization_id},dropoff_trucking_org_id.eq.${profile.organization_id}`)
     .order('created_at', { ascending: false })
 
   // Apply status filter
@@ -84,8 +90,13 @@ export async function getStreetTurnRequests(filters: StreetTurnRequestFilters = 
   return filteredRequests.map(request => ({
     id: request.id,
     status: request.status,
+    match_type: request.match_type,
+    dropoff_org_approval_status: request.dropoff_org_approval_status,
+    auto_approved_by_rule_id: request.auto_approved_by_rule_id,
     created_at: request.created_at,
     carrier_organization: { name: request.approving_org?.name || 'Unknown' },
+    partner_organization: request.match_type === 'MARKETPLACE' ? 
+      { name: request.dropoff_trucking_org?.name || 'Unknown' } : null,
     import_containers: request.import_container ? [{
       container_number: request.import_container.container_number,
       booking_number: request.export_booking?.booking_number || ''
@@ -117,9 +128,9 @@ export async function cancelStreetTurnRequest(requestId: string) {
   // Verify request exists and belongs to user's organization
   const { data: request, error: requestError } = await supabase
     .from('street_turn_requests')
-    .select('id, status, requesting_org_id')
+    .select('id, status, pickup_trucking_org_id, dropoff_trucking_org_id')
     .eq('id', requestId)
-    .eq('requesting_org_id', profile.organization_id)
+    .or(`pickup_trucking_org_id.eq.${profile.organization_id},dropoff_trucking_org_id.eq.${profile.organization_id}`)
     .single()
 
   if (requestError || !request) {

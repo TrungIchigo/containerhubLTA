@@ -40,9 +40,9 @@ export default function ImportContainersTable({
     <Card className="card mb-8">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-h3 text-text-primary">Quản lý Container Nhập Khẩu</CardTitle>
+          <CardTitle className="text-h3 text-text-primary">Quản lý Lệnh Giao Trả</CardTitle>
           <p className="text-body-small text-text-secondary mt-1">
-            Tổng cộng: {containers.length} container
+            Tổng cộng: {containers.length} lệnh
           </p>
         </div>
         <AddImportContainerForm shippingLines={shippingLines} />
@@ -51,8 +51,8 @@ export default function ImportContainersTable({
       <CardContent>
         {containers.length === 0 ? (
           <div className="text-center py-12 text-text-secondary">
-            <p className="text-body">Chưa có container nhập khẩu nào.</p>
-            <p className="text-body-small mt-2">Hãy thêm container đầu tiên để bắt đầu.</p>
+            <p className="text-body">Chưa có lệnh giao trả nào.</p>
+            <p className="text-body-small mt-2">Hãy thêm lệnh đầu tiên để bắt đầu.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

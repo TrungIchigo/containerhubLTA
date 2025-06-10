@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'i-ContainerHub@LTA',
-  description: 'Digital marketplace for optimizing container logistics through street-turn operations.',
+  description: 'Hệ thống tối ưu hóa logistics container thông qua hoạt động tái sử dụng container.',
 }
 
 export default function RootLayout({

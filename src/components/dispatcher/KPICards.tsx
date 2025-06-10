@@ -32,7 +32,7 @@ export default function KPICards({
       valueColor: 'text-text-primary'
     },
     {
-      title: 'Street-Turns Đã Duyệt',
+      title: 'Tái Sử Dụng Đã Duyệt',
       value: approvedStreetTurns,
       icon: CheckCircle,
       bgColor: 'bg-primary-light',

@@ -33,7 +33,7 @@ export default function CarrierKPICards({ kpis }: CarrierKPICardsProps) {
       icon: RotateCcw,
       bgColor: 'bg-foreground',
       iconColor: 'text-info',
-      description: 'lượt street-turn thành công'
+              description: 'lượt tái sử dụng thành công'
     }
   ]
 

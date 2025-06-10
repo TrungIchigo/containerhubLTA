@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Plus, Loader2 } from 'lucide-react'
 import { addImportContainer } from '@/lib/actions/dispatcher'
 import type { Organization } from '@/lib/types'
@@ -22,7 +23,8 @@ export default function AddImportContainerForm({ shippingLines }: AddImportConta
     container_type: '20FT',
     drop_off_location: '',
     available_from_datetime: '',
-    shipping_line_org_id: ''
+    shipping_line_org_id: '',
+    is_listed_on_marketplace: false
   })
 
   const containerTypes = [
@@ -59,7 +61,8 @@ export default function AddImportContainerForm({ shippingLines }: AddImportConta
         container_type: '20FT',
         drop_off_location: '',
         available_from_datetime: '',
-        shipping_line_org_id: ''
+        shipping_line_org_id: '',
+        is_listed_on_marketplace: false
       })
       setIsOpen(false)
     } catch (error: any) {
@@ -75,13 +78,13 @@ export default function AddImportContainerForm({ shippingLines }: AddImportConta
       <DialogTrigger asChild>
         <Button className="bg-primary hover:bg-primary-dark text-white">
           <Plus className="mr-2 h-4 w-4" />
-          Thêm Container Nhập
+          Thêm Lệnh Giao Trả
         </Button>
       </DialogTrigger>
       
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-text-primary">Thêm Container Nhập Khẩu</DialogTitle>
+          <DialogTitle className="text-text-primary">Thêm Lệnh Giao Trả</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">

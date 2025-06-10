@@ -56,12 +56,12 @@ export default function MatchSuggestions({ suggestions }: MatchSuggestionsProps)
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-text-primary">Gợi Ý Ghép Nối Street-Turn</CardTitle>
+          <CardTitle className="text-text-primary">Gợi Ý Tái Sử Dụng Container</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-text-secondary">
-            <p>Không có gợi ý ghép nối nào tại thời điểm này.</p>
-            <p className="text-sm mt-2">Hãy thêm container và booking để tạo gợi ý ghép nối.</p>
+            <p>Không có gợi ý tái sử dụng nào tại thời điểm này.</p>
+            <p className="text-sm mt-2">Hãy thêm lệnh giao trả và lệnh lấy rỗng để tạo gợi ý tái sử dụng.</p>
           </div>
         </CardContent>
       </Card>
@@ -71,9 +71,9 @@ export default function MatchSuggestions({ suggestions }: MatchSuggestionsProps)
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-text-primary">Gợi Ý Ghép Nối Street-Turn</CardTitle>
+        <CardTitle className="text-text-primary">Gợi Ý Tái Sử Dụng Container</CardTitle>
         <p className="text-sm text-text-secondary">
-          Hệ thống đã tìm thấy {suggestions.length} cặp ghép nối tiềm năng
+          Hệ thống đã tìm thấy {suggestions.length} cặp tái sử dụng tiềm năng
         </p>
       </CardHeader>
       <CardContent>
@@ -81,8 +81,8 @@ export default function MatchSuggestions({ suggestions }: MatchSuggestionsProps)
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-border">
-                <th className="text-left p-3 font-medium text-text-primary">Container Nhập</th>
-                <th className="text-left p-3 font-medium text-text-primary">Booking Xuất</th>
+                <th className="text-left p-3 font-medium text-text-primary">Lệnh Giao Trả</th>
+                <th className="text-left p-3 font-medium text-text-primary">Lệnh Lấy Rỗng</th>
                 <th className="text-left p-3 font-medium text-text-primary">Lợi ích Ước tính</th>
                 <th className="text-center p-3 font-medium text-text-primary">Hành động</th>
               </tr>
@@ -94,7 +94,7 @@ export default function MatchSuggestions({ suggestions }: MatchSuggestionsProps)
                 
                 return (
                   <tr key={requestId} className="border-b border-border hover:bg-gray-50">
-                    {/* Container Nhập */}
+                    {/* Lệnh Giao Trả */}
                     <td className="p-3">
                       <div className="space-y-1">
                         <div className="font-medium text-text-primary">
@@ -115,7 +115,7 @@ export default function MatchSuggestions({ suggestions }: MatchSuggestionsProps)
                       </div>
                     </td>
 
-                    {/* Booking Xuất */}
+                    {/* Lệnh Lấy Rỗng */}
                     <td className="p-3">
                       <div className="space-y-1">
                         <div className="font-medium text-text-primary">

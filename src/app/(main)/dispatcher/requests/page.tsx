@@ -35,7 +35,7 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-h3 font-semibold text-text-primary">
-              Lịch sử các yêu cầu đã gửi
+              Lịch sử Yêu Cầu Tái Sử Dụng
             </h2>
             <span className="text-body-small text-text-secondary">
               {requests.length} yêu cầu{search || status ? ' (đã lọc)' : ''}
@@ -144,10 +144,10 @@ export default async function RequestsPage(props: RequestsPageProps) {
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-h1 font-bold text-text-primary mb-2">
-            Quản Lý Yêu Cầu Street-Turn
+            Quản lý Yêu Cầu Tái Sử Dụng
           </h1>
           <p className="text-body text-text-secondary">
-            Xem lại và theo dõi tất cả các yêu cầu street-turn đã gửi của công ty bạn
+            Xem lại và theo dõi tất cả các yêu cầu tái sử dụng container đã gửi của công ty bạn
           </p>
         </div>
 

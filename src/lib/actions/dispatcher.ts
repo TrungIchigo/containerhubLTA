@@ -89,6 +89,7 @@ export async function addImportContainer(formData: {
   drop_off_location: string
   available_from_datetime: string
   shipping_line_org_id: string
+  is_listed_on_marketplace?: boolean
 }) {
   const user = await getCurrentUser()
   
@@ -107,6 +108,7 @@ export async function addImportContainer(formData: {
       available_from_datetime: formData.available_from_datetime,
       trucking_company_org_id: user.profile.organization_id,
       shipping_line_org_id: formData.shipping_line_org_id,
+      is_listed_on_marketplace: formData.is_listed_on_marketplace || false,
       status: 'AVAILABLE'
     })
 

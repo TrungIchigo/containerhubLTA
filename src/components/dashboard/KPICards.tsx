@@ -44,7 +44,7 @@ export default function KPICards({ kpis, className }: KPICardsProps) {
       bgColor: 'bg-primary-light'
     },
     {
-      title: 'Tổng Số Street-Turns Thành Công',
+      title: 'Tổng Số Tái Sử Dụng Thành Công',
       value: formatNumber(kpis.successful_street_turns),
       description: 'yêu cầu đã được phê duyệt',
       icon: CheckCircle,

@@ -26,10 +26,10 @@ export default async function CarrierAdminPage() {
         </div>
         <div>
           <h1 className="text-3xl font-bold text-text-primary">
-            Quản lý Yêu cầu Street-Turn
+            Cổng Hãng Tàu - Quản lý Yêu Cầu Tái Sử Dụng
           </h1>
           <p className="text-text-secondary mt-1">
-            Xem và xử lý các yêu cầu street-turn cho hãng tàu {user.profile?.organization?.name}
+            Xem và xử lý các yêu cầu tái sử dụng container cho hãng tàu {user.profile?.organization?.name}
           </p>
         </div>
       </div>

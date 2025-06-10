@@ -42,10 +42,10 @@ export default async function DispatcherPage() {
             {/* Header */}
             <div className="mb-8">
               <h1 className="text-3xl font-bold text-text-primary mb-2">
-                Dashboard Điều Phối Viên
+                Bảng Điều Phối
               </h1>
               <p className="text-text-secondary">
-                Chào mừng {user.profile?.full_name}! Quản lý container và booking của {user.profile?.organization?.name}
+                Chào mừng {user.profile?.full_name}! Quản lý Lệnh Giao Trả và Lệnh Lấy Rỗng của {user.profile?.organization?.name}
               </p>
             </div>
 

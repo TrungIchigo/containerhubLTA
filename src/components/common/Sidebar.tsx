@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { BarChart3, Truck, Ship, FileText } from 'lucide-react'
+import { BarChart3, Truck, Ship, FileText, Settings, Store } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface NavigationItem {
@@ -19,9 +19,11 @@ export default function Sidebar() {
   
   const allNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3, roles: ['DISPATCHER', 'CARRIER_ADMIN'] },
-    { name: 'Điều phối', href: '/dispatcher', icon: Truck, roles: ['DISPATCHER'] },
-    { name: 'Quản lý Yêu cầu', href: '/dispatcher/requests', icon: FileText, roles: ['DISPATCHER'] },
-    { name: 'Quản trị Hãng tàu', href: '/carrier-admin', icon: Ship, roles: ['CARRIER_ADMIN'] },
+    { name: 'Bảng Điều Phối', href: '/dispatcher', icon: Truck, roles: ['DISPATCHER'] },
+    { name: 'Thị Trường', href: '/marketplace', icon: Store, roles: ['DISPATCHER'] },
+    { name: 'Quản lý Yêu Cầu Tái Sử Dụng', href: '/dispatcher/requests', icon: FileText, roles: ['DISPATCHER'] },
+    { name: 'Cổng Hãng Tàu', href: '/carrier-admin', icon: Ship, roles: ['CARRIER_ADMIN'] },
+    { name: 'Quy tắc Tự động', href: '/carrier-admin/rules', icon: Settings, roles: ['CARRIER_ADMIN'] },
   ]
 
   useEffect(() => {
@@ -71,7 +73,10 @@ export default function Sidebar() {
       <nav className="space-y-1">
         {navigation.map((item) => {
           const IconComponent = item.icon
-          const isActive = pathname === item.href || (item.href === '/dispatcher/requests' && pathname.startsWith('/dispatcher/requests'))
+          const isActive = pathname === item.href || 
+            (item.href === '/dispatcher/requests' && pathname.startsWith('/dispatcher/requests')) ||
+            (item.href === '/carrier-admin/rules' && pathname.startsWith('/carrier-admin/rules')) ||
+            (item.href === '/marketplace' && pathname.startsWith('/marketplace'))
           return (
             <Link
               key={item.name}

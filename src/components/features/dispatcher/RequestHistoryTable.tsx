@@ -5,14 +5,23 @@ interface StreetTurnRequest {
   container_number?: string
   booking_number?: string
   status: 'PENDING' | 'APPROVED' | 'DECLINED'
+  match_type?: 'INTERNAL' | 'MARKETPLACE'
+  dropoff_org_approval_status?: 'PENDING' | 'APPROVED' | 'DECLINED'
   created_at: string
+  auto_approved_by_rule_id?: string
   carrier_organization?: {
     name: string
   }
+  partner_organization?: {
+    name: string
+  } | null
   import_containers?: {
     container_number: string
     booking_number: string
   }[]
+  auto_approval_rule?: {
+    name: string
+  }
 }
 
 interface RequestHistoryTableProps {
@@ -27,8 +36,40 @@ const statusMap = {
   'DECLINED': { text: 'Bị từ chối', variant: 'declined' as const },
 }
 
-const getStatusBadge = (status: StreetTurnRequest['status']) => {
+const getStatusBadge = (request: StreetTurnRequest) => {
+  const { status, auto_approved_by_rule_id, match_type, dropoff_org_approval_status } = request
   const currentStatus = statusMap[status] || { text: status, variant: 'default' as const }
+  
+  // Auto approved
+  if (status === 'APPROVED' && auto_approved_by_rule_id) {
+    return (
+      <div className="flex items-center gap-1">
+        <Badge variant="approved">Tự động duyệt</Badge>
+        <span className="text-xs text-blue-600">🤖</span>
+      </div>
+    )
+  }
+  
+  // Marketplace requests with partner approval pending
+  if (match_type === 'MARKETPLACE' && dropoff_org_approval_status === 'PENDING') {
+    return (
+      <div className="flex flex-col gap-1">
+        <Badge variant="pending">Chờ đối tác</Badge>
+        <span className="text-xs text-text-secondary">Đợi công ty bán duyệt</span>
+      </div>
+    )
+  }
+  
+  // Marketplace requests with partner declined
+  if (match_type === 'MARKETPLACE' && dropoff_org_approval_status === 'DECLINED') {
+    return (
+      <div className="flex flex-col gap-1">
+        <Badge variant="declined">Đối tác từ chối</Badge>
+        <span className="text-xs text-text-secondary">Yêu cầu bị hủy</span>
+      </div>
+    )
+  }
+  
   return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
 }
 
@@ -78,6 +119,7 @@ export default function RequestHistoryTable({ requests, className }: RequestHist
               <th className="table-header">Mã Yêu cầu</th>
               <th className="table-header">Container / Booking</th>
               <th className="table-header">Hãng tàu</th>
+              <th className="table-header">Đối tác</th>
               <th className="table-header">Ngày gửi</th>
               <th className="table-header">Trạng thái</th>
               <th className="table-header">Hành động</th>
@@ -100,10 +142,22 @@ export default function RequestHistoryTable({ requests, className }: RequestHist
                   {request.carrier_organization?.name || 'N/A'}
                 </td>
                 <td className="table-cell">
+                  {request.match_type === 'MARKETPLACE' && request.partner_organization ? (
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">{request.partner_organization.name}</span>
+                      <Badge variant="secondary" className="text-xs w-fit">
+                        Marketplace
+                      </Badge>
+                    </div>
+                  ) : (
+                    <span className="text-text-secondary text-sm">Nội bộ</span>
+                  )}
+                </td>
+                <td className="table-cell">
                   {formatDate(request.created_at)}
                 </td>
                 <td className="table-cell">
-                  {getStatusBadge(request.status)}
+                  {getStatusBadge(request)}
                 </td>
                 <td className="table-cell">
                   <div className="flex space-x-2">

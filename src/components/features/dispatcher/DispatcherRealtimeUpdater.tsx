@@ -49,7 +49,7 @@ export function DispatcherRealtimeUpdater({ userOrgId }: DispatcherRealtimeUpdat
             if (newStatus === 'APPROVED') {
               toast({
                 title: "🎉 Yêu cầu được phê duyệt!",
-                description: `Street-turn cho container ${containerNumber} → booking ${bookingNumber} đã được chấp thuận.`,
+                description: `Tái sử dụng container ${containerNumber} → lệnh ${bookingNumber} đã được chấp thuận.`,
                 variant: 'default',
                 duration: 5000,
               })

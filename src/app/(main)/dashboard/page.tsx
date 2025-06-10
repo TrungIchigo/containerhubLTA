@@ -185,10 +185,10 @@ export default function DashboardPage(props: DashboardPageProps) {
       {/* Page Header */}
       <div className="mb-6">
         <h1 className="text-h1 font-bold text-text-primary mb-2">
-          Báo cáo Hiệu quả Hoạt động
+          Báo cáo hiệu quả hoạt động
         </h1>
         <p className="text-body text-text-secondary">
-          Tổng quan về hiệu suất và giá trị mà nền tảng i-ContainerHub@LTA mang lại
+          Tổng quan về hiệu suất và giá trị mà Hệ Thống Tái Sử Dụng Container i-ContainerHub@LTA mang lại
         </p>
       </div>
 
