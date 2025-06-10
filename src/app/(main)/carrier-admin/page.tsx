@@ -17,23 +17,6 @@ export default async function CarrierAdminPage() {
     redirect('/dashboard')
   }
 
-  // Fetch dashboard data
-  let dashboardData
-  try {
-    dashboardData = await getCarrierAdminDashboardData()
-  } catch (error) {
-    console.error('Error fetching carrier admin data:', error)
-    // Fallback data
-    dashboardData = {
-      pendingRequests: [],
-      kpis: {
-        pendingCount: 0,
-        approvedThisMonth: 0,
-        totalApproved: 0
-      }
-    }
-  }
-
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -51,11 +34,32 @@ export default async function CarrierAdminPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <CarrierKPICards kpis={dashboardData.kpis} />
-
-      {/* Request Queue Table */}
-      <RequestQueueTable requests={dashboardData.pendingRequests} />
+      <CarrierDashboardContent />
     </div>
   )
+}
+
+async function CarrierDashboardContent() {
+  try {
+    const dashboardData = await getCarrierAdminDashboardData()
+    
+    return (
+      <>
+        {/* KPI Cards */}
+        <CarrierKPICards kpis={dashboardData.kpis} />
+
+        {/* Request Queue Table */}
+        <RequestQueueTable requests={dashboardData.pendingRequests} />
+      </>
+    )
+  } catch (error) {
+    console.error('Error fetching carrier admin data:', error)
+    return (
+      <div className="card text-center py-8">
+        <p className="text-danger">
+          Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.
+        </p>
+      </div>
+    )
+  }
 } 

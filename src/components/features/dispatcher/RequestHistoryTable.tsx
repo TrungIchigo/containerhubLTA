@@ -20,17 +20,16 @@ interface RequestHistoryTableProps {
   className?: string
 }
 
+// Status mapping cho requests
+const statusMap = {
+  'PENDING': { text: 'Đang chờ', variant: 'pending' as const },
+  'APPROVED': { text: 'Đã duyệt', variant: 'approved' as const },
+  'DECLINED': { text: 'Bị từ chối', variant: 'declined' as const },
+}
+
 const getStatusBadge = (status: StreetTurnRequest['status']) => {
-  switch (status) {
-    case 'PENDING':
-      return <Badge variant="pending">Đang chờ</Badge>
-    case 'APPROVED':
-      return <Badge variant="approved">Đã duyệt</Badge>
-    case 'DECLINED':
-      return <Badge variant="declined">Bị từ chối</Badge>
-    default:
-      return <Badge variant="default">{status}</Badge>
-  }
+  const currentStatus = statusMap[status] || { text: status, variant: 'default' as const }
+  return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
 }
 
 const formatDate = (dateString: string) => {

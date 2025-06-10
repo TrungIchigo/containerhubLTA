@@ -1,7 +1,10 @@
 import { Suspense } from 'react'
 import { getStreetTurnRequests } from '@/lib/actions/requests'
+import { getCurrentUser } from '@/lib/actions/auth'
+import { redirect } from 'next/navigation'
 import RequestFilters from '@/components/features/dispatcher/RequestFilters'
 import RequestHistoryTable from '@/components/features/dispatcher/RequestHistoryTable'
+import { DispatcherDashboardWrapper } from '@/components/features/dispatcher/DispatcherDashboardWrapper'
 
 interface RequestsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -118,24 +121,42 @@ function LoadingSkeleton() {
   )
 }
 
-export default function RequestsPage(props: RequestsPageProps) {
-  return (
-    <div className="container-spacing">
-      {/* Page Header */}
-      <div className="mb-6">
-        <h1 className="text-h1 font-bold text-text-primary mb-2">
-          Quản Lý Yêu Cầu Street-Turn
-        </h1>
-        <p className="text-body text-text-secondary">
-          Xem lại và theo dõi tất cả các yêu cầu street-turn đã gửi của công ty bạn
-        </p>
-      </div>
+export default async function RequestsPage(props: RequestsPageProps) {
+  // Authentication and role check
+  const user = await getCurrentUser()
+  
+  if (!user) {
+    redirect('/login')
+  }
 
-      {/* Content with Suspense for loading state */}
-      <Suspense fallback={<LoadingSkeleton />}>
-        <RequestsContent {...props} />
-      </Suspense>
-    </div>
+  if (user.profile?.role !== 'DISPATCHER') {
+    // Redirect to appropriate page based on role
+    if (user.profile?.role === 'CARRIER_ADMIN') {
+      redirect('/carrier-admin')
+    } else {
+      redirect('/dashboard')
+    }
+  }
+
+  return (
+    <DispatcherDashboardWrapper userOrgId={user.profile?.organization_id || ''}>
+      <div className="container-spacing">
+        {/* Page Header */}
+        <div className="mb-6">
+          <h1 className="text-h1 font-bold text-text-primary mb-2">
+            Quản Lý Yêu Cầu Street-Turn
+          </h1>
+          <p className="text-body text-text-secondary">
+            Xem lại và theo dõi tất cả các yêu cầu street-turn đã gửi của công ty bạn
+          </p>
+        </div>
+
+        {/* Content with Suspense for loading state */}
+        <Suspense fallback={<LoadingSkeleton />}>
+          <RequestsContent {...props} />
+        </Suspense>
+      </div>
+    </DispatcherDashboardWrapper>
   )
 }
 

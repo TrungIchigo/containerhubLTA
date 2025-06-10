@@ -20,7 +20,7 @@ export default function Header() {
           />
           <div>
             <h1 className="text-lg font-bold text-primary">{APP_CONFIG.name}</h1>
-            <p className="text-xs text-text-secondary">Logistics Technology Authority</p>
+            <p className="text-xs text-text-secondary">Logistics Technology Application</p>
           </div>
         </Link>
         <UserNav />

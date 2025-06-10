@@ -2,17 +2,57 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { BarChart3, Truck, Ship, FileText } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+
+interface NavigationItem {
+  name: string
+  href: string
+  icon: any
+  roles: string[]
+}
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const [userRole, setUserRole] = useState<string | null>(null)
   
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
-    { name: 'Điều phối', href: '/dispatcher', icon: Truck },
-    { name: 'Quản lý Yêu cầu', href: '/dispatcher/requests', icon: FileText },
-    { name: 'Quản trị', href: '/carrier-admin', icon: Ship },
+  const allNavigation: NavigationItem[] = [
+    { name: 'Dashboard', href: '/dashboard', icon: BarChart3, roles: ['DISPATCHER', 'CARRIER_ADMIN'] },
+    { name: 'Điều phối', href: '/dispatcher', icon: Truck, roles: ['DISPATCHER'] },
+    { name: 'Quản lý Yêu cầu', href: '/dispatcher/requests', icon: FileText, roles: ['DISPATCHER'] },
+    { name: 'Quản trị Hãng tàu', href: '/carrier-admin', icon: Ship, roles: ['CARRIER_ADMIN'] },
   ]
+
+  useEffect(() => {
+    const loadUserRole = async () => {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+          
+          if (profile) {
+            setUserRole(profile.role)
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user role:', error)
+      }
+    }
+
+    loadUserRole()
+  }, [])
+
+  // Filter navigation based on user role
+  const navigation = allNavigation.filter(item => 
+    !userRole || item.roles.includes(userRole)
+  )
 
   return (
     <aside className="sidebar w-60 p-4 shadow-card">

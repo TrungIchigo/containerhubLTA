@@ -3,17 +3,26 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from './auth'
 import { revalidatePath } from 'next/cache'
+import { debugUserData } from '../debug'
 
 // Get carrier admin dashboard data
 export async function getCarrierAdminDashboardData() {
   const user = await getCurrentUser()
   
-  if (!user?.profile?.organization_id || user.profile.role !== 'CARRIER_ADMIN') {
-    throw new Error('Unauthorized')
+  if (!user?.profile?.organization_id) {
+    console.error('User missing organization_id:', user)
+    throw new Error('User organization not found')
+  }
+
+  if (user.profile.role !== 'CARRIER_ADMIN') {
+    console.error('User role is not CARRIER_ADMIN:', user.profile.role)
+    throw new Error('Unauthorized - not a carrier admin')
   }
 
   const supabase = await createClient()
   const orgId = user.profile.organization_id
+
+  console.log('Fetching data for carrier org_id:', orgId)
 
   // Get pending requests for this shipping line
   const { data: pendingRequests, error: requestsError } = await supabase
@@ -36,8 +45,11 @@ export async function getCarrierAdminDashboardData() {
 
   if (requestsError) {
     console.error('Error fetching pending requests:', requestsError)
-    throw requestsError
+    console.error('Query details - orgId:', orgId)
+    throw new Error(`Database query failed: ${requestsError.message}`)
   }
+
+  console.log('Found pending requests:', pendingRequests?.length || 0)
 
   // Get KPI data
   // 1. Pending requests count
@@ -48,19 +60,33 @@ export async function getCarrierAdminDashboardData() {
   thisMonth.setDate(1)
   thisMonth.setHours(0, 0, 0, 0)
   
-  const { data: approvedThisMonth } = await supabase
+  const { data: approvedThisMonth, error: approvedError } = await supabase
     .from('street_turn_requests')
     .select('id')
     .eq('approving_org_id', orgId)
     .eq('status', 'APPROVED')
     .gte('created_at', thisMonth.toISOString())
 
+  if (approvedError) {
+    console.error('Error fetching approved this month:', approvedError)
+  }
+
   // 3. Total approved (all time)
-  const { data: totalApproved } = await supabase
+  const { data: totalApproved, error: totalError } = await supabase
     .from('street_turn_requests')
     .select('id')
     .eq('approving_org_id', orgId)
     .eq('status', 'APPROVED')
+
+  if (totalError) {
+    console.error('Error fetching total approved:', totalError)
+  }
+
+  console.log('KPI data:', {
+    pendingCount,
+    approvedThisMonth: approvedThisMonth?.length || 0,
+    totalApproved: totalApproved?.length || 0
+  })
 
   return {
     pendingRequests: pendingRequests || [],
@@ -126,13 +152,14 @@ export async function approveRequest(requestId: string) {
     // Don't throw here as the main operation succeeded
   }
 
-  // Revalidate both pages
+  // Revalidate all relevant pages
   revalidatePath('/carrier-admin')
   revalidatePath('/dispatcher')
+  revalidatePath('/dispatcher/requests')
 }
 
 // Decline street-turn request - SERVER ACTION
-export async function declineRequest(requestId: string) {
+export async function declineRequest(requestId: string, reason: string) {
   const user = await getCurrentUser()
   
   if (!user?.profile?.organization_id || user.profile.role !== 'CARRIER_ADMIN') {
@@ -155,11 +182,12 @@ export async function declineRequest(requestId: string) {
     throw new Error('Request not found or unauthorized')
   }
 
-  // Update request status to DECLINED
+  // Update request status to DECLINED with reason
   const { error: updateError } = await supabase
     .from('street_turn_requests')
     .update({ 
       status: 'DECLINED',
+      decline_reason: reason,
       updated_at: new Date().toISOString()
     })
     .eq('id', requestId)
@@ -185,7 +213,8 @@ export async function declineRequest(requestId: string) {
     // Don't throw here as the main operation succeeded
   }
 
-  // Revalidate both pages
+  // Revalidate all relevant pages
   revalidatePath('/carrier-admin')
   revalidatePath('/dispatcher')
+  revalidatePath('/dispatcher/requests')
 } 

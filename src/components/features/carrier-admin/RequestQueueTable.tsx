@@ -6,51 +6,17 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, XCircle, ArrowRight, Clock, MapPin, Calendar } from 'lucide-react'
-import { approveRequest, declineRequest } from '@/lib/actions/carrier-admin'
+import ApproveRequestDialog from './ApproveRequestDialog'
+import DeclineRequestDialog from './DeclineRequestDialog'
 
 interface RequestQueueTableProps {
   requests: any[]
 }
 
 export default function RequestQueueTable({ requests }: RequestQueueTableProps) {
-  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set())
-
-  const handleApprove = async (requestId: string) => {
-    if (processingIds.has(requestId)) return
-    
-    setProcessingIds(prev => new Set(prev).add(requestId))
-    try {
-      await approveRequest(requestId)
-      // The page will automatically revalidate due to revalidatePath in the server action
-    } catch (error) {
-      console.error('Error approving request:', error)
-      alert('Có lỗi xảy ra khi phê duyệt yêu cầu. Vui lòng thử lại.')
-    } finally {
-      setProcessingIds(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(requestId)
-        return newSet
-      })
-    }
-  }
-
-  const handleDecline = async (requestId: string) => {
-    if (processingIds.has(requestId)) return
-    
-    setProcessingIds(prev => new Set(prev).add(requestId))
-    try {
-      await declineRequest(requestId)
-      // The page will automatically revalidate due to revalidatePath in the server action
-    } catch (error) {
-      console.error('Error declining request:', error)
-      alert('Có lỗi xảy ra khi từ chối yêu cầu. Vui lòng thử lại.')
-    } finally {
-      setProcessingIds(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(requestId)
-        return newSet
-      })
-    }
+  const handleActionComplete = (success: boolean, message: string) => {
+    // Tạm thời sử dụng alert, có thể thay thế bằng toast library sau
+    alert(message)
   }
 
   const formatDateTime = (dateString: string) => {
@@ -122,7 +88,6 @@ export default function RequestQueueTable({ requests }: RequestQueueTableProps) 
             </TableHeader>
             <TableBody>
               {requests.map((request) => {
-                const isProcessing = processingIds.has(request.id)
                 const container = request.import_container
                 const booking = request.export_booking
                 const requestingCompany = request.requesting_org
@@ -210,32 +175,32 @@ export default function RequestQueueTable({ requests }: RequestQueueTableProps) 
                     
                     <TableCell className="table-cell">
                       <div className="flex gap-2 justify-center">
-                        <Button
-                          onClick={() => handleApprove(request.id)}
-                          disabled={isProcessing}
-                          className="btn-primary"
-                          size="sm"
+                        <ApproveRequestDialog 
+                          request={request} 
+                          onActionComplete={handleActionComplete}
                         >
-                          {isProcessing ? (
-                            <Clock className="w-4 h-4 animate-spin" />
-                          ) : (
+                          <Button
+                            className="btn-primary min-w-[100px]"
+                            size="sm"
+                          >
                             <CheckCircle className="w-4 h-4" />
-                          )}
-                          Phê duyệt
-                        </Button>
-                        <Button
-                          onClick={() => handleDecline(request.id)}
-                          disabled={isProcessing}
-                          className="btn-danger"
-                          size="sm"
+                            Phê duyệt
+                          </Button>
+                        </ApproveRequestDialog>
+
+                        <DeclineRequestDialog 
+                          request={request} 
+                          onActionComplete={handleActionComplete}
                         >
-                          {isProcessing ? (
-                            <Clock className="w-4 h-4 animate-spin" />
-                          ) : (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="min-w-[100px] bg-red-600 hover:bg-red-700 text-white"
+                          >
                             <XCircle className="w-4 h-4" />
-                          )}
-                          Từ chối
-                        </Button>
+                            Từ chối
+                          </Button>
+                        </DeclineRequestDialog>
                       </div>
                     </TableCell>
                   </TableRow>

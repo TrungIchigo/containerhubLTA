@@ -14,17 +14,16 @@ export default function ImportContainersTable({
   containers, 
   shippingLines 
 }: ImportContainersTableProps) {
+  // Status mapping cho container
+  const statusMap = {
+    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const },
+    'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const },
+    'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const },
+  }
+
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'AVAILABLE':
-        return <Badge variant="approved">Sẵn sàng</Badge>
-      case 'AWAITING_APPROVAL':
-        return <Badge variant="pending">Chờ duyệt</Badge>
-      case 'CONFIRMED':
-        return <Badge variant="confirmed">Đã xác nhận</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
+    const currentStatus = statusMap[status as keyof typeof statusMap] || { text: status, variant: 'outline' as const }
+    return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
   }
 
   const formatDateTime = (dateTime: string) => {

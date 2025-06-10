@@ -6,6 +6,7 @@ import KPICards from '@/components/dispatcher/KPICards'
 import ImportContainersTable from '@/components/dispatcher/ImportContainersTable'
 import ExportBookingsTable from '@/components/dispatcher/ExportBookingsTable'
 import MatchSuggestions from '@/components/dispatcher/MatchSuggestions'
+import { DispatcherDashboardWrapper } from '@/components/features/dispatcher/DispatcherDashboardWrapper'
 
 export default async function DispatcherPage() {
   // Kiểm tra authentication và authorization
@@ -16,7 +17,12 @@ export default async function DispatcherPage() {
   }
   
   if (user.profile?.role !== 'DISPATCHER') {
-    redirect('/login')
+    // Redirect to appropriate page based on role
+    if (user.profile?.role === 'CARRIER_ADMIN') {
+      redirect('/carrier-admin')
+    } else {
+      redirect('/dashboard')
+    }
   }
 
   try {
@@ -30,45 +36,47 @@ export default async function DispatcherPage() {
     )
 
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-text-primary mb-2">
-              Dashboard Điều Phối Viên
-            </h1>
-            <p className="text-text-secondary">
-              Chào mừng {user.profile?.full_name}! Quản lý container và booking của {user.profile?.organization?.name}
-            </p>
-          </div>
+      <DispatcherDashboardWrapper userOrgId={user.profile?.organization_id || ''}>
+        <div className="min-h-screen bg-background">
+          <div className="container mx-auto px-4 py-8">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-text-primary mb-2">
+                Dashboard Điều Phối Viên
+              </h1>
+              <p className="text-text-secondary">
+                Chào mừng {user.profile?.full_name}! Quản lý container và booking của {user.profile?.organization?.name}
+              </p>
+            </div>
 
-          {/* KPI Cards */}
-          <KPICards
-            availableContainers={data.kpis.availableContainers}
-            availableBookings={data.kpis.availableBookings}
-            approvedStreetTurns={data.kpis.approvedStreetTurns}
-          />
-
-          {/* Management Tables */}
-          <div className="space-y-8">
-            {/* Import Containers Table */}
-            <ImportContainersTable
-              containers={data.importContainers}
-              shippingLines={data.shippingLines}
+            {/* KPI Cards */}
+            <KPICards
+              availableContainers={data.kpis.availableContainers}
+              availableBookings={data.kpis.availableBookings}
+              approvedStreetTurns={data.kpis.approvedStreetTurns}
             />
 
-            {/* Export Bookings Table */}
-            <ExportBookingsTable
-              bookings={data.exportBookings}
-            />
+            {/* Management Tables */}
+            <div className="space-y-8">
+              {/* Import Containers Table */}
+              <ImportContainersTable
+                containers={data.importContainers}
+                shippingLines={data.shippingLines}
+              />
 
-            {/* Match Suggestions */}
-            <MatchSuggestions
-              suggestions={matchSuggestions}
-            />
+              {/* Export Bookings Table */}
+              <ExportBookingsTable
+                bookings={data.exportBookings}
+              />
+
+              {/* Match Suggestions */}
+              <MatchSuggestions
+                suggestions={matchSuggestions}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </DispatcherDashboardWrapper>
     )
   } catch (error) {
     console.error('Error loading dispatcher dashboard:', error)

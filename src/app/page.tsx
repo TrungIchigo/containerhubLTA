@@ -14,7 +14,27 @@ export default function HomePage() {
         const { data: { user } } = await supabase.auth.getUser()
         
         if (user) {
-          router.push('/dashboard')
+          // Get user profile to determine appropriate page
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+          if (profile) {
+            switch (profile.role) {
+              case 'DISPATCHER':
+                router.push('/dispatcher')
+                break
+              case 'CARRIER_ADMIN':
+                router.push('/carrier-admin')
+                break
+              default:
+                router.push('/dashboard')
+            }
+          } else {
+            router.push('/dashboard')
+          }
         } else {
           router.push('/login')
         }

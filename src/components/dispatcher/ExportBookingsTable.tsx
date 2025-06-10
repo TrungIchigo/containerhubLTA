@@ -8,17 +8,16 @@ interface ExportBookingsTableProps {
 }
 
 export default function ExportBookingsTable({ bookings }: ExportBookingsTableProps) {
+  // Status mapping cho booking
+  const statusMap = {
+    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const },
+    'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const },
+    'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const },
+  }
+
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'AVAILABLE':
-        return <Badge className="bg-green-100 text-green-800 border-green-200">Sẵn sàng</Badge>
-      case 'AWAITING_APPROVAL':
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Chờ duyệt</Badge>
-      case 'CONFIRMED':
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-200">Đã xác nhận</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
+    const currentStatus = statusMap[status as keyof typeof statusMap] || { text: status, variant: 'outline' as const }
+    return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
   }
 
   const formatDateTime = (dateTime: string) => {

@@ -23,62 +23,74 @@ export async function getStreetTurnRequests(filters: StreetTurnRequestFilters = 
     .eq('id', user.id)
     .single()
 
-  if (profileError || !profile || profile.role !== 'DISPATCHER') {
+  if (profileError || !profile) {
+    console.error('Profile error:', profileError)
+    throw new Error('Profile not found')
+  }
+
+  if (profile.role !== 'DISPATCHER') {
     throw new Error('Unauthorized access')
   }
 
-  // For now, return mock data to test the UI structure
-  // TODO: Replace with actual Supabase query once we understand the data structure
-  const mockRequests = [
-    {
-      id: 'req-001-test-abc123',
-      status: 'PENDING' as const,
-      created_at: new Date().toISOString(),
-      carrier_organization: { name: 'Hãng tàu ABC' },
-      import_containers: [
-        { container_number: 'ABCD1234567', booking_number: 'BK001' }
-      ]
-    },
-    {
-      id: 'req-002-test-def456',
-      status: 'APPROVED' as const,
-      created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      carrier_organization: { name: 'Hãng tàu XYZ' },
-      import_containers: [
-        { container_number: 'XYZA9876543', booking_number: 'BK002' }
-      ]
-    },
-    {
-      id: 'req-003-test-ghi789',
-      status: 'DECLINED' as const,
-      created_at: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
-      carrier_organization: { name: 'Hãng tàu DEF' },
-      import_containers: [
-        { container_number: 'DEFG5555555', booking_number: 'BK003' }
-      ]
-    }
-  ]
+  // Query actual street turn requests from database
+  let query = supabase
+    .from('street_turn_requests')
+    .select(`
+      *,
+      import_container:import_containers(
+        container_number,
+        container_type,
+        drop_off_location,
+        available_from_datetime
+      ),
+      export_booking:export_bookings(
+        booking_number,
+        required_container_type,
+        pick_up_location,
+        needed_by_datetime
+      ),
+      approving_org:organizations!street_turn_requests_approving_org_id_fkey(
+        name
+      )
+    `)
+    .eq('requesting_org_id', profile.organization_id)
+    .order('created_at', { ascending: false })
 
-  // Apply filters
-  let filteredRequests = mockRequests
-
+  // Apply status filter
   if (filters.status) {
-    filteredRequests = filteredRequests.filter(request => request.status === filters.status)
+    query = query.eq('status', filters.status)
   }
 
+  const { data: requests, error: requestsError } = await query
+
+  if (requestsError) {
+    console.error('Error fetching requests:', requestsError)
+    throw new Error('Failed to fetch requests')
+  }
+
+  let filteredRequests = requests || []
+
+  // Apply search filter
   if (filters.search) {
     const searchTerm = filters.search.toLowerCase()
     filteredRequests = filteredRequests.filter(request => {
-      const containers = request.import_containers || []
-      return containers.some(container => {
-        const containerNumber = container.container_number?.toLowerCase() || ''
-        const bookingNumber = container.booking_number?.toLowerCase() || ''
-        return containerNumber.includes(searchTerm) || bookingNumber.includes(searchTerm)
-      })
+      const containerNumber = request.import_container?.container_number?.toLowerCase() || ''
+      const bookingNumber = request.export_booking?.booking_number?.toLowerCase() || ''
+      return containerNumber.includes(searchTerm) || bookingNumber.includes(searchTerm)
     })
   }
 
-  return filteredRequests
+  // Transform data to match expected interface
+  return filteredRequests.map(request => ({
+    id: request.id,
+    status: request.status,
+    created_at: request.created_at,
+    carrier_organization: { name: request.approving_org?.name || 'Unknown' },
+    import_containers: request.import_container ? [{
+      container_number: request.import_container.container_number,
+      booking_number: request.export_booking?.booking_number || ''
+    }] : []
+  }))
 }
 
 export async function cancelStreetTurnRequest(requestId: string) {

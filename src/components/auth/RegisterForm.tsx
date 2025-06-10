@@ -23,33 +23,17 @@ export default function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [debugInfo, setDebugInfo] = useState('')
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [countdown, setCountdown] = useState(3)
   const router = useRouter()
-
-  // Test Supabase connection on component mount
-  useEffect(() => {
-    const testConnection = async () => {
-      try {
-        const supabase = createClient()
-        const { data, error } = await supabase.from('organizations').select('count').limit(1)
-        if (error) {
-          console.error('Supabase connection test failed:', error)
-          setDebugInfo(`Connection test failed: ${error.message}`)
-        } else {
-          console.log('Supabase connection test passed')
-          setDebugInfo('Supabase connection OK')
-        }
-      } catch (err) {
-        console.error('Connection test error:', err)
-        setDebugInfo(`Connection error: ${err}`)
-      }
-    }
-    
-    testConnection()
-  }, [])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleRadioChange = (value: string) => {
+    setFormData(prev => ({ ...prev, organizationType: value }))
   }
 
   const handleRegister = async () => {
@@ -174,14 +158,23 @@ export default function RegisterForm() {
         return
       }
 
-      // Thành công - redirect người dùng
+      // Thành công - hiển thị popup và countdown
       setDebugInfo('Registration completed successfully!')
+      setShowSuccessModal(true)
+      
+      // Bắt đầu countdown
       const redirectPath = formData.organizationType === 'TRUCKING_COMPANY' ? '/dispatcher' : '/carrier-admin'
       
-      // Add delay before redirect to ensure auth state is updated
-      setTimeout(() => {
-        router.push(redirectPath)
-      }, 1500)
+      let timeLeft = 3
+      const countdownInterval = setInterval(() => {
+        timeLeft -= 1
+        setCountdown(timeLeft)
+        
+        if (timeLeft === 0) {
+          clearInterval(countdownInterval)
+          router.push(redirectPath)
+        }
+      }, 1000)
       
     } catch (error: any) {
       console.error('Registration error:', error)
@@ -240,7 +233,33 @@ export default function RegisterForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg">
+    <>
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md mx-4 text-center shadow-xl">
+            <div className="mb-4">
+              <div className="mx-auto mb-4 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">Đăng ký thành công!</h3>
+              <div className="text-sm text-text-secondary space-y-1">
+                <p><strong>Họ tên:</strong> {formData.fullName}</p>
+                <p><strong>Công ty:</strong> {formData.companyName}</p>
+                <p><strong>Loại hình:</strong> {formData.organizationType === 'TRUCKING_COMPANY' ? 'Công ty Vận tải' : 'Hãng tàu'}</p>
+                <p><strong>Email:</strong> {formData.email}</p>
+              </div>
+            </div>
+            <p className="text-sm text-text-secondary mb-4">
+              Đang chuyển hướng trong <span className="font-semibold text-primary">{countdown}</span> giây...
+            </p>
+          </div>
+        </div>
+      )}
+
+      <Card className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg">
       <CardHeader className="text-center pb-6">
         <div className="mx-auto mb-4">
           <Image
@@ -306,20 +325,33 @@ export default function RegisterForm() {
 
           {/* Loại Hình Tổ Chức */}
           <div>
-            <label htmlFor="organizationType" className="form-label">
+            <label className="form-label">
               Loại hình tổ chức
             </label>
-            <select
-              id="organizationType"
-              name="organizationType"
-              value={formData.organizationType}
-              onChange={handleInputChange}
-              className="form-input"
-              required
-            >
-              <option value="TRUCKING_COMPANY">Công ty Vận tải</option>
-              <option value="SHIPPING_LINE">Hãng tàu</option>
-            </select>
+            <div className="flex items-center gap-6 mt-2">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="organizationType"
+                  value="TRUCKING_COMPANY"
+                  checked={formData.organizationType === 'TRUCKING_COMPANY'}
+                  onChange={() => handleRadioChange('TRUCKING_COMPANY')}
+                  className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary focus:ring-2"
+                />
+                <span className="ml-2 text-sm font-medium text-text-primary">Công ty Vận tải</span>
+              </label>
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="organizationType"
+                  value="SHIPPING_LINE"
+                  checked={formData.organizationType === 'SHIPPING_LINE'}
+                  onChange={() => handleRadioChange('SHIPPING_LINE')}
+                  className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary focus:ring-2"
+                />
+                <span className="ml-2 text-sm font-medium text-text-primary">Hãng tàu</span>
+              </label>
+            </div>
           </div>
 
           {/* Email */}
@@ -390,5 +422,6 @@ export default function RegisterForm() {
         </form>
       </CardContent>
     </Card>
+    </>
   )
 } 

@@ -53,4 +53,26 @@ export async function signOut() {
   const supabase = await createClient()
   await supabase.auth.signOut()
   redirect('/login')
+}
+
+export function getDefaultPageForRole(role: string): string {
+  switch (role) {
+    case 'DISPATCHER':
+      return '/dispatcher'
+    case 'CARRIER_ADMIN':
+      return '/carrier-admin'
+    default:
+      return '/dashboard'
+  }
+}
+
+export async function redirectToRolePage() {
+  const user = await getCurrentUser()
+  
+  if (!user?.profile?.role) {
+    redirect('/login')
+  }
+
+  const defaultPage = getDefaultPageForRole(user.profile.role)
+  redirect(defaultPage)
 } 
