@@ -7,6 +7,7 @@ You need to create a file named '.env.local' in the root directory (same level a
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+GOOGLE_MAPS_API_KEY=your-google-maps-api-key-here
 ```
 
 ## 📝 How to get these values:
@@ -16,11 +17,20 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 3. Go to Settings -> API
 4. Copy the URL and anon key values
 
+## 🗺️ How to get Google Maps API Key:
+
+1. Go to https://console.cloud.google.com/
+2. Create a new project or select existing one
+3. Enable "Geocoding API" in the API Library
+4. Go to "Credentials" and create an API Key
+5. Copy the API key
+
 ## 🔧 Example .env.local content:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://abcdefghijklmnop.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+GOOGLE_MAPS_API_KEY=AIzaSy...your-actual-key
 ```
 
 ## ⚠️ Important Notes:

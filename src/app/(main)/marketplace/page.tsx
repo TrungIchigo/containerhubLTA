@@ -4,7 +4,8 @@ import { getCurrentUser } from '@/lib/actions/auth'
 import { redirect } from 'next/navigation'
 import MarketplaceFilters from '@/components/features/marketplace/MarketplaceFilters'
 import MarketplaceListingsTable from '@/components/features/marketplace/MarketplaceListingsTable'
-import { Store, Filter } from 'lucide-react'
+import DynamicMap from '@/components/ui/dynamic-map'
+import { Store, Filter, Map } from 'lucide-react'
 import type { MarketplaceFilters as MarketplaceFiltersType } from '@/lib/types'
 
 interface MarketplacePageProps {
@@ -37,6 +38,17 @@ async function MarketplaceContent({ searchParams }: MarketplacePageProps) {
             </h2>
           </div>
           <MarketplaceFilters />
+        </div>
+
+        {/* Map Section */}
+        <div className="card">
+          <div className="flex items-center gap-2 mb-4">
+            <Map className="w-5 h-5 text-primary" />
+            <h2 className="text-h3 font-semibold text-text-primary">
+              Bản Đồ Địa Điểm
+            </h2>
+          </div>
+          <DynamicMap listings={listings} height="400px" />
         </div>
 
         {/* Results Section */}
@@ -80,6 +92,15 @@ function LoadingSkeleton() {
             <div key={index} className="h-10 bg-gray-200 rounded animate-pulse"></div>
           ))}
         </div>
+      </div>
+
+      {/* Map skeleton */}
+      <div className="card">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="h-96 bg-gray-200 rounded animate-pulse"></div>
       </div>
 
       {/* Table skeleton */}

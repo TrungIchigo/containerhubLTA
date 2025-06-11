@@ -25,6 +25,8 @@ export async function getMarketplaceListings(filters: MarketplaceFilters = {}) {
       container_type,
       drop_off_location,
       available_from_datetime,
+      latitude,
+      longitude,
       shipping_line_org_id,
       trucking_company_org_id,
       shipping_line_org:organizations!shipping_line_org_id (
@@ -64,6 +66,8 @@ export async function getMarketplaceListings(filters: MarketplaceFilters = {}) {
     container_type: item.container_type,
     drop_off_location: item.drop_off_location,
     available_from_datetime: item.available_from_datetime,
+    latitude: item.latitude,
+    longitude: item.longitude,
     shipping_line: {
       id: item.shipping_line_org?.id || '',
       name: item.shipping_line_org?.name || 'Unknown',

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from './auth'
 import { revalidatePath } from 'next/cache'
+import { geocodeAddress } from '@/lib/google-maps'
 import type { ImportContainer, ExportBooking, Organization } from '@/lib/types'
 
 // Get dispatcher dashboard data
@@ -90,6 +91,8 @@ export async function addImportContainer(formData: {
   available_from_datetime: string
   shipping_line_org_id: string
   is_listed_on_marketplace?: boolean
+  latitude?: number
+  longitude?: number
 }) {
   const user = await getCurrentUser()
   
@@ -98,6 +101,18 @@ export async function addImportContainer(formData: {
   }
 
   const supabase = await createClient()
+  
+  // Geocode the address if coordinates are not provided
+  let latitude = formData.latitude
+  let longitude = formData.longitude
+  
+  if (!latitude || !longitude) {
+    const coordinates = await geocodeAddress(formData.drop_off_location)
+    if (coordinates) {
+      latitude = coordinates.lat
+      longitude = coordinates.lng
+    }
+  }
   
   const { error } = await supabase
     .from('import_containers')
@@ -109,6 +124,8 @@ export async function addImportContainer(formData: {
       trucking_company_org_id: user.profile.organization_id,
       shipping_line_org_id: formData.shipping_line_org_id,
       is_listed_on_marketplace: formData.is_listed_on_marketplace || false,
+      latitude,
+      longitude,
       status: 'AVAILABLE'
     })
 

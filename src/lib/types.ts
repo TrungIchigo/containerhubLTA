@@ -32,6 +32,8 @@ export interface ImportContainer {
   shipping_line_org_id: string
   status: AssetStatus
   is_listed_on_marketplace: boolean
+  latitude: number | null
+  longitude: number | null
   created_at: string
 }
 
@@ -104,6 +106,8 @@ export interface CreateImportContainerForm {
   available_from_datetime: string
   shipping_line_org_id: string
   is_listed_on_marketplace?: boolean
+  latitude?: number
+  longitude?: number
 }
 
 export interface CreateExportBookingForm {
@@ -137,6 +141,8 @@ export interface MarketplaceListing {
   available_from_datetime: string
   shipping_line: Organization
   trucking_company: Organization
+  latitude: number | null
+  longitude: number | null
   estimated_cost_saving?: number
   estimated_co2_saving_kg?: number
 }
