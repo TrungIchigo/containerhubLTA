@@ -1,4 +1,7 @@
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import ReviewDialog from '@/components/features/reviews/ReviewDialog'
+import { Star } from 'lucide-react'
 
 interface StreetTurnRequest {
   id: string
@@ -13,6 +16,7 @@ interface StreetTurnRequest {
     name: string
   }
   partner_organization?: {
+    id: string
     name: string
   } | null
   import_containers?: {
@@ -27,6 +31,8 @@ interface StreetTurnRequest {
 interface RequestHistoryTableProps {
   requests: StreetTurnRequest[]
   className?: string
+  currentUserId?: string
+  userReviews?: string[] // Array of request IDs that user has already reviewed
 }
 
 // Status mapping cho requests
@@ -101,7 +107,18 @@ const getContainerBookingInfo = (request: StreetTurnRequest) => {
   return 'N/A'
 }
 
-export default function RequestHistoryTable({ requests, className }: RequestHistoryTableProps) {
+export default function RequestHistoryTable({ requests, className, userReviews = [] }: RequestHistoryTableProps) {
+  // Function to check if a request can be reviewed
+  const canShowReviewButton = (request: StreetTurnRequest) => {
+    return request.match_type === 'MARKETPLACE' && 
+           request.status === 'APPROVED' && 
+           !userReviews.includes(request.id)
+  }
+
+  // Function to get the partner organization ID for review
+  const getPartnerOrgId = (request: StreetTurnRequest) => {
+    return request.partner_organization?.id || ''
+  }
   if (!requests || requests.length === 0) {
     return (
       <div className={`card text-center py-8 ${className}`}>
@@ -168,6 +185,22 @@ export default function RequestHistoryTable({ requests, className }: RequestHist
                       <button className="text-danger hover:text-red-600 text-sm font-medium transition-colors">
                         Hủy yêu cầu
                       </button>
+                    )}
+                    {canShowReviewButton(request) && request.partner_organization && (
+                      <ReviewDialog
+                        requestId={request.id}
+                        revieweeOrgId={getPartnerOrgId(request)}
+                        revieweeOrgName={request.partner_organization.name}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs"
+                        >
+                          <Star className="w-3 h-3 mr-1" />
+                          Đánh giá đối tác
+                        </Button>
+                      </ReviewDialog>
                     )}
                   </div>
                 </td>

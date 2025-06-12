@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { getStreetTurnRequests } from '@/lib/actions/requests'
 import { getCurrentUser } from '@/lib/actions/auth'
+import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import RequestFilters from '@/components/features/dispatcher/RequestFilters'
 import RequestHistoryTable from '@/components/features/dispatcher/RequestHistoryTable'
@@ -24,6 +25,20 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
     // Fetch requests with filters
     const requests = await getStreetTurnRequests({ search, status })
 
+    // Get current user to fetch their reviews
+    const user = await getCurrentUser()
+    let userReviews: string[] = []
+    
+    if (user?.profile?.organization_id) {
+      const supabase = await createClient()
+      const { data: reviews } = await supabase
+        .from('partner_reviews')
+        .select('request_id')
+        .eq('reviewer_org_id', user.profile.organization_id)
+      
+      userReviews = reviews?.map(review => review.request_id) || []
+    }
+
     return (
       <>
         {/* Filters Section */}
@@ -42,7 +57,7 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
             </span>
           </div>
           
-          <RequestHistoryTable requests={requests} />
+          <RequestHistoryTable requests={requests} userReviews={userReviews} />
         </div>
       </>
     )

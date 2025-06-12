@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MapPin, Calendar, Building2, Ship, HandHeart } from 'lucide-react'
 import CreateMarketplaceRequestDialog from './CreateMarketplaceRequestDialog'
+import { RatingDisplay } from '@/components/ui/star-rating'
+import { useMarketplaceStore } from '@/stores/marketplace-store'
 import type { MarketplaceListing } from '@/lib/types'
 
 interface MarketplaceListingsTableProps {
@@ -15,6 +17,30 @@ interface MarketplaceListingsTableProps {
 export default function MarketplaceListingsTable({ listings }: MarketplaceListingsTableProps) {
   const [selectedListing, setSelectedListing] = useState<MarketplaceListing | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  
+  // Zustand store for map-table interaction
+  const { 
+    hoveredListingId, 
+    selectedListingId, 
+    setHoveredListingId, 
+    setSelectedListingId 
+  } = useMarketplaceStore()
+  
+  // Refs for auto-scrolling to selected rows
+  const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({})
+  
+  // Auto-scroll to selected listing when it changes from map
+  useEffect(() => {
+    if (selectedListingId) {
+      const selectedRow = rowRefs.current[selectedListingId]
+      if (selectedRow) {
+        selectedRow.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center', // Scroll to center of the viewport
+        })
+      }
+    }
+  }, [selectedListingId])
 
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString('vi-VN', {
@@ -82,7 +108,20 @@ export default function MarketplaceListingsTable({ listings }: MarketplaceListin
               </thead>
               <tbody>
                 {listings.map((listing) => (
-                  <tr key={listing.id} className="table-row">
+                  <tr 
+                    key={listing.id} 
+                    ref={el => { rowRefs.current[listing.id] = el }}
+                    className={`table-row cursor-pointer transition-colors ${
+                      selectedListingId === listing.id 
+                        ? 'bg-primary/10 border-l-4 border-l-primary' 
+                        : hoveredListingId === listing.id
+                        ? 'bg-gray-50'
+                        : 'hover:bg-gray-50'
+                    }`}
+                    onMouseEnter={() => setHoveredListingId(listing.id)}
+                    onMouseLeave={() => setHoveredListingId(null)}
+                    onClick={() => setSelectedListingId(listing.id)}
+                  >
                     {/* Container Info */}
                     <td className="table-cell">
                       <div className="space-y-1">
@@ -97,11 +136,22 @@ export default function MarketplaceListingsTable({ listings }: MarketplaceListin
 
                     {/* Company */}
                     <td className="table-cell">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-text-secondary" />
-                        <span className="text-text-primary">
-                          {listing.trucking_company.name}
-                        </span>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-4 h-4 text-text-secondary" />
+                          <span className="text-text-primary">
+                            {listing.trucking_company.name}
+                          </span>
+                        </div>
+                        {listing.rating_details && (
+                          <RatingDisplay
+                            rating={listing.rating_details.average_rating}
+                            reviewCount={listing.rating_details.review_count}
+                            size="sm"
+                            showText={true}
+                            className="text-xs"
+                          />
+                        )}
                       </div>
                     </td>
 

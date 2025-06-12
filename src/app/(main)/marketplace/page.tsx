@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { getMarketplaceListings } from '@/lib/actions/marketplace'
+import { getMarketplaceListings, getShippingLinesForFilter } from '@/lib/actions/marketplace'
 import { getCurrentUser } from '@/lib/actions/auth'
 import { redirect } from 'next/navigation'
 import MarketplaceFilters from '@/components/features/marketplace/MarketplaceFilters'
@@ -20,12 +20,18 @@ async function MarketplaceContent({ searchParams }: MarketplacePageProps) {
     container_type: typeof params.container_type === 'string' ? params.container_type : undefined,
     shipping_line_name: typeof params.shipping_line_name === 'string' ? params.shipping_line_name : undefined,
     location: typeof params.location === 'string' ? params.location : undefined,
-    max_distance_km: typeof params.max_distance_km === 'string' ? parseInt(params.max_distance_km) : undefined
+    max_distance_km: typeof params.max_distance_km === 'string' ? parseInt(params.max_distance_km) : undefined,
+    min_rating: typeof params.min_rating === 'string' ? parseInt(params.min_rating) : undefined,
+    start_date: typeof params.start_date === 'string' ? params.start_date : undefined,
+    end_date: typeof params.end_date === 'string' ? params.end_date : undefined
   }
 
   try {
-    // Fetch marketplace listings with filters
-    const listings = await getMarketplaceListings(filters)
+    // Fetch marketplace listings with filters and shipping lines in parallel
+    const [listings, shippingLines] = await Promise.all([
+      getMarketplaceListings(filters),
+      getShippingLinesForFilter()
+    ])
 
     return (
       <>
@@ -37,7 +43,7 @@ async function MarketplaceContent({ searchParams }: MarketplacePageProps) {
               Bộ Lọc Tìm Kiếm
             </h2>
           </div>
-          <MarketplaceFilters />
+          <MarketplaceFilters shippingLines={shippingLines} />
         </div>
 
         {/* Map Section */}

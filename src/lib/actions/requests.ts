@@ -96,7 +96,10 @@ export async function getStreetTurnRequests(filters: StreetTurnRequestFilters = 
     created_at: request.created_at,
     carrier_organization: { name: request.approving_org?.name || 'Unknown' },
     partner_organization: request.match_type === 'MARKETPLACE' ? 
-      { name: request.dropoff_trucking_org?.name || 'Unknown' } : null,
+      { 
+        id: request.dropoff_trucking_org_id,
+        name: request.dropoff_trucking_org?.name || 'Unknown' 
+      } : null,
     import_containers: request.import_container ? [{
       container_number: request.import_container.container_number,
       booking_number: request.export_booking?.booking_number || ''

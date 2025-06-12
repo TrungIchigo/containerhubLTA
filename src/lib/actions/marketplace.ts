@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from './auth'
 import { revalidatePath } from 'next/cache'
-import type { MarketplaceFilters, MarketplaceListing, CreateMarketplaceRequestForm } from '@/lib/types'
+import type { MarketplaceFilters, MarketplaceListing, CreateMarketplaceRequestForm, Organization } from '@/lib/types'
 
 // Get marketplace listings with filters
 export async function getMarketplaceListings(filters: MarketplaceFilters = {}) {
@@ -51,6 +51,13 @@ export async function getMarketplaceListings(filters: MarketplaceFilters = {}) {
     query = query.ilike('drop_off_location', `%${filters.location}%`)
   }
 
+  // Apply date range filter
+  if (filters.start_date && filters.end_date) {
+    query = query
+      .gte('available_from_datetime', filters.start_date)
+      .lte('available_from_datetime', filters.end_date)
+  }
+
   // Execute query
   const { data: rawListings, error } = await query.order('created_at', { ascending: false })
 
@@ -58,6 +65,19 @@ export async function getMarketplaceListings(filters: MarketplaceFilters = {}) {
     console.error('Error fetching marketplace listings:', error)
     throw error
   }
+
+  // Fetch rating details for each organization in parallel
+  const organizationIds = [...new Set(rawListings?.map(item => item.trucking_company_org_id).filter(Boolean) || [])]
+  const ratingPromises = organizationIds.map(async (orgId) => {
+    const { data: ratingData } = await supabase.rpc('get_org_rating_details', { org_id: orgId })
+    return { orgId, ...ratingData }
+  })
+  
+  const ratings = await Promise.all(ratingPromises)
+  const ratingsMap = ratings.reduce((acc, rating) => {
+    acc[rating.orgId] = rating
+    return acc
+  }, {} as Record<string, any>)
 
   // Transform data to match MarketplaceListing interface
   const listings: MarketplaceListing[] = (rawListings || []).map((item: any) => ({
@@ -79,14 +99,22 @@ export async function getMarketplaceListings(filters: MarketplaceFilters = {}) {
       name: item.trucking_company_org?.name || 'Unknown',
       type: 'TRUCKING_COMPANY' as const,
       created_at: ''
-    }
+    },
+    rating_details: ratingsMap[item.trucking_company_org_id] || { average_rating: 0, review_count: 0 }
   }))
 
   // Apply shipping line filter if provided
   let filteredListings = listings
   if (filters.shipping_line_name) {
-    filteredListings = listings.filter(listing => 
+    filteredListings = filteredListings.filter(listing => 
       listing.shipping_line.name.toLowerCase().includes(filters.shipping_line_name!.toLowerCase())
+    )
+  }
+
+  // Apply rating filter if provided
+  if (filters.min_rating && filters.min_rating > 0) {
+    filteredListings = filteredListings.filter(listing => 
+      listing.rating_details && listing.rating_details.average_rating >= filters.min_rating!
     )
   }
 
@@ -301,4 +329,22 @@ export async function handlePartnerApproval(requestId: string, decision: 'APPROV
   // Revalidate related paths
   revalidatePath('/dispatcher/requests')
   revalidatePath('/marketplace')
+}
+
+// Get shipping lines for filter combobox
+export async function getShippingLinesForFilter(): Promise<Organization[]> {
+  const supabase = await createClient()
+  
+  const { data: shippingLines, error } = await supabase
+    .from('organizations')
+    .select('id, name, type, created_at')
+    .eq('type', 'SHIPPING_LINE')
+    .order('name', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching shipping lines:', error)
+    throw error
+  }
+
+  return shippingLines || []
 } 

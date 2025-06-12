@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { useMarketplaceStore } from '@/stores/marketplace-store'
 import type { MarketplaceListing } from '@/lib/types'
 
 interface SimpleMapProps {
@@ -18,12 +19,31 @@ export default function SimpleMap({
 }: SimpleMapProps) {
   const mapRef = useRef<L.Map | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const markersRef = useRef<L.Marker[]>([])
+  const markersRef = useRef<Record<string, L.Marker>>({})
+
+  // Zustand store for map-table interaction
+  const { hoveredListingId, selectedListingId, setSelectedListingId } = useMarketplaceStore()
 
   // Filter listings that have coordinates
   const listingsWithCoords = listings.filter(
     listing => listing.latitude !== null && listing.longitude !== null
   )
+
+  // Create custom icons for different states
+  const createIcon = (color: string, isSelected: boolean = false) => {    
+    return new L.Icon({
+      iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+      shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+      iconSize: isSelected ? [30, 47] as [number, number] : [25, 41] as [number, number],
+      iconAnchor: isSelected ? [15, 47] as [number, number] : [12, 41] as [number, number],
+      popupAnchor: [1, -34] as [number, number],
+      shadowSize: [41, 41] as [number, number]
+    })
+  }
+
+  const defaultIcon = createIcon('blue')
+  const hoverIcon = createIcon('orange')
+  const selectedIcon = createIcon('red', true)
 
   // Initialize map
   useEffect(() => {
@@ -73,17 +93,19 @@ export default function SimpleMap({
     if (!mapRef.current) return
 
     // Clear existing markers
-    markersRef.current.forEach(marker => {
+    Object.values(markersRef.current).forEach(marker => {
       mapRef.current?.removeLayer(marker)
     })
-    markersRef.current = []
+    markersRef.current = {}
 
     // Add new markers
     if (listingsWithCoords.length > 0) {
       const newMarkers: L.Marker[] = []
 
       listingsWithCoords.forEach(listing => {
-        const marker = L.marker([listing.latitude!, listing.longitude!])
+        const marker = L.marker([listing.latitude!, listing.longitude!], {
+          icon: defaultIcon
+        })
           .addTo(mapRef.current!)
           .bindPopup(`
             <div style="padding: 8px; min-width: 200px;">
@@ -99,11 +121,13 @@ export default function SimpleMap({
               </div>
             </div>
           `)
+          .on('click', () => {
+            setSelectedListingId(listing.id)
+          })
 
+        markersRef.current[listing.id] = marker
         newMarkers.push(marker)
       })
-
-      markersRef.current = newMarkers
 
       // Fit bounds to show all markers
       if (newMarkers.length > 1) {
@@ -113,7 +137,22 @@ export default function SimpleMap({
         mapRef.current.setView([listingsWithCoords[0].latitude!, listingsWithCoords[0].longitude!], 13)
       }
     }
-  }, [listingsWithCoords])
+  }, [listingsWithCoords, setSelectedListingId, defaultIcon])
+
+  // Update marker styles based on hover/selection state
+  useEffect(() => {
+    Object.entries(markersRef.current).forEach(([listingId, marker]) => {
+      let icon = defaultIcon
+      
+      if (listingId === selectedListingId) {
+        icon = selectedIcon
+      } else if (listingId === hoveredListingId) {
+        icon = hoverIcon
+      }
+      
+      marker.setIcon(icon)
+    })
+  }, [hoveredListingId, selectedListingId, defaultIcon, hoverIcon, selectedIcon])
 
   // Show message when no coordinates
   if (listings.length > 0 && listingsWithCoords.length === 0) {

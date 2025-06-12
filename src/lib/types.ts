@@ -64,6 +64,21 @@ export interface StreetTurnRequest {
   created_at: string
 }
 
+export interface PartnerReview {
+  id: string
+  request_id: string
+  reviewer_org_id: string
+  reviewee_org_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+}
+
+export interface RatingDetails {
+  average_rating: number
+  review_count: number
+}
+
 // Extended types with relations for UI
 export interface ImportContainerWithOrgs extends ImportContainer {
   trucking_company: Organization
@@ -145,6 +160,7 @@ export interface MarketplaceListing {
   longitude: number | null
   estimated_cost_saving?: number
   estimated_co2_saving_kg?: number
+  rating_details?: RatingDetails
 }
 
 // Marketplace filters
@@ -153,4 +169,7 @@ export interface MarketplaceFilters {
   shipping_line_name?: string
   location?: string
   max_distance_km?: number
+  min_rating?: number
+  start_date?: string
+  end_date?: string
 } 
