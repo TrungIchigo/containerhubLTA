@@ -7,7 +7,7 @@ import { LOGO_URL, APP_CONFIG, ROUTES } from '@/lib/constants'
 
 export default function Header() {
   return (
-    <header className="header px-4 py-3 shadow-card">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-4 py-3 shadow-sm">
       <div className="flex items-center justify-between">
         <Link href={ROUTES.DASHBOARD} className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
           <Image

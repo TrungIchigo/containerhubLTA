@@ -1,10 +1,14 @@
 import { Suspense } from 'react'
 import { getStreetTurnRequests } from '@/lib/actions/requests'
+import { getCodRequests } from '@/lib/actions/cod'
 import { getCurrentUser } from '@/lib/actions/auth'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import RequestFilters from '@/components/features/dispatcher/RequestFilters'
 import RequestHistoryTable from '@/components/features/dispatcher/RequestHistoryTable'
+import CodRequestsTable from '@/components/features/cod/CodRequestsTable'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { RefreshCw, MapPin } from 'lucide-react'
 import { DispatcherDashboardWrapper } from '@/components/features/dispatcher/DispatcherDashboardWrapper'
 
 interface RequestsPageProps {
@@ -22,8 +26,11 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
     : undefined
 
   try {
-    // Fetch requests with filters
-    const requests = await getStreetTurnRequests({ search, status })
+    // Fetch both street-turn and COD requests
+    const [streetTurnRequests, codRequests] = await Promise.all([
+      getStreetTurnRequests({ search, status }),
+      getCodRequests()
+    ])
 
     // Get current user to fetch their reviews
     const user = await getCurrentUser()
@@ -40,26 +47,43 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
     }
 
     return (
-      <>
-        {/* Filters Section */}
-        <div className="card">
-          <RequestFilters />
-        </div>
+      <Tabs defaultValue="street-turn" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="street-turn" className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Yêu cầu Tái Sử Dụng
+          </TabsTrigger>
+          <TabsTrigger value="cod" className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            Yêu cầu Đổi Nơi Trả (COD)
+          </TabsTrigger>
+        </TabsList>
 
-        {/* Results Section */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-h3 font-semibold text-text-primary">
-              Lịch sử Yêu Cầu Tái Sử Dụng
-            </h2>
-            <span className="text-body-small text-text-secondary">
-              {requests.length} yêu cầu{search || status ? ' (đã lọc)' : ''}
-            </span>
+        <TabsContent value="street-turn" className="space-y-6">
+          {/* Filters Section */}
+          <div className="card">
+            <RequestFilters />
           </div>
-          
-          <RequestHistoryTable requests={requests} userReviews={userReviews} />
-        </div>
-      </>
+
+          {/* Results Section */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-h3 font-semibold text-text-primary">
+                Lịch sử Yêu Cầu Tái Sử Dụng
+              </h2>
+              <span className="text-body-small text-text-secondary">
+                {streetTurnRequests.length} yêu cầu{search || status ? ' (đã lọc)' : ''}
+              </span>
+            </div>
+            
+            <RequestHistoryTable requests={streetTurnRequests} userReviews={userReviews} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="cod" className="space-y-6">
+          <CodRequestsTable requests={codRequests} />
+        </TabsContent>
+      </Tabs>
     )
   } catch (error) {
     console.error('Error loading requests:', error)

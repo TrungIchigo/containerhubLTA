@@ -2,10 +2,20 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
-import { LogOut, User as UserIcon } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { LogOut, User as UserIcon, Settings } from 'lucide-react'
+import LogoutConfirmationDialog from '@/components/auth/LogoutConfirmationDialog'
 
 interface UserProfile {
   full_name: string | null
@@ -18,6 +28,7 @@ export default function UserNav() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -58,14 +69,8 @@ export default function UserNav() {
     loadUser()
   }, [])
 
-  const handleSignOut = async () => {
-    try {
-      const supabase = createClient()
-      await supabase.auth.signOut()
-      router.push('/login')
-    } catch (error) {
-      console.error('Error signing out:', error)
-    }
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true)
   }
 
   if (loading) {
@@ -82,28 +87,55 @@ export default function UserNav() {
 
   return (
     <div className="flex items-center space-x-4">
-      <div className="flex items-center space-x-2">
-        <UserIcon className="h-4 w-4 text-text-secondary" />
-        <div className="text-sm">
-          <div className="text-text-primary font-medium">
-            {profile?.full_name || 'User'}
-          </div>
-          {profile?.organization && (
-            <div className="text-xs text-text-secondary">
-              {profile.organization.name}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button 
+            variant="ghost" 
+            className="flex items-center space-x-2 h-auto p-2 hover:bg-primary hover:text-primary-foreground"
+          >
+            <UserIcon className="h-4 w-4 text-text-secondary" />
+            <div className="text-sm text-left">
+              <div className="text-text-primary font-medium">
+                {profile?.full_name || 'User'}
+              </div>
+              {profile?.organization && (
+                <div className="text-xs text-text-secondary">
+                  {profile.organization.name}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleSignOut}
-        className="text-sm"
-      >
-        <LogOut className="h-4 w-4 mr-2" />
-        Đăng xuất
-      </Button>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">
+                {profile?.full_name || 'User'}
+              </p>
+              <p className="text-xs leading-none text-muted-foreground">
+                {user.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/account" className="flex items-center">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Quản lý Tài khoản</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleLogoutClick} className="text-red-600">
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Đăng xuất</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      
+      {/* Logout Confirmation Dialog */}
+      <LogoutConfirmationDialog 
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+      />
     </div>
   )
 } 

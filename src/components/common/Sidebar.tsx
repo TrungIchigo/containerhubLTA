@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { BarChart3, Truck, Ship, FileText, Settings, Store } from 'lucide-react'
+import { BarChart3, Truck, Ship, FileText, Settings, Store, Activity, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface NavigationItem {
@@ -16,6 +16,10 @@ interface NavigationItem {
 export default function Sidebar() {
   const pathname = usePathname()
   const [userRole, setUserRole] = useState<string | null>(null)
+  const [stats, setStats] = useState({
+    totalRequests: 0,
+    activeListings: 0
+  })
   
   const allNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3, roles: ['DISPATCHER', 'CARRIER_ADMIN'] },
@@ -41,10 +45,48 @@ export default function Sidebar() {
           
           if (profile) {
             setUserRole(profile.role)
+            
+            // Load relevant stats based on role
+            if (profile.role === 'DISPATCHER') {
+              // Load dispatcher stats
+              const [requestsResult, listingsResult] = await Promise.all([
+                supabase
+                  .from('street_turn_requests')
+                  .select('id', { count: 'exact', head: true })
+                  .eq('pickup_trucking_org_id', user.id),
+                supabase
+                  .from('import_containers')
+                  .select('id', { count: 'exact', head: true })
+                  .eq('is_listed_on_marketplace', true)
+                  .eq('status', 'AVAILABLE')
+              ])
+              
+              setStats({
+                totalRequests: requestsResult.count || 0,
+                activeListings: listingsResult.count || 0
+              })
+            } else if (profile.role === 'CARRIER_ADMIN') {
+              // Load carrier admin stats
+              const [requestsResult, rulesResult] = await Promise.all([
+                supabase
+                  .from('street_turn_requests')
+                  .select('id', { count: 'exact', head: true })
+                  .eq('status', 'PENDING'),
+                supabase
+                  .from('auto_approval_rules')
+                  .select('id', { count: 'exact', head: true })
+                  .eq('is_active', true)
+              ])
+              
+              setStats({
+                totalRequests: requestsResult.count || 0,
+                activeListings: rulesResult.count || 0
+              })
+            }
           }
         }
       } catch (error) {
-        console.error('Error loading user role:', error)
+        console.error('Error loading user role and stats:', error)
       }
     }
 
@@ -57,15 +99,26 @@ export default function Sidebar() {
   )
 
   return (
-    <aside className="sidebar w-60 p-4 shadow-card">
-      <div className="mb-6">
-        <div className="flex items-center space-x-2 mb-1">
-          <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-xs">iC</span>
+    <aside className="hidden lg:block fixed left-0 top-[73px] bottom-0 w-60 bg-secondary-dark text-secondary-foreground shadow-sm z-40 overflow-y-auto">
+      <div className="p-4">
+        {/* Quick Stats Section */}
+        <div className="mb-6 bg-secondary/20 rounded-lg p-3">
+          <div className="flex items-center gap-2 mb-3">
+            <Activity className="w-4 h-4 text-accent" />
+            <span className="text-sm font-medium">Thống Kê Nhanh</span>
           </div>
-          <div>
-            <p className="text-secondary-foreground text-sm font-semibold">ContainerHub</p>
-            <p className="text-secondary-light text-xs">LTA Platform</p>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-secondary-light">
+                {userRole === 'DISPATCHER' ? 'Yêu cầu của tôi' : 'Yêu cầu chờ duyệt'}
+              </span>
+              <span className="font-semibold text-accent">{stats.totalRequests}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-secondary-light">
+                {userRole === 'DISPATCHER' ? 'Cơ hội khả dụng' : 'Quy tắc đang hoạt động'}
+              </span>
+              <span className="font-semibold text-accent">{stats.activeListings}</span>
           </div>
         </div>
       </div>
@@ -95,6 +148,7 @@ export default function Sidebar() {
           )
         })}
       </nav>
+      </div>
     </aside>
   )
 } 

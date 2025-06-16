@@ -3,7 +3,9 @@ import { getCurrentUser } from '@/lib/actions/auth'
 import { redirect } from 'next/navigation'
 import CarrierKPICards from '@/components/features/carrier-admin/CarrierKPICards'
 import RequestQueueTable from '@/components/features/carrier-admin/RequestQueueTable'
-import { Ship } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Ship, MapPin, RefreshCw, MessageSquare } from 'lucide-react'
+import CodRequestsQueue from '@/components/features/cod/CodRequestsQueue'
 
 export default async function CarrierAdminPage() {
   // Authentication check
@@ -43,15 +45,34 @@ async function CarrierDashboardContent() {
   try {
     const dashboardData = await getCarrierAdminDashboardData()
     
-    return (
-      <>
-        {/* KPI Cards */}
-        <CarrierKPICards kpis={dashboardData.kpis} />
+          return (
+        <>
+          {/* KPI Cards */}
+          <CarrierKPICards kpis={dashboardData.kpis} />
 
-        {/* Request Queue Table */}
-        <RequestQueueTable requests={dashboardData.pendingRequests} />
-      </>
-    )
+          {/* Tabs for different request types */}
+          <Tabs defaultValue="street-turn" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="street-turn" className="flex items-center gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Yêu cầu Tái Sử Dụng
+              </TabsTrigger>
+              <TabsTrigger value="cod" className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Yêu cầu Đổi Nơi Trả (COD)
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="street-turn" className="space-y-4">
+              <RequestQueueTable requests={dashboardData.pendingRequests} />
+            </TabsContent>
+
+            <TabsContent value="cod" className="space-y-4">
+              <CodRequestsQueue />
+            </TabsContent>
+          </Tabs>
+        </>
+      )
   } catch (error) {
     console.error('Error fetching carrier admin data:', error)
     return (

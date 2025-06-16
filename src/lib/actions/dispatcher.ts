@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from './auth'
 import { revalidatePath } from 'next/cache'
 import { geocodeAddress } from '@/lib/google-maps'
-import type { ImportContainer, ExportBooking, Organization } from '@/lib/types'
+import { validateContainerNumber } from '@/lib/utils'
+import type { ImportContainer, ExportBooking, Organization, CreateImportContainerForm, CreateExportBookingForm } from '@/lib/types'
 
 // Get dispatcher dashboard data
 export async function getDispatcherDashboardData() {
@@ -81,94 +82,164 @@ export async function getDispatcherDashboardData() {
   }
 }
 
-
-
 // Add import container - SERVER ACTION
-export async function addImportContainer(formData: {
-  container_number: string
-  container_type: string
-  drop_off_location: string
-  available_from_datetime: string
-  shipping_line_org_id: string
-  is_listed_on_marketplace?: boolean
-  latitude?: number
-  longitude?: number
-}) {
-  const user = await getCurrentUser()
-  
-  if (!user?.profile?.organization_id || user.profile.role !== 'DISPATCHER') {
-    throw new Error('Unauthorized')
-  }
-
-  const supabase = await createClient()
-  
-  // Geocode the address if coordinates are not provided
-  let latitude = formData.latitude
-  let longitude = formData.longitude
-  
-  if (!latitude || !longitude) {
-    const coordinates = await geocodeAddress(formData.drop_off_location)
-    if (coordinates) {
-      latitude = coordinates.lat
-      longitude = coordinates.lng
+export async function addImportContainer(data: CreateImportContainerForm) {
+  try {
+    const supabase = await createClient()
+    
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      throw new Error('Unauthorized: User not authenticated')
     }
-  }
-  
-  const { error } = await supabase
-    .from('import_containers')
-    .insert({
-      container_number: formData.container_number,
-      container_type: formData.container_type,
-      drop_off_location: formData.drop_off_location,
-      available_from_datetime: formData.available_from_datetime,
-      trucking_company_org_id: user.profile.organization_id,
-      shipping_line_org_id: formData.shipping_line_org_id,
-      is_listed_on_marketplace: formData.is_listed_on_marketplace || false,
-      latitude,
-      longitude,
-      status: 'AVAILABLE'
-    })
 
-  if (error) {
-    console.error('Error adding container:', error)
-    throw error
-  }
+    // Validate container number
+    if (!validateContainerNumber(data.container_number)) {
+      throw new Error('Invalid container number format')
+    }
 
-  revalidatePath('/dispatcher')
+    // Check if container already exists
+    const { data: existingContainer } = await supabase
+      .from('import_containers')
+      .select('container_number')
+      .eq('container_number', data.container_number)
+      .single()
+
+    if (existingContainer) {
+      throw new Error(`Container ${data.container_number} already exists`)
+    }
+
+    // Validate cargo type exists
+    const { data: cargoType } = await supabase
+      .from('cargo_types')
+      .select('id')
+      .eq('id', data.cargo_type_id)
+      .single()
+
+    if (!cargoType) {
+      throw new Error('Invalid cargo type')
+    }
+
+    // Get depot details for coordinates
+    const { data: depot } = await supabase
+      .from('depots')
+      .select('latitude, longitude')
+      .eq('id', data.depot_id)
+      .single()
+
+    // Insert the new import container with image and document URLs
+    const { data: container, error } = await supabase
+      .from('import_containers')
+      .insert({
+        container_number: data.container_number,
+        container_type: data.container_type,
+        cargo_type_id: data.cargo_type_id,
+        city_id: data.city_id,
+        depot_id: data.depot_id,
+        available_from_datetime: data.available_from_datetime,
+        shipping_line_org_id: data.shipping_line_org_id,
+        condition_images: data.condition_images || [],
+        attached_documents: data.attached_documents || [],
+        is_listed_on_marketplace: data.is_listed_on_marketplace || false,
+        latitude: depot?.latitude || data.latitude,
+        longitude: depot?.longitude || data.longitude,
+        dispatcher_user_id: user.id,
+        status: 'available'
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Database error:', error)
+      throw new Error('Failed to create import container')
+    }
+
+    // Revalidate the import containers page
+    revalidatePath('/dispatcher')
+    
+    return { 
+      success: true, 
+      message: `Lệnh giao trả container ${data.container_number} đã được tạo thành công!`,
+      data: container
+    }
+
+  } catch (error: any) {
+    console.error('Error in addImportContainer:', error)
+    
+    // Return a user-friendly error message
+    const errorMessage = error.message?.includes('already exists') 
+      ? error.message
+      : error.message?.includes('Invalid') 
+      ? error.message
+      : 'Có lỗi xảy ra khi tạo lệnh giao trả. Vui lòng thử lại.'
+    
+    throw new Error(errorMessage)
+  }
 }
 
 // Add export booking - SERVER ACTION
-export async function addExportBooking(formData: {
-  booking_number: string
-  required_container_type: string
-  pick_up_location: string
-  needed_by_datetime: string
-}) {
-  const user = await getCurrentUser()
-  
-  if (!user?.profile?.organization_id || user.profile.role !== 'DISPATCHER') {
-    throw new Error('Unauthorized')
+export async function addExportBooking(data: CreateExportBookingForm) {
+  try {
+    const supabase = await createClient()
+    
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      throw new Error('Unauthorized: User not authenticated')
+    }
+
+    // Validate cargo type exists
+    const { data: cargoType } = await supabase
+      .from('cargo_types')
+      .select('id')
+      .eq('id', data.cargo_type_id)
+      .single()
+
+    if (!cargoType) {
+      throw new Error('Invalid cargo type')
+    }
+
+    // Insert the new export booking with document URLs
+    const { data: booking, error } = await supabase
+      .from('export_bookings')
+      .insert({
+        booking_number: data.booking_number,
+        required_container_type: data.required_container_type,
+        cargo_type_id: data.cargo_type_id,
+        city_id: data.city_id,
+        depot_id: data.depot_id,
+        needed_by_datetime: data.needed_by_datetime,
+        attached_documents: data.attached_documents || [],
+        dispatcher_user_id: user.id,
+        status: 'pending'
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Database error:', error)
+      throw new Error('Failed to create export booking')
+    }
+
+    // Revalidate the export bookings page
+    revalidatePath('/dispatcher')
+    
+    return { 
+      success: true, 
+      message: `Booking xuất ${data.booking_number} đã được tạo thành công!`,
+      data: booking
+    }
+
+  } catch (error: any) {
+    console.error('Error in addExportBooking:', error)
+    
+    // Return a user-friendly error message
+    const errorMessage = error.message?.includes('Invalid') 
+      ? error.message
+      : 'Có lỗi xảy ra khi tạo booking xuất. Vui lòng thử lại.'
+    
+    throw new Error(errorMessage)
   }
-
-  const supabase = await createClient()
-  
-  const { error } = await supabase
-    .from('export_bookings')
-    .insert({
-      booking_number: formData.booking_number,
-      required_container_type: formData.required_container_type,
-      pick_up_location: formData.pick_up_location,
-      needed_by_datetime: formData.needed_by_datetime,
-      trucking_company_org_id: user.profile.organization_id,
-      status: 'AVAILABLE'
-    })
-
-  if (error) {
-    console.error('Error adding booking:', error)
-    throw error
-  }
-
-  revalidatePath('/dispatcher')
 }
 
 // Create street-turn request - SERVER ACTION  

@@ -9,16 +9,19 @@ export default function MainLayout({
 }) {
   return (
     <AuthGuard requireAuth={true}>
-      <div className="main-content">
+      <div className="relative min-h-screen bg-background">
+        {/* Fixed Header */}
         <Header />
-        <div className="flex min-h-screen">
+        
+        {/* Fixed Sidebar - hidden on mobile, visible on desktop */}
           <Sidebar />
-          <main className="flex-1 p-4 bg-background">
-            <div className="space-y-4">
+        
+        {/* Main Content with responsive margins */}
+        <main className="lg:ml-60 mt-[73px] p-4 min-h-screen transition-all duration-300">
+          <div className="space-y-4 max-w-full">
               {children}
             </div>
           </main>
-        </div>
       </div>
     </AuthGuard>
   )

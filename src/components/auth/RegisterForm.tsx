@@ -282,13 +282,7 @@ export default function RegisterForm() {
       
       <CardContent className="px-6 pb-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Debug Info - Remove in production */}
-          {debugInfo && (
-            <div className="p-2 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded">
-              Debug: {debugInfo}
-            </div>
-          )}
-
+          
           {/* Họ và Tên */}
           <div>
             <label htmlFor="fullName" className="form-label">
