@@ -38,7 +38,21 @@ export async function getStreetTurnRequests(filters: StreetTurnRequestFilters = 
     // First, try a simple query to see if basic access works
     const { data: basicRequests, error: basicError } = await supabase
       .from('street_turn_requests')
-      .select('id, status, created_at, dropoff_trucking_org_id, pickup_trucking_org_id, approving_org_id, match_type')
+      .select(`
+        id, 
+        status, 
+        created_at, 
+        dropoff_trucking_org_id, 
+        pickup_trucking_org_id, 
+        approving_org_id, 
+        match_type,
+        import_container_id,
+        export_booking_id,
+        dropoff_org_approval_status,
+        auto_approved_by_rule_id,
+        estimated_cost_saving,
+        estimated_co2_saving_kg
+      `)
       .or(`pickup_trucking_org_id.eq.${profile.organization_id},dropoff_trucking_org_id.eq.${profile.organization_id}`)
       .order('created_at', { ascending: false })
 
@@ -188,15 +202,17 @@ export async function getStreetTurnRequests(filters: StreetTurnRequestFilters = 
       dropoff_org_approval_status: request.dropoff_org_approval_status,
       auto_approved_by_rule_id: request.auto_approved_by_rule_id,
       created_at: request.created_at,
-      carrier_organization: { name: request.approving_org?.name || 'Unknown' },
+      carrier_organization: { 
+        name: (request as any).approving_org?.name || 'Unknown' 
+      },
       partner_organization: request.match_type === 'MARKETPLACE' ? 
         { 
           id: request.dropoff_trucking_org_id,
-          name: request.dropoff_trucking_org?.name || 'Unknown' 
+          name: (request as any).dropoff_trucking_org?.name || 'Unknown' 
         } : null,
-      import_containers: request.import_container ? [{
-        container_number: request.import_container.container_number,
-        booking_number: request.export_booking?.booking_number || ''
+      import_containers: (request as any).import_container ? [{
+        container_number: (request as any).import_container.container_number,
+        booking_number: (request as any).export_booking?.booking_number || ''
       }] : []
     }))
 

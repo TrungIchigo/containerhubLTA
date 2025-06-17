@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RefreshCw, MapPin } from 'lucide-react'
 import { DispatcherDashboardWrapper } from '@/components/features/dispatcher/DispatcherDashboardWrapper'
 import ErrorBoundary from '@/components/common/ErrorBoundary'
+import { ErrorSection } from '@/components/common/RetryButton'
 
 interface RequestsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -93,27 +94,7 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
 
         <TabsContent value="street-turn" className="space-y-6">
           {streetTurnError ? (
-            <div className="space-y-4">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <h3 className="font-medium text-red-800 mb-2">
-                  Không thể tải danh sách yêu cầu tái sử dụng
-                </h3>
-                <p className="text-red-700 text-sm mb-3">
-                  {streetTurnError}
-                </p>
-                <button 
-                  onClick={() => window.location.reload()}
-                  className="px-3 py-1 bg-red-100 text-red-800 text-sm rounded hover:bg-red-200"
-                >
-                  Thử lại
-                </button>
-              </div>
-              
-              {/* Show filters even if data failed to load */}
-              <div className="card">
-                <RequestFilters />
-              </div>
-            </div>
+            <ErrorSection title="Không thể tải danh sách yêu cầu tái sử dụng" error={streetTurnError} />
           ) : (
             <>
               {/* Filters Section */}
@@ -140,20 +121,7 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
 
         <TabsContent value="cod" className="space-y-6">
           {codError ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h3 className="font-medium text-red-800 mb-2">
-                Không thể tải danh sách yêu cầu COD
-              </h3>
-              <p className="text-red-700 text-sm mb-3">
-                {codError}
-              </p>
-              <button 
-                onClick={() => window.location.reload()}
-                className="px-3 py-1 bg-red-100 text-red-800 text-sm rounded hover:bg-red-200"
-              >
-                Thử lại
-              </button>
-            </div>
+            <ErrorSection title="Không thể tải danh sách yêu cầu COD" error={codError} />
           ) : (
             <CodRequestsTable requests={codRequests} />
           )}

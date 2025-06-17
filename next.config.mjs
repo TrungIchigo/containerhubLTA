@@ -19,13 +19,12 @@ const nextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
-  // Fix for development server stability
-  experimental: {
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
-  },
+  // Move to top-level as recommended
+  serverExternalPackages: ['@supabase/supabase-js'],
   // Webpack configuration for better module resolution
-  webpack: (config, { dev, isServer }) => {
-    if (dev && !isServer) {
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    // Add polling for better development stability
+    if (dev) {
       config.watchOptions = {
         poll: 1000,
         aggregateTimeout: 300,
