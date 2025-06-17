@@ -10,6 +10,7 @@ import CodRequestsTable from '@/components/features/cod/CodRequestsTable'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { RefreshCw, MapPin } from 'lucide-react'
 import { DispatcherDashboardWrapper } from '@/components/features/dispatcher/DispatcherDashboardWrapper'
+import ErrorBoundary from '@/components/common/ErrorBoundary'
 
 interface RequestsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -26,24 +27,49 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
     : undefined
 
   try {
-    // Fetch both street-turn and COD requests
-    const [streetTurnRequests, codRequests] = await Promise.all([
-      getStreetTurnRequests({ search, status }),
-      getCodRequests()
-    ])
+    console.log('Loading requests with filters:', { search, status })
+
+    // Fetch both street-turn and COD requests with individual error handling
+    let streetTurnRequests: any[] = []
+    let codRequests: any[] = []
+    let streetTurnError: string | null = null
+    let codError: string | null = null
+
+    // Try to fetch street-turn requests
+    try {
+      streetTurnRequests = await getStreetTurnRequests({ search, status })
+      console.log('Street-turn requests loaded:', streetTurnRequests.length)
+    } catch (error: any) {
+      console.error('Failed to load street-turn requests:', error)
+      streetTurnError = error.message
+    }
+
+    // Try to fetch COD requests
+    try {
+      codRequests = await getCodRequests()
+      console.log('COD requests loaded:', codRequests.length)
+    } catch (error: any) {
+      console.error('Failed to load COD requests:', error)
+      codError = error.message
+    }
 
     // Get current user to fetch their reviews
     const user = await getCurrentUser()
     let userReviews: string[] = []
     
     if (user?.profile?.organization_id) {
-      const supabase = await createClient()
-      const { data: reviews } = await supabase
-        .from('partner_reviews')
-        .select('request_id')
-        .eq('reviewer_org_id', user.profile.organization_id)
-      
-      userReviews = reviews?.map(review => review.request_id) || []
+      try {
+        const supabase = await createClient()
+        const { data: reviews } = await supabase
+          .from('partner_reviews')
+          .select('request_id')
+          .eq('reviewer_org_id', user.profile.organization_id)
+        
+        userReviews = reviews?.map(review => review.request_id) || []
+      } catch (error) {
+        console.error('Failed to load user reviews:', error)
+        // Continue without reviews - non-critical feature
+      }
     }
 
     return (
@@ -52,111 +78,111 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
           <TabsTrigger value="street-turn" className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
             Yêu cầu Tái Sử Dụng
+            {streetTurnError && (
+              <span className="ml-1 w-2 h-2 bg-red-500 rounded-full" title="Có lỗi khi tải dữ liệu" />
+            )}
           </TabsTrigger>
           <TabsTrigger value="cod" className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />
             Yêu cầu Đổi Nơi Trả (COD)
+            {codError && (
+              <span className="ml-1 w-2 h-2 bg-red-500 rounded-full" title="Có lỗi khi tải dữ liệu" />
+            )}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="street-turn" className="space-y-6">
-          {/* Filters Section */}
-          <div className="card">
-            <RequestFilters />
-          </div>
-
-          {/* Results Section */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-h3 font-semibold text-text-primary">
-                Lịch sử Yêu Cầu Tái Sử Dụng
-              </h2>
-              <span className="text-body-small text-text-secondary">
-                {streetTurnRequests.length} yêu cầu{search || status ? ' (đã lọc)' : ''}
-              </span>
+          {streetTurnError ? (
+            <div className="space-y-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <h3 className="font-medium text-red-800 mb-2">
+                  Không thể tải danh sách yêu cầu tái sử dụng
+                </h3>
+                <p className="text-red-700 text-sm mb-3">
+                  {streetTurnError}
+                </p>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="px-3 py-1 bg-red-100 text-red-800 text-sm rounded hover:bg-red-200"
+                >
+                  Thử lại
+                </button>
+              </div>
+              
+              {/* Show filters even if data failed to load */}
+              <div className="card">
+                <RequestFilters />
+              </div>
             </div>
-            
-            <RequestHistoryTable requests={streetTurnRequests} userReviews={userReviews} />
-          </div>
+          ) : (
+            <>
+              {/* Filters Section */}
+              <div className="card">
+                <RequestFilters />
+              </div>
+
+              {/* Results Section */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-h3 font-semibold text-text-primary">
+                    Lịch sử Yêu Cầu Tái Sử Dụng
+                  </h2>
+                  <span className="text-body-small text-text-secondary">
+                    {streetTurnRequests.length} yêu cầu{search || status ? ' (đã lọc)' : ''}
+                  </span>
+                </div>
+                
+                <RequestHistoryTable requests={streetTurnRequests} userReviews={userReviews} />
+              </div>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="cod" className="space-y-6">
-          <CodRequestsTable requests={codRequests} />
+          {codError ? (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <h3 className="font-medium text-red-800 mb-2">
+                Không thể tải danh sách yêu cầu COD
+              </h3>
+              <p className="text-red-700 text-sm mb-3">
+                {codError}
+              </p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="px-3 py-1 bg-red-100 text-red-800 text-sm rounded hover:bg-red-200"
+              >
+                Thử lại
+              </button>
+            </div>
+          ) : (
+            <CodRequestsTable requests={codRequests} />
+          )}
         </TabsContent>
       </Tabs>
     )
-  } catch (error) {
-    console.error('Error loading requests:', error)
-    return (
-      <div className="card text-center py-8">
-        <p className="text-danger">
-          Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.
-        </p>
-      </div>
-    )
+  } catch (error: any) {
+    console.error('Critical error loading requests page:', error)
+    return <ErrorBoundary error={error} />
   }
 }
 
-function LoadingSkeleton() {
+// Loading component
+function RequestsLoading() {
   return (
-    <>
-      {/* Filter skeleton */}
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+        <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+      </div>
       <div className="card">
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1 h-9 bg-gray-200 rounded animate-pulse"></div>
-          <div className="sm:w-48 h-9 bg-gray-200 rounded animate-pulse"></div>
-        </div>
+        <div className="h-20 bg-gray-200 rounded animate-pulse"></div>
       </div>
-
-      {/* Table skeleton */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="h-6 w-64 bg-gray-200 rounded animate-pulse"></div>
-          <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
-        </div>
-        
-        <div className="card p-0 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="table-header">Mã Yêu cầu</th>
-                  <th className="table-header">Container / Booking</th>
-                  <th className="table-header">Hãng tàu</th>
-                  <th className="table-header">Ngày gửi</th>
-                  <th className="table-header">Trạng thái</th>
-                  <th className="table-header">Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[...Array(5)].map((_, index) => (
-                  <tr key={index} className="table-row">
-                    <td className="table-cell">
-                      <div className="h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="table-cell">
-                      <div className="h-5 w-32 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="table-cell">
-                      <div className="h-5 w-28 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="table-cell">
-                      <div className="h-5 w-20 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                    <td className="table-cell">
-                      <div className="h-6 w-16 bg-gray-200 rounded-full animate-pulse"></div>
-                    </td>
-                    <td className="table-cell">
-                      <div className="h-5 w-20 bg-gray-200 rounded animate-pulse"></div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <div className="space-y-4">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-16 bg-gray-200 rounded animate-pulse"></div>
+        ))}
       </div>
-    </>
+    </div>
   )
 }
 
@@ -191,7 +217,7 @@ export default async function RequestsPage(props: RequestsPageProps) {
         </div>
 
         {/* Content with Suspense for loading state */}
-        <Suspense fallback={<LoadingSkeleton />}>
+        <Suspense fallback={<RequestsLoading />}>
           <RequestsContent {...props} />
         </Suspense>
       </div>

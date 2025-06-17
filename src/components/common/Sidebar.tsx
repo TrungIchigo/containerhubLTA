@@ -26,7 +26,7 @@ export default function Sidebar() {
     { name: 'Báo Cáo', href: '/reports', icon: BarChart3, roles: ['DISPATCHER', 'CARRIER_ADMIN'] },
     { name: 'Bảng Điều Phối', href: '/dispatcher', icon: Truck, roles: ['DISPATCHER'] },
     { name: 'Thị Trường', href: '/marketplace', icon: Store, roles: ['DISPATCHER'] },
-    { name: 'Quản lý Yêu Cầu Tái Sử Dụng', href: '/dispatcher/requests', icon: FileText, roles: ['DISPATCHER'] },
+    { name: 'Quản lý Yêu Cầu', href: '/dispatcher/requests', icon: FileText, roles: ['DISPATCHER'] },
     { name: 'Cổng Hãng Tàu', href: '/carrier-admin', icon: Ship, roles: ['CARRIER_ADMIN'] },
     { name: 'Quy tắc Tự động', href: '/carrier-admin/rules', icon: Settings, roles: ['CARRIER_ADMIN'] },
   ]

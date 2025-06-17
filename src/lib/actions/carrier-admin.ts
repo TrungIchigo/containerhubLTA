@@ -7,93 +7,160 @@ import { debugUserData } from '../debug'
 
 // Get carrier admin dashboard data
 export async function getCarrierAdminDashboardData() {
-  const user = await getCurrentUser()
-  
-  if (!user?.profile?.organization_id) {
-    console.error('User missing organization_id:', user)
-    throw new Error('User organization not found')
-  }
+  try {
+    const user = await getCurrentUser()
+    
+    if (!user?.profile?.organization_id) {
+      console.error('User missing organization_id:', user)
+      throw new Error('User organization not found')
+    }
 
-  if (user.profile.role !== 'CARRIER_ADMIN') {
-    console.error('User role is not CARRIER_ADMIN:', user.profile.role)
-    throw new Error('Unauthorized - not a carrier admin')
-  }
+    if (user.profile.role !== 'CARRIER_ADMIN') {
+      console.error('User role is not CARRIER_ADMIN:', user.profile.role)
+      throw new Error('Unauthorized - not a carrier admin')
+    }
 
-  const supabase = await createClient()
-  const orgId = user.profile.organization_id
+    const supabase = await createClient()
+    const orgId = user.profile.organization_id
 
-  console.log('Fetching data for carrier org_id:', orgId)
+    console.log('Fetching data for carrier org_id:', orgId)
 
-  // Get pending requests for this shipping line
-  const { data: pendingRequests, error: requestsError } = await supabase
-    .from('street_turn_requests')
-    .select(`
-      *,
-      import_container:import_containers(
+    // First, verify the organization exists and is active
+    const { data: organization, error: orgError } = await supabase
+      .from('organizations')
+      .select('id, name, type, status')
+      .eq('id', orgId)
+      .single()
+
+    if (orgError || !organization) {
+      console.error('Organization not found or error:', orgError)
+      throw new Error('Organization not found')
+    }
+
+    if (organization.status !== 'ACTIVE') {
+      console.error('Organization is not active:', organization.status)
+      throw new Error('Organization is not active')
+    }
+
+    // Get pending requests for this shipping line with better error handling
+    const { data: pendingRequests, error: requestsError } = await supabase
+      .from('street_turn_requests')
+      .select(`
         *,
-        trucking_company:organizations!import_containers_trucking_company_org_id_fkey(*)
-      ),
-      export_booking:export_bookings(
-        *,
-        trucking_company:organizations!export_bookings_trucking_company_org_id_fkey(*)
-      ),
-      requesting_org:organizations!street_turn_requests_requesting_org_id_fkey(*)
-    `)
-    .eq('approving_org_id', orgId)
-    .eq('status', 'PENDING')
-    .order('created_at', { ascending: false })
+        import_container:import_containers(
+          id,
+          container_number,
+          container_type,
+          drop_off_location,
+          status,
+          trucking_company:organizations!import_containers_trucking_company_org_id_fkey(
+            id,
+            name
+          )
+        ),
+        export_booking:export_bookings(
+          id,
+          booking_number,
+          required_container_type,
+          pick_up_location,
+          status,
+          trucking_company:organizations!export_bookings_trucking_company_org_id_fkey(
+            id,
+            name
+          )
+        ),
+        dropoff_trucking_org:organizations!street_turn_requests_dropoff_trucking_org_id_fkey(
+          id,
+          name
+        )
+      `)
+      .eq('approving_org_id', orgId)
+      .eq('status', 'PENDING')
+      .order('created_at', { ascending: false })
 
-  if (requestsError) {
-    console.error('Error fetching pending requests:', requestsError)
-    console.error('Query details - orgId:', orgId)
-    throw new Error(`Database query failed: ${requestsError.message}`)
-  }
+    if (requestsError) {
+      console.error('Error fetching pending requests:', requestsError)
+      console.error('Query details - orgId:', orgId)
+      
+      // Check if it's a foreign key error
+      if (requestsError.message?.includes('foreign key') || requestsError.message?.includes('violates')) {
+        throw new Error(`Database foreign key constraint error: ${requestsError.message}`)
+      }
+      
+      throw new Error(`Database query failed: ${requestsError.message}`)
+    }
 
-  console.log('Found pending requests:', pendingRequests?.length || 0)
+    console.log('Found pending requests:', pendingRequests?.length || 0)
 
-  // Get KPI data
-  // 1. Pending requests count
-  const pendingCount = pendingRequests?.length || 0
+    // Get KPI data with individual error handling
+    let approvedThisMonth = []
+    let totalApproved = []
+    
+    try {
+      // 2. Approved this month
+      const thisMonth = new Date()
+      thisMonth.setDate(1)
+      thisMonth.setHours(0, 0, 0, 0)
+      
+      const { data: approvedData, error: approvedError } = await supabase
+        .from('street_turn_requests')
+        .select('id')
+        .eq('approving_org_id', orgId)
+        .eq('status', 'APPROVED')
+        .gte('created_at', thisMonth.toISOString())
 
-  // 2. Approved this month
-  const thisMonth = new Date()
-  thisMonth.setDate(1)
-  thisMonth.setHours(0, 0, 0, 0)
-  
-  const { data: approvedThisMonth, error: approvedError } = await supabase
-    .from('street_turn_requests')
-    .select('id')
-    .eq('approving_org_id', orgId)
-    .eq('status', 'APPROVED')
-    .gte('created_at', thisMonth.toISOString())
+      if (approvedError) {
+        console.error('Error fetching approved this month:', approvedError)
+      } else {
+        approvedThisMonth = approvedData || []
+      }
+    } catch (error) {
+      console.error('Error in approved this month query:', error)
+    }
 
-  if (approvedError) {
-    console.error('Error fetching approved this month:', approvedError)
-  }
+    try {
+      // 3. Total approved (all time)
+      const { data: totalData, error: totalError } = await supabase
+        .from('street_turn_requests')
+        .select('id')
+        .eq('approving_org_id', orgId)
+        .eq('status', 'APPROVED')
 
-  // 3. Total approved (all time)
-  const { data: totalApproved, error: totalError } = await supabase
-    .from('street_turn_requests')
-    .select('id')
-    .eq('approving_org_id', orgId)
-    .eq('status', 'APPROVED')
+      if (totalError) {
+        console.error('Error fetching total approved:', totalError)
+      } else {
+        totalApproved = totalData || []
+      }
+    } catch (error) {
+      console.error('Error in total approved query:', error)
+    }
 
-  if (totalError) {
-    console.error('Error fetching total approved:', totalError)
-  }
+    const kpis = {
+      pendingCount: pendingRequests?.length || 0,
+      approvedThisMonth: approvedThisMonth.length,
+      totalApproved: totalApproved.length
+    }
 
-  console.log('KPI data:', {
-    pendingCount,
-    approvedThisMonth: approvedThisMonth?.length || 0,
-    totalApproved: totalApproved?.length || 0
-  })
+    console.log('KPI data:', kpis)
 
-  return {
-    pendingRequests: pendingRequests || [],
-    kpis: {
-      pendingCount,
-      approvedThisMonth: approvedThisMonth?.length || 0,
-      totalApproved: totalApproved?.length || 0
+    return {
+      pendingRequests: pendingRequests || [],
+      kpis,
+      organization
+    }
+
+  } catch (error: any) {
+    console.error('Error in getCarrierAdminDashboardData:', error)
+    
+    // Re-throw with better error context
+    if (error.message?.includes('organization not found')) {
+      throw new Error('User organization not found')
+    } else if (error.message?.includes('Unauthorized')) {
+      throw new Error('Unauthorized - not a carrier admin')
+    } else if (error.message?.includes('foreign key')) {
+      throw new Error('Database schema error - foreign key constraint')
+    } else {
+      throw new Error(`Failed to fetch carrier admin data: ${error.message}`)
     }
   }
 }

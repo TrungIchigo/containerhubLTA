@@ -65,7 +65,7 @@ export async function getDispatcherDashboardData() {
   const { data: approvedRequests } = await supabase
     .from('street_turn_requests')
     .select('*')
-    .eq('requesting_org_id', orgId)
+    .eq('dropoff_trucking_org_id', orgId)
     .eq('status', 'APPROVED')
 
   const approvedStreetTurns = approvedRequests?.length || 0
@@ -328,57 +328,110 @@ export async function createStreetTurnRequest(
   estimatedCostSaving?: number,
   estimatedCo2Saving?: number
 ) {
-  const user = await getCurrentUser()
-  
-  if (!user?.profile?.organization_id || user.profile.role !== 'DISPATCHER') {
-    throw new Error('Unauthorized')
+  try {
+    const user = await getCurrentUser()
+    
+    if (!user?.profile?.organization_id || user.profile.role !== 'DISPATCHER') {
+      throw new Error('Unauthorized')
+    }
+
+    const supabase = await createClient()
+    
+    // Get container details to find approving organization
+    const { data: container, error: containerFetchError } = await supabase
+      .from('import_containers')
+      .select('shipping_line_org_id, trucking_company_org_id, status')
+      .eq('id', importContainerId)
+      .single()
+
+    if (containerFetchError || !container) {
+      console.error('Container fetch error:', containerFetchError)
+      throw new Error('Container not found')
+    }
+
+    // Verify user owns this container
+    if (container.trucking_company_org_id !== user.profile.organization_id) {
+      throw new Error('Container does not belong to your organization')
+    }
+
+    // Check container status
+    if (container.status !== 'AVAILABLE') {
+      throw new Error('Container is not available for street-turn request')
+    }
+
+    // Get booking details
+    const { data: booking, error: bookingFetchError } = await supabase
+      .from('export_bookings')
+      .select('trucking_company_org_id, status')
+      .eq('id', exportBookingId)
+      .single()
+
+    if (bookingFetchError || !booking) {
+      console.error('Booking fetch error:', bookingFetchError)
+      throw new Error('Booking not found')
+    }
+
+    // Verify user owns this booking
+    if (booking.trucking_company_org_id !== user.profile.organization_id) {
+      throw new Error('Booking does not belong to your organization')
+    }
+
+    // Check booking status
+    if (booking.status !== 'AVAILABLE') {
+      throw new Error('Booking is not available for street-turn request')
+    }
+
+    // Create the request with all required fields
+    const { error: requestError } = await supabase
+      .from('street_turn_requests')
+      .insert({
+        import_container_id: importContainerId,
+        export_booking_id: exportBookingId,
+        dropoff_trucking_org_id: user.profile.organization_id,
+        pickup_trucking_org_id: user.profile.organization_id,
+        approving_org_id: container.shipping_line_org_id,
+        status: 'PENDING',
+        match_type: 'INTERNAL',
+        dropoff_org_approval_status: 'APPROVED', // Internal request, auto-approved
+        estimated_cost_saving: estimatedCostSaving,
+        estimated_co2_saving_kg: estimatedCo2Saving
+      })
+
+    if (requestError) {
+      console.error('Error creating request:', requestError)
+      throw new Error(`Failed to create street-turn request: ${requestError.message}`)
+    }
+
+    // Update container and booking status
+    const { error: containerError } = await supabase
+      .from('import_containers')
+      .update({ status: 'AWAITING_APPROVAL' })
+      .eq('id', importContainerId)
+
+    const { error: bookingError } = await supabase
+      .from('export_bookings')
+      .update({ status: 'AWAITING_APPROVAL' })
+      .eq('id', exportBookingId)
+
+    if (containerError) {
+      console.error('Error updating container status:', containerError)
+      throw new Error(`Failed to update container status: ${containerError.message}`)
+    }
+
+    if (bookingError) {
+      console.error('Error updating booking status:', bookingError)
+      throw new Error(`Failed to update booking status: ${bookingError.message}`)
+    }
+
+    revalidatePath('/dispatcher')
+    
+    return {
+      success: true,
+      message: 'Yêu cầu tái sử dụng container đã được tạo thành công!'
+    }
+
+  } catch (error: any) {
+    console.error('Error in createStreetTurnRequest:', error)
+    throw new Error(error.message || 'Failed to create street-turn request')
   }
-
-  const supabase = await createClient()
-  
-  // Get container to find approving organization
-  const { data: container } = await supabase
-    .from('import_containers')
-    .select('shipping_line_org_id')
-    .eq('id', importContainerId)
-    .single()
-
-  if (!container) {
-    throw new Error('Container not found')
-  }
-
-  // Create the request
-  const { error: requestError } = await supabase
-    .from('street_turn_requests')
-    .insert({
-      import_container_id: importContainerId,
-      export_booking_id: exportBookingId,
-      requesting_org_id: user.profile.organization_id,
-      approving_org_id: container.shipping_line_org_id,
-      status: 'PENDING',
-      estimated_cost_saving: estimatedCostSaving,
-      estimated_co2_saving_kg: estimatedCo2Saving
-    })
-
-  if (requestError) {
-    console.error('Error creating request:', requestError)
-    throw requestError
-  }
-
-  // Update container and booking status
-  const { error: containerError } = await supabase
-    .from('import_containers')
-    .update({ status: 'AWAITING_APPROVAL' })
-    .eq('id', importContainerId)
-
-  const { error: bookingError } = await supabase
-    .from('export_bookings')
-    .update({ status: 'AWAITING_APPROVAL' })
-    .eq('id', exportBookingId)
-
-  if (containerError || bookingError) {
-    console.error('Error updating status:', { containerError, bookingError })
-  }
-
-  revalidatePath('/dispatcher')
 } 

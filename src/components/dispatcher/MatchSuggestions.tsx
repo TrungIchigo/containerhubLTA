@@ -30,14 +30,21 @@ export default function MatchSuggestions({ suggestions }: MatchSuggestionsProps)
     setLoadingRequests(prev => [...prev, requestId])
 
     try {
-      await createStreetTurnRequest(
+      const result = await createStreetTurnRequest(
         suggestion.import_container.id,
         suggestion.export_booking.id,
         suggestion.estimated_cost_saving,
         suggestion.estimated_co2_saving_kg
       )
-    } catch (error) {
+      
+      if (result?.success) {
+        console.log('Request created successfully:', result.message)
+        // You could add a toast notification here
+      }
+      
+    } catch (error: any) {
       console.error('Error creating request:', error)
+      alert(`Lỗi tạo yêu cầu: ${error.message || 'Unknown error'}`)
     } finally {
       setLoadingRequests(prev => prev.filter(id => id !== requestId))
     }

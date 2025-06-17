@@ -137,7 +137,7 @@ test.describe('COD Module - Implementation Verification', () => {
     const notFoundKeywords = [];
     
     for (const keyword of codKeywords) {
-      if (bodyText.toLowerCase().includes(keyword.toLowerCase())) {
+      if (bodyText?.toLowerCase().includes(keyword.toLowerCase())) {
         foundKeywords.push(keyword);
       } else {
         notFoundKeywords.push(keyword);
@@ -188,7 +188,7 @@ test.describe('COD Module - Implementation Verification', () => {
             return {
               status: 0,
               ok: false,
-              statusText: error.message
+              statusText: (error as Error).message
             };
           }
         }, `http://localhost:3000${endpoint}`);

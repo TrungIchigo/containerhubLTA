@@ -8,6 +8,7 @@ import { Ship, MapPin, RefreshCw, MessageSquare } from 'lucide-react'
 import CodRequestsQueue from '@/components/features/cod/CodRequestsQueue'
 import DynamicGreeting from '@/components/common/DynamicGreeting'
 import EnhancedEmptyState from '@/components/common/EnhancedEmptyState'
+import ErrorBoundary from '@/components/common/ErrorBoundary'
 
 export default async function CarrierAdminPage() {
   // Authentication check
@@ -34,7 +35,7 @@ export default async function CarrierAdminPage() {
               Cổng Hãng Tàu - Quản lý Yêu Cầu Tái Sử Dụng
             </h1>
             <p className="text-text-secondary mt-1">
-              Xem và xử lý các yêu cầu tái sử dụng container cho hãng tàu {user.profile?.organization?.name}
+              Xem và xử lý các yêu cầu tái sử dụng container cho hãng tàu {user.profile?.organization?.name || 'của bạn'}
             </p>
           </div>
         </div>
@@ -55,65 +56,59 @@ async function CarrierDashboardContent() {
   try {
     const dashboardData = await getCarrierAdminDashboardData()
     
-          return (
-        <>
-          {/* KPI Cards */}
-          <CarrierKPICards kpis={dashboardData.kpis} />
-
-          {/* Tabs for different request types */}
-          <Tabs defaultValue="street-turn" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="street-turn" className="flex items-center gap-2">
-                <RefreshCw className="h-4 w-4" />
-                Yêu cầu Tái Sử Dụng
-              </TabsTrigger>
-              <TabsTrigger value="cod" className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Yêu cầu Đổi Nơi Trả (COD)
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="street-turn" className="space-y-4">
-              <div>
-                <h3 className="text-h3 font-semibold text-text-primary mb-2">
-                  Yêu cầu Tái Sử Dụng Chờ Duyệt
-                </h3>
-                <p className="text-body text-text-secondary mb-4">
-                  Xem xét và phê duyệt các yêu cầu tái sử dụng container
-                </p>
-                {dashboardData.pendingRequests.length > 0 ? (
-                  <RequestQueueTable requests={dashboardData.pendingRequests} />
-                ) : (
-                  <EnhancedEmptyState
-                    type="pending-requests"
-                    actionHref="/carrier-admin/requests"
-                  />
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="cod" className="space-y-4">
-              <div>
-                <h3 className="text-h3 font-semibold text-text-primary mb-2">
-                  Yêu cầu Đổi Nơi Trả (COD)
-                </h3>
-                <p className="text-body text-text-secondary mb-4">
-                  Quản lý yêu cầu thay đổi địa điểm trả container
-                </p>
-                <CodRequestsQueue />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </>
-      )
-  } catch (error) {
-    console.error('Error fetching carrier admin data:', error)
     return (
-      <div className="card text-center py-8">
-        <p className="text-danger">
-          Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.
-        </p>
-      </div>
+      <>
+        {/* KPI Cards */}
+        <CarrierKPICards kpis={dashboardData.kpis} />
+
+        {/* Tabs for different request types */}
+        <Tabs defaultValue="street-turn" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="street-turn" className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              Yêu cầu Tái Sử Dụng
+            </TabsTrigger>
+            <TabsTrigger value="cod" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Yêu cầu Đổi Nơi Trả (COD)
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="street-turn" className="space-y-4">
+            <div>
+              <h3 className="text-h3 font-semibold text-text-primary mb-2">
+                Yêu cầu Tái Sử Dụng Chờ Duyệt
+              </h3>
+              <p className="text-body text-text-secondary mb-4">
+                Xem xét và phê duyệt các yêu cầu tái sử dụng container
+              </p>
+              {dashboardData.pendingRequests.length > 0 ? (
+                <RequestQueueTable requests={dashboardData.pendingRequests} />
+              ) : (
+                <EnhancedEmptyState
+                  type="pending-requests"
+                  actionHref="/carrier-admin/requests"
+                />
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="cod" className="space-y-4">
+            <div>
+              <h3 className="text-h3 font-semibold text-text-primary mb-2">
+                Yêu cầu Đổi Nơi Trả (COD)
+              </h3>
+              <p className="text-body text-text-secondary mb-4">
+                Quản lý yêu cầu thay đổi địa điểm trả container
+              </p>
+              <CodRequestsQueue />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </>
     )
+  } catch (error: any) {
+    console.error('Error fetching carrier admin data:', error)
+    return <ErrorBoundary error={error} />
   }
 } 

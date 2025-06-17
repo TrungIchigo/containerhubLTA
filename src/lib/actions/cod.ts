@@ -366,53 +366,128 @@ export async function handleCodDecision(
       }
 
       // Rollback trạng thái container về AVAILABLE
-      await supabase
+      const { error: rollbackError } = await supabase
         .from('import_containers')
         .update({ status: 'AVAILABLE' })
         .eq('id', codRequest.dropoff_order_id)
 
-    } else if (decision === 'APPROVED') {
-      // Phê duyệt yêu cầu
-      const { error: updateError } = await supabase
-        .from('cod_requests')
-        .update({
-          status: 'APPROVED',
-          cod_fee: codFee || 0,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', requestId)
-
-      if (updateError) {
-        console.error('Error approving COD request:', updateError)
+      if (rollbackError) {
+        console.error('Error rolling back container status:', rollbackError)
         return {
           success: false,
-          message: 'Không thể phê duyệt yêu cầu. Vui lòng thử lại.'
+          message: 'Không thể cập nhật trạng thái container. Vui lòng thử lại.'
         }
       }
 
-      // Cập nhật thông tin container với depot mới
-      const depot = Array.isArray(codRequest.requested_depot) ? codRequest.requested_depot[0] : codRequest.requested_depot
-      const { error: containerUpdateError } = await supabase
-        .from('import_containers')
-        .update({
-          depot_id: codRequest.requested_depot_id,
-          drop_off_location: `${depot.name}, ${depot.address}`,
-          latitude: depot.latitude,
-          longitude: depot.longitude,
-          status: 'AVAILABLE' // Mở khóa container
-        })
-        .eq('id', codRequest.dropoff_order_id)
+    } else if (decision === 'APPROVED') {
+      // Phê duyệt yêu cầu - Sử dụng stored function để đảm bảo transaction
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('name')
+        .eq('id', user.profile.organization_id)
+        .single()
 
-      if (containerUpdateError) {
-        console.error('Error updating container location:', containerUpdateError)
+      console.log('Calling approve_cod_request with params:', {
+        request_id: requestId,
+        cod_fee: codFee || 0,
+        actor_user_id: user.id,
+        actor_org_name: orgData?.name || 'Unknown Organization'
+      })
+
+      const { data: approvalResult, error: approvalError } = await supabase
+        .rpc('approve_cod_request', {
+          request_id: requestId,
+          cod_fee: codFee || 0,
+          actor_user_id: user.id,
+          actor_org_name: orgData?.name || 'Unknown Organization'
+        })
+
+      console.log('Stored function result:', { approvalResult, approvalError })
+
+      if (approvalError) {
+        console.error('Error calling approve_cod_request function:', approvalError)
+        
+        // Fallback: Try manual update if stored function fails
+        console.log('Attempting fallback manual update...')
+        
+        // Update COD request
+        const { error: codUpdateError } = await supabase
+          .from('cod_requests')
+          .update({
+            status: 'APPROVED',
+            cod_fee: codFee || 0,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', requestId)
+
+        if (codUpdateError) {
+          return {
+            success: false,
+            message: 'Không thể phê duyệt yêu cầu. Vui lòng thử lại.'
+          }
+        }
+
+                 // Update container với detailed logging
+         const depot = Array.isArray(codRequest.requested_depot) ? codRequest.requested_depot[0] : codRequest.requested_depot
+         
+         console.log('Fallback: Attempting container update with data:', {
+           container_id: codRequest.dropoff_order_id,
+           depot_id: codRequest.requested_depot_id,
+           depot_name: depot.name,
+           depot_address: depot.address
+         })
+
+         const { data: updateData, error: containerUpdateError } = await supabase
+           .from('import_containers')
+           .update({
+             depot_id: codRequest.requested_depot_id,
+             drop_off_location: `${depot.name}, ${depot.address}`,
+             latitude: depot.latitude,
+             longitude: depot.longitude,
+             status: 'AVAILABLE'
+           })
+           .eq('id', codRequest.dropoff_order_id)
+           .select()
+
+         console.log('Fallback container update result:', { updateData, containerUpdateError })
+
+         if (containerUpdateError) {
+           console.error('Fallback container update failed:', containerUpdateError)
+           return {
+             success: false,
+             message: `Không thể cập nhật container. Lỗi: ${containerUpdateError.message}. Vui lòng liên hệ admin.`
+           }
+         }
+
+        // Success with fallback
+        const container = Array.isArray(codRequest.import_container) ? codRequest.import_container[0] : codRequest.import_container
+        return {
+          success: true,
+          message: `Đã phê duyệt yêu cầu COD cho container ${container?.container_number}${codFee ? ` với phí ${codFee.toLocaleString('vi-VN')} VNĐ` : ''}`
+        }
+      }
+
+      // Kiểm tra kết quả từ stored function
+      if (!approvalResult?.success) {
         return {
           success: false,
-          message: 'Không thể cập nhật địa điểm container. Vui lòng thử lại.'
+          message: approvalResult?.message || 'Không thể phê duyệt yêu cầu'
         }
+      }
+
+      // Revalidate các trang liên quan cho APPROVED
+      revalidatePath('/carrier-admin')
+      revalidatePath('/dispatcher')
+      revalidatePath('/dispatcher/requests')
+
+      // Trả về kết quả thành công từ stored function
+      return {
+        success: true,
+        message: approvalResult.message
       }
     }
 
-    // BƯỚC 3: Ghi audit log
+    // BƯỚC 3: Ghi audit log cho DECLINED
     const container = Array.isArray(codRequest.import_container) ? codRequest.import_container[0] : codRequest.import_container
     const { data: orgData } = await supabase
       .from('organizations')
@@ -426,26 +501,22 @@ export async function handleCodDecision(
         request_id: requestId,
         actor_user_id: user.id,
         actor_org_name: orgData?.name || 'Unknown Organization',
-        action: decision,
+        action: 'DECLINED',
         details: {
           container_number: container?.container_number,
-          decision,
-          cod_fee: codFee,
+          decision: 'DECLINED',
           reason_for_decision: reasonForDecision
         }
       })
 
-    // BƯỚC 4: Revalidate các trang liên quan
+    // BƯỚC 4: Revalidate các trang liên quan cho DECLINED
     revalidatePath('/carrier-admin')
     revalidatePath('/dispatcher')
     revalidatePath('/dispatcher/requests')
-    const successMessage = decision === 'APPROVED' 
-      ? `Đã phê duyệt yêu cầu COD cho container ${container?.container_number}${codFee ? ` với phí ${codFee.toLocaleString('vi-VN')} VNĐ` : ''}`
-      : `Đã từ chối yêu cầu COD cho container ${container?.container_number}`
 
     return {
       success: true,
-      message: successMessage
+      message: `Đã từ chối yêu cầu COD cho container ${container?.container_number}`
     }
 
   } catch (error: any) {
