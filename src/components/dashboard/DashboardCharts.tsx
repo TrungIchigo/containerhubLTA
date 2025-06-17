@@ -11,8 +11,12 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
-  Legend
+  Legend,
+  BarChart,
+  Bar
 } from 'recharts'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { formatDateVN } from '@/lib/utils'
 
 interface TrendDataPoint {
   date: string
@@ -46,19 +50,12 @@ const pieData = (distribution: StatusDistribution) => [
   { name: 'Đang chờ', value: distribution.pending, color: statusColors.pending }
 ]
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit'
-  })
-}
-
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-foreground border border-border rounded-md p-3 shadow-lg">
         <p className="text-body font-medium text-text-primary mb-2">
-          {formatDate(label)}
+          {formatDateVN(label)}
         </p>
         {payload.map((entry: any, index: number) => (
           <p key={index} className="text-body-small" style={{ color: entry.color }}>
@@ -113,7 +110,7 @@ export default function DashboardCharts({
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                 <XAxis 
                   dataKey="date" 
-                  tickFormatter={formatDate}
+                  tickFormatter={formatDateVN}
                   stroke="#6B7280"
                   fontSize={12}
                 />

@@ -16,6 +16,71 @@ export function formatDate(date: string | Date): string {
   })
 }
 
+// NEW: Timezone-aware datetime utilities for Vietnam (+7)
+export function formatDateTimeVN(date: string | Date): string {
+  const d = new Date(date)
+  // Format specifically for Vietnam timezone display
+  return d.toLocaleString('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Ho_Chi_Minh'
+  })
+}
+
+export function formatDateVN(date: string | Date): string {
+  const d = new Date(date)
+  return d.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Asia/Ho_Chi_Minh'
+  })
+}
+
+// Convert datetime-local input value to proper timezone for storage
+export function datetimeLocalToUTC(datetimeLocal: string): string {
+  if (!datetimeLocal) return ''
+  
+  // datetime-local gives us YYYY-MM-DDTHH:mm
+  // We need to treat this as Vietnam local time and convert to UTC for storage
+  const localDate = new Date(datetimeLocal)
+  
+  // Create a date with Vietnam timezone offset
+  const vnOffset = 7 * 60 // Vietnam is UTC+7 (420 minutes)
+  const utcTime = localDate.getTime() - (vnOffset * 60 * 1000)
+  
+  return new Date(utcTime).toISOString()
+}
+
+// Convert UTC datetime from database to datetime-local input format
+export function utcToDatetimeLocal(utcDateTime: string): string {
+  if (!utcDateTime) return ''
+  
+  const utcDate = new Date(utcDateTime)
+  
+  // Add Vietnam timezone offset to display the original selected time
+  const vnOffset = 7 * 60 // Vietnam is UTC+7 (420 minutes)
+  const localTime = utcDate.getTime() + (vnOffset * 60 * 1000)
+  const localDate = new Date(localTime)
+  
+  // Format for datetime-local input (YYYY-MM-DDTHH:mm)
+  return localDate.toISOString().slice(0, 16)
+}
+
+// Convert UTC datetime to Vietnam local time for display without offset issues
+export function utcToVNLocal(utcDateTime: string): Date {
+  if (!utcDateTime) return new Date()
+  
+  const utcDate = new Date(utcDateTime)
+  const vnOffset = 7 * 60 // Vietnam is UTC+7 (420 minutes)
+  const localTime = utcDate.getTime() + (vnOffset * 60 * 1000)
+  
+  return new Date(localTime)
+}
+
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',

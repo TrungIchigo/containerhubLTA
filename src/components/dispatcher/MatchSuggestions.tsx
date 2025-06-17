@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, DollarSign, Leaf } from 'lucide-react'
+import { Loader2, DollarSign, Leaf, MapPin, ArrowRight, Calculator, Clock } from 'lucide-react'
 import { createStreetTurnRequest } from '@/lib/actions/dispatcher'
+import { formatDateTimeVN } from '@/lib/utils'
 import type { ImportContainer, ExportBooking } from '@/lib/types'
 
 interface MatchSuggestion {
@@ -40,16 +41,6 @@ export default function MatchSuggestions({ suggestions }: MatchSuggestionsProps)
     } finally {
       setLoadingRequests(prev => prev.filter(id => id !== requestId))
     }
-  }
-
-  const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
   }
 
   if (suggestions.length === 0) {
@@ -110,7 +101,7 @@ export default function MatchSuggestions({ suggestions }: MatchSuggestionsProps)
                           📍 {suggestion.import_container.drop_off_location}
                         </div>
                         <div className="text-xs text-text-secondary">
-                          🕒 Rảnh từ: {formatDateTime(suggestion.import_container.available_from_datetime)}
+                          🕒 Rảnh từ: {formatDateTimeVN(suggestion.import_container.available_from_datetime)}
                         </div>
                       </div>
                     </td>
@@ -130,7 +121,7 @@ export default function MatchSuggestions({ suggestions }: MatchSuggestionsProps)
                           📍 {suggestion.export_booking.pick_up_location}
                         </div>
                         <div className="text-xs text-text-secondary">
-                          🕒 Cần trước: {formatDateTime(suggestion.export_booking.needed_by_datetime)}
+                          🕒 Cần trước: {formatDateTimeVN(suggestion.export_booking.needed_by_datetime)}
                         </div>
                       </div>
                     </td>

@@ -90,7 +90,7 @@ export default function SubmitInfoDialog({ isOpen, onClose, request }: SubmitInf
               Thông tin Yêu Cầu
             </h3>
             
-            <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+            <div className="bg-gray-50 p-4 rounded-lg shadow-sm space-y-3">
               <div className="flex items-center gap-2">
                 <Package className="h-4 w-4 text-primary" />
                 <span className="font-medium">Container:</span>
@@ -146,7 +146,7 @@ export default function SubmitInfoDialog({ isOpen, onClose, request }: SubmitInf
                 Yêu Cầu Từ Hãng Tàu
               </h3>
               
-              <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
+              <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg shadow-sm">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
@@ -192,7 +192,7 @@ export default function SubmitInfoDialog({ isOpen, onClose, request }: SubmitInf
           </div>
 
           {/* Xác nhận */}
-          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg shadow-sm">
             <div className="flex items-start gap-3">
               <MessageSquare className="h-5 w-5 text-blue-600 mt-0.5" />
               <div>

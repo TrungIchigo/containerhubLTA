@@ -92,12 +92,14 @@ export async function getMarketplaceListings(filters: MarketplaceFilters = {}) {
       id: item.shipping_line_org?.id || '',
       name: item.shipping_line_org?.name || 'Unknown',
       type: 'SHIPPING_LINE' as const,
+      status: 'ACTIVE',
       created_at: ''
     },
     trucking_company: {
       id: item.trucking_company_org?.id || '',
       name: item.trucking_company_org?.name || 'Unknown',
       type: 'TRUCKING_COMPANY' as const,
+      status: 'ACTIVE',
       created_at: ''
     },
     rating_details: ratingsMap[item.trucking_company_org_id] || { average_rating: 0, review_count: 0 }
@@ -337,7 +339,7 @@ export async function getShippingLinesForFilter(): Promise<Organization[]> {
   
   const { data: shippingLines, error } = await supabase
     .from('organizations')
-    .select('id, name, type, created_at')
+    .select('id, name, type, status, created_at')
     .eq('type', 'SHIPPING_LINE')
     .order('name', { ascending: true })
 

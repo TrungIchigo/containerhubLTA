@@ -13,11 +13,13 @@ import { addExportBooking } from '@/lib/actions/dispatcher'
 import { useCargoTypes } from '@/hooks/useCargoTypes'
 import DocumentUploader from '@/components/common/DocumentUploader'
 import LocationSelector from '@/components/common/LocationSelector'
+import ContainerTypeSelect from '@/components/common/ContainerTypeSelect'
 import { createClient } from '@/lib/supabase/client'
+import { validateContainerNumber, datetimeLocalToUTC, utcToDatetimeLocal } from '@/lib/utils'
 
 const formSchema = z.object({
   booking_number: z.string().min(1, 'Số booking là bắt buộc'),
-  required_container_type: z.string().min(1, 'Loại container là bắt buộc'),
+  container_type_id: z.string().min(1, 'Loại container là bắt buộc'),
   cargo_type_id: z.string().min(1, 'Loại hàng hóa là bắt buộc'),
   city_id: z.string().min(1, 'Thành phố là bắt buộc'),
   depot_id: z.string().min(1, 'Depot/Địa điểm là bắt buộc'),
@@ -27,18 +29,32 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-export default function AddExportBookingForm() {
-  const [isOpen, setIsOpen] = useState(false)
+interface AddExportBookingFormProps {
+  isOpen?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+export default function AddExportBookingForm(props: AddExportBookingFormProps = {}) {
+  const { 
+    isOpen: externalIsOpen,
+    onOpenChange: externalOnOpenChange 
+  } = props
+  
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [userId, setUserId] = useState<string>('')
   const [bookingId] = useState<string>(() => `temp_${Date.now()}`) // Temporary ID for uploads
   const { cargoOptions, loading: cargoLoading, error: cargoError } = useCargoTypes()
 
+  // Use external control if provided, otherwise use internal state
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
+  const setIsOpen = externalOnOpenChange || setInternalIsOpen
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       booking_number: '',
-      required_container_type: '20FT',
+      container_type_id: '',
       cargo_type_id: '',
       city_id: '',
       depot_id: '',
@@ -46,13 +62,6 @@ export default function AddExportBookingForm() {
       attached_documents: []
     }
   })
-
-  const containerTypes = [
-    { value: '20FT', label: '20FT' },
-    { value: '40FT', label: '40FT' },
-    { value: '40HQ', label: '40HQ' },
-    { value: '45FT', label: '45FT' }
-  ]
 
   // Get current user ID for file uploads
   useEffect(() => {
@@ -70,12 +79,18 @@ export default function AddExportBookingForm() {
     setIsLoading(true)
 
     try {
-      await addExportBooking(data)
+      // Convert datetime to UTC for proper storage
+      const processedData = {
+        ...data,
+        needed_by_datetime: datetimeLocalToUTC(data.needed_by_datetime)
+      }
+      
+      await addExportBooking(processedData)
       
       // Reset form and close dialog
       form.reset({
         booking_number: '',
-        required_container_type: '20FT',
+        container_type_id: '',
         cargo_type_id: '',
         city_id: '',
         depot_id: '',
@@ -87,7 +102,7 @@ export default function AddExportBookingForm() {
       console.error('Error adding booking:', error)
       form.setError('root', { 
         type: 'manual', 
-        message: 'Có lỗi xảy ra. Vui lòng thử lại.' 
+        message: error.message || 'Có lỗi xảy ra. Vui lòng thử lại.' 
       })
     } finally {
       setIsLoading(false)
@@ -99,13 +114,13 @@ export default function AddExportBookingForm() {
       <DialogTrigger asChild>
         <Button className="bg-green-600 hover:bg-green-700 text-white">
           <Plus className="mr-2 h-4 w-4" />
-          Thêm Booking Xuất
+          Thêm Lệnh Lấy Rỗng
         </Button>
       </DialogTrigger>
       
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-text-primary">Thêm Booking Xuất</DialogTitle>
+          <DialogTitle className="text-text-primary">Thêm Lệnh Lấy Rỗng</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -118,7 +133,7 @@ export default function AddExportBookingForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Số Booking */}
               <div className="space-y-2">
-                <Label htmlFor="booking_number">Số Booking *</Label>
+                <Label htmlFor="booking_number">Số Booking <span className="text-red-500">*</span></Label>
                 <Input
                   id="booking_number"
                   type="text"
@@ -133,30 +148,25 @@ export default function AddExportBookingForm() {
                 )}
               </div>
 
-              {/* Loại Container Cần */}
+              {/* Loại Container Cần Lấy */}
               <div className="space-y-2">
-                <Label htmlFor="required_container_type">Loại Container Cần *</Label>
-                <select
-                  id="required_container_type"
-                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  {...form.register('required_container_type')}
-                >
-                  {containerTypes.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
-                    </option>
-                  ))}
-                </select>
-                {form.formState.errors.required_container_type && (
+                <Label htmlFor="container_type_id">Loại Container Cần Lấy <span className="text-red-500">*</span></Label>
+                <ContainerTypeSelect
+                  value={form.watch('container_type_id')}
+                  onValueChange={(value) => form.setValue('container_type_id', value)}
+                  className="w-full"
+                  placeholder="Chọn loại container"
+                />
+                {form.formState.errors.container_type_id && (
                   <p className="text-sm text-red-600">
-                    {form.formState.errors.required_container_type.message}
+                    {form.formState.errors.container_type_id.message}
                   </p>
                 )}
               </div>
 
-              {/* Thời Gian Cần Container */}
+              {/* Thời Gian Cần Lấy Rỗng */}
               <div className="space-y-2">
-                <Label htmlFor="needed_by_datetime">Thời Gian Cần Container *</Label>
+                <Label htmlFor="needed_by_datetime">Thời Gian Cần Lấy Rỗng <span className="text-red-500">*</span></Label>
                 <Input
                   id="needed_by_datetime"
                   type="datetime-local"
@@ -182,7 +192,7 @@ export default function AddExportBookingForm() {
                 depotError={form.formState.errors.depot_id?.message}
                 required={true}
                 cityLabel="Thành phố/Tỉnh"
-                depotLabel="Depot/Địa điểm lấy hàng"
+                depotLabel="Địa điểm lấy rỗng"
               />
             </div>
 
@@ -190,7 +200,7 @@ export default function AddExportBookingForm() {
             <div className="space-y-2">
               <Label htmlFor="cargo_type_id" className="flex items-center">
                 <Package className="w-4 h-4 mr-2" />
-                Loại Hàng Hóa *
+                Loại Hàng Hóa <span className="text-red-500">*</span>
               </Label>
               {cargoLoading ? (
                 <div className="flex items-center justify-center py-3">
@@ -198,13 +208,13 @@ export default function AddExportBookingForm() {
                   <span className="text-sm text-muted-foreground">Đang tải danh sách loại hàng hóa...</span>
                 </div>
               ) : cargoError ? (
-                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md shadow-sm">
                   {cargoError}
                 </div>
               ) : (
                 <select
                   id="cargo_type_id"
-                  className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                   {...form.register('cargo_type_id')}
                 >
                   <option value="">Chọn loại hàng hóa</option>
@@ -236,8 +246,8 @@ export default function AddExportBookingForm() {
                 <FileText className="w-5 h-5 mr-2 text-primary" />
                 Đính kèm chứng từ
               </Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-                <DocumentUploader
+                              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 shadow-sm">
+                  <DocumentUploader
                   value={form.watch('attached_documents') || []}
                   onChange={(urls) => form.setValue('attached_documents', urls)}
                   userId={userId}
@@ -253,7 +263,7 @@ export default function AddExportBookingForm() {
 
           {/* Thông báo lỗi chung */}
           {form.formState.errors.root && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md shadow-sm">
               {form.formState.errors.root.message}
             </div>
           )}

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, XCircle, ArrowRight, Clock, MapPin, Calendar } from 'lucide-react'
 import ApproveRequestDialog from './ApproveRequestDialog'
 import DeclineRequestDialog from './DeclineRequestDialog'
+import { formatDateTimeVN, formatDateVN } from '@/lib/utils'
 
 interface RequestQueueTableProps {
   requests: any[]
@@ -19,23 +20,7 @@ export default function RequestQueueTable({ requests }: RequestQueueTableProps) 
     alert(message)
   }
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
 
   if (requests.length === 0) {
     return (
@@ -139,13 +124,13 @@ export default function RequestQueueTable({ requests }: RequestQueueTableProps) 
                         <div>
                           <span className="text-text-secondary">Rảnh từ:</span>
                           <div className="font-medium text-primary">
-                            {formatDateTime(container?.available_from_datetime)}
+                            {formatDateTimeVN(container?.available_from_datetime)}
                           </div>
                         </div>
                         <div>
                           <span className="text-text-secondary">Cần trước:</span>
                           <div className="font-medium text-danger">
-                            {formatDateTime(booking?.needed_by_datetime)}
+                            {formatDateTimeVN(booking?.needed_by_datetime)}
                           </div>
                         </div>
                       </div>
@@ -154,7 +139,7 @@ export default function RequestQueueTable({ requests }: RequestQueueTableProps) 
                     <TableCell className="table-cell">
                       <div className="flex items-center gap-2 text-body-small">
                         <Calendar className="w-4 h-4 text-text-secondary" />
-                        {formatDate(request.created_at)}
+                        {formatDateVN(request.created_at)}
                       </div>
                     </TableCell>
                     

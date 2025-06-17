@@ -1,5 +1,6 @@
 // Database enums
 export type OrganizationType = 'TRUCKING_COMPANY' | 'SHIPPING_LINE'
+export type OrganizationStatus = 'ACTIVE' | 'PENDING_VERIFICATION' | 'SUSPENDED'
 export type UserRole = 'DISPATCHER' | 'CARRIER_ADMIN'
 export type RequestStatus = 'PENDING' | 'APPROVED' | 'DECLINED'
 export type AssetStatus = 'AVAILABLE' | 'AWAITING_APPROVAL' | 'AWAITING_COD_APPROVAL' | 'CONFIRMED'
@@ -11,6 +12,10 @@ export interface Organization {
   id: string
   name: string
   type: OrganizationType
+  tax_code?: string | null
+  address?: string | null
+  phone_number?: string | null
+  status: OrganizationStatus
   created_at: string
 }
 
@@ -22,10 +27,19 @@ export interface Profile {
   updated_at: string | null
 }
 
+export interface ContainerType {
+  id: string
+  code: string
+  name: string
+  description: string | null
+  created_at: string
+}
+
 export interface ImportContainer {
   id: string
   container_number: string
   container_type: string
+  container_type_id: string | null
   drop_off_location: string
   available_from_datetime: string
   trucking_company_org_id: string
@@ -41,6 +55,7 @@ export interface ExportBooking {
   id: string
   booking_number: string
   required_container_type: string
+  container_type_id: string | null
   pick_up_location: string
   needed_by_datetime: string
   trucking_company_org_id: string
@@ -116,13 +131,13 @@ export interface ApiResponse<T> {
 // Form types
 export interface CreateImportContainerForm {
   container_number: string
-  container_type: string
+  container_type_id: string
   cargo_type_id: string
   city_id: string
   depot_id: string
   available_from_datetime: string
   shipping_line_org_id: string
-  condition_images: string[]
+  condition_images?: string[]
   attached_documents?: string[]
   is_listed_on_marketplace?: boolean
   latitude?: number
@@ -131,7 +146,7 @@ export interface CreateImportContainerForm {
 
 export interface CreateExportBookingForm {
   booking_number: string
-  required_container_type: string
+  container_type_id: string
   cargo_type_id: string
   city_id: string
   depot_id: string

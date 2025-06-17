@@ -4,11 +4,11 @@ import KPICards from '@/components/dashboard/KPICards'
 import TimeFilter from '@/components/dashboard/TimeFilter'
 import DashboardCharts from '@/components/dashboard/DashboardCharts'
 
-interface DashboardPageProps {
+interface ReportsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
-async function DashboardContent({ searchParams }: DashboardPageProps) {
+async function ReportsContent({ searchParams }: ReportsPageProps) {
   const params = await searchParams
   
   // Extract and validate search parameters
@@ -179,7 +179,7 @@ function LoadingSkeleton() {
   )
 }
 
-export default function DashboardPage(props: DashboardPageProps) {
+export default function ReportsPage(props: ReportsPageProps) {
   return (
     <div className="container-spacing">
       {/* Page Header */}
@@ -194,10 +194,8 @@ export default function DashboardPage(props: DashboardPageProps) {
 
       {/* Content with Suspense for loading state */}
       <Suspense fallback={<LoadingSkeleton />}>
-        <DashboardContent {...props} />
+        <ReportsContent {...props} />
       </Suspense>
     </div>
   )
-}
-
-export const dynamic = 'force-dynamic' 
+} 

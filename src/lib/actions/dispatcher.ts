@@ -85,18 +85,37 @@ export async function getDispatcherDashboardData() {
 // Add import container - SERVER ACTION
 export async function addImportContainer(data: CreateImportContainerForm) {
   try {
+    console.log('Starting addImportContainer with data:', JSON.stringify(data, null, 2))
+    
     const supabase = await createClient()
     
     // Get the current user
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
+      console.error('No authenticated user found')
       throw new Error('Unauthorized: User not authenticated')
     }
+    console.log('Authenticated user:', user.id)
+
+    // Get user profile to get organization_id
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('organization_id')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile?.organization_id) {
+      console.error('No organization found for user:', user.id)
+      throw new Error('User organization not found')
+    }
+    console.log('User organization:', profile.organization_id)
 
     // Validate container number
     if (!validateContainerNumber(data.container_number)) {
+      console.error('Invalid container number:', data.container_number)
       throw new Error('Invalid container number format')
     }
+    console.log('Container number validation passed:', data.container_number)
 
     // Check if container already exists
     const { data: existingContainer } = await supabase
@@ -106,53 +125,79 @@ export async function addImportContainer(data: CreateImportContainerForm) {
       .single()
 
     if (existingContainer) {
+      console.error('Container already exists:', data.container_number)
       throw new Error(`Container ${data.container_number} already exists`)
     }
+    console.log('Container uniqueness check passed')
 
     // Validate cargo type exists
-    const { data: cargoType } = await supabase
+    const { data: cargoType, error: cargoError } = await supabase
       .from('cargo_types')
       .select('id')
       .eq('id', data.cargo_type_id)
       .single()
 
-    if (!cargoType) {
+    if (cargoError || !cargoType) {
+      console.error('Cargo type validation failed:', cargoError, data.cargo_type_id)
       throw new Error('Invalid cargo type')
     }
+    console.log('Cargo type validation passed:', data.cargo_type_id)
 
-    // Get depot details for coordinates
-    const { data: depot } = await supabase
+    // Get depot details for coordinates and location name
+    const { data: depot, error: depotError } = await supabase
       .from('depots')
-      .select('latitude, longitude')
+      .select('latitude, longitude, name, address')
       .eq('id', data.depot_id)
       .single()
 
-    // Insert the new import container with image and document URLs
+    console.log('Depot lookup result:', { depot, depotError })
+
+    // Get container type details
+    const { data: containerType, error: containerTypeError } = await supabase
+      .from('container_types')
+      .select('code')
+      .eq('id', data.container_type_id)
+      .single()
+
+    if (containerTypeError || !containerType) {
+      console.error('Container type validation failed:', containerTypeError, data.container_type_id)
+      throw new Error('Invalid container type')
+    }
+    console.log('Container type validation passed:', data.container_type_id, containerType.code)
+
+    // Prepare insert data
+    const insertData = {
+      container_number: data.container_number,
+      container_type: containerType.code, // Keep legacy field for compatibility
+      container_type_id: data.container_type_id,
+      cargo_type_id: data.cargo_type_id,
+      city_id: data.city_id,
+      depot_id: data.depot_id,
+      drop_off_location: depot?.address || `${depot?.name || 'Depot'}`, // Required legacy field
+      available_from_datetime: data.available_from_datetime,
+      trucking_company_org_id: profile.organization_id, // Use organization_id instead of user.id
+      shipping_line_org_id: data.shipping_line_org_id,
+      condition_images: data.condition_images || [],
+      attached_documents: data.attached_documents || [],
+      is_listed_on_marketplace: data.is_listed_on_marketplace || false,
+      latitude: depot?.latitude || null,
+      longitude: depot?.longitude || null,
+      status: 'AVAILABLE'
+    }
+    console.log('Insert data prepared:', JSON.stringify(insertData, null, 2))
+
+    // Insert the new import container with proper schema fields
     const { data: container, error } = await supabase
       .from('import_containers')
-      .insert({
-        container_number: data.container_number,
-        container_type: data.container_type,
-        cargo_type_id: data.cargo_type_id,
-        city_id: data.city_id,
-        depot_id: data.depot_id,
-        available_from_datetime: data.available_from_datetime,
-        shipping_line_org_id: data.shipping_line_org_id,
-        condition_images: data.condition_images || [],
-        attached_documents: data.attached_documents || [],
-        is_listed_on_marketplace: data.is_listed_on_marketplace || false,
-        latitude: depot?.latitude || data.latitude,
-        longitude: depot?.longitude || data.longitude,
-        dispatcher_user_id: user.id,
-        status: 'available'
-      })
+      .insert(insertData)
       .select()
       .single()
 
     if (error) {
-      console.error('Database error:', error)
-      throw new Error('Failed to create import container')
+      console.error('Database insert error:', JSON.stringify(error, null, 2))
+      throw new Error(`Database error: ${error.message || 'Failed to create import container'}`)
     }
+    console.log('Container created successfully:', container.id)
 
     // Revalidate the import containers page
     revalidatePath('/dispatcher')
@@ -165,11 +210,14 @@ export async function addImportContainer(data: CreateImportContainerForm) {
 
   } catch (error: any) {
     console.error('Error in addImportContainer:', error)
+    console.error('Error stack:', error.stack)
     
     // Return a user-friendly error message
     const errorMessage = error.message?.includes('already exists') 
       ? error.message
       : error.message?.includes('Invalid') 
+      ? error.message
+      : error.message?.includes('Database error') 
       ? error.message
       : 'Có lỗi xảy ra khi tạo lệnh giao trả. Vui lòng thử lại.'
     
@@ -188,6 +236,17 @@ export async function addExportBooking(data: CreateExportBookingForm) {
       throw new Error('Unauthorized: User not authenticated')
     }
 
+    // Get user profile to get organization_id
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('organization_id')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile?.organization_id) {
+      throw new Error('User organization not found')
+    }
+
     // Validate cargo type exists
     const { data: cargoType } = await supabase
       .from('cargo_types')
@@ -199,19 +258,39 @@ export async function addExportBooking(data: CreateExportBookingForm) {
       throw new Error('Invalid cargo type')
     }
 
-    // Insert the new export booking with document URLs
+    // Get depot details for location name
+    const { data: depot } = await supabase
+      .from('depots')
+      .select('name, address')
+      .eq('id', data.depot_id)
+      .single()
+
+    // Get container type details
+    const { data: containerType } = await supabase
+      .from('container_types')
+      .select('code')
+      .eq('id', data.container_type_id)
+      .single()
+
+    if (!containerType) {
+      throw new Error('Invalid container type')
+    }
+
+    // Insert the new export booking with proper schema fields
     const { data: booking, error } = await supabase
       .from('export_bookings')
       .insert({
         booking_number: data.booking_number,
-        required_container_type: data.required_container_type,
+        required_container_type: containerType.code, // Keep legacy field for compatibility
+        container_type_id: data.container_type_id,
         cargo_type_id: data.cargo_type_id,
         city_id: data.city_id,
         depot_id: data.depot_id,
+        pick_up_location: depot?.address || `${depot?.name || 'Depot'}`, // Required legacy field
         needed_by_datetime: data.needed_by_datetime,
+        trucking_company_org_id: profile.organization_id, // Use organization_id instead of user.id
         attached_documents: data.attached_documents || [],
-        dispatcher_user_id: user.id,
-        status: 'pending'
+        status: 'AVAILABLE'
       })
       .select()
       .single()

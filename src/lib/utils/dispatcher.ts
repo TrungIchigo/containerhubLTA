@@ -12,8 +12,12 @@ export function generateMatchingSuggestions(
   
   for (const container of availableContainers) {
     for (const booking of availableBookings) {
-      // Check if container type matches
-      if (container.container_type === booking.required_container_type) {
+      // Check if container type matches (prefer container_type_id, fallback to legacy field)
+      const containerTypeMatches = container.container_type_id && booking.container_type_id 
+        ? container.container_type_id === booking.container_type_id
+        : container.container_type === booking.required_container_type;
+      
+      if (containerTypeMatches) {
         // Check if timing is compatible (container available before booking needed)
         const containerAvailable = new Date(container.available_from_datetime)
         const bookingNeeded = new Date(booking.needed_by_datetime)

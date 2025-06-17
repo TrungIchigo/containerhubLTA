@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import AddExportBookingForm from './AddExportBookingForm'
+import { formatDateTimeVN } from '@/lib/utils'
 import type { ExportBooking } from '@/lib/types'
 
 interface ExportBookingsTableProps {
@@ -20,15 +21,7 @@ export default function ExportBookingsTable({ bookings }: ExportBookingsTablePro
     return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
   }
 
-  const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+
 
   return (
     <Card className="mb-8">
@@ -77,7 +70,7 @@ export default function ExportBookingsTable({ bookings }: ExportBookingsTablePro
                       {booking.pick_up_location}
                     </td>
                     <td className="p-3 text-text-secondary">
-                      {formatDateTime(booking.needed_by_datetime)}
+                      {formatDateTimeVN(booking.needed_by_datetime)}
                     </td>
                     <td className="p-3 text-center">
                       {getStatusBadge(booking.status)}

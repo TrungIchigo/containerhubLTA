@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Loader2, ArrowRight, MapPin, Calendar, Truck } from 'lucide-react'
 import { createMarketplaceRequest, getUserExportBookings } from '@/lib/actions/marketplace'
 import { useToast } from '@/hooks/use-toast'
+import { formatDateTimeVN } from '@/lib/utils'
 import type { MarketplaceListing } from '@/lib/types'
 
 // Interface cho booking data từ API
@@ -106,16 +107,6 @@ export default function CreateMarketplaceRequestDialog({
     }
   }
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
   const selectedBooking = availableBookings.find(b => b.id === selectedBookingId)
 
   return (
@@ -129,7 +120,7 @@ export default function CreateMarketplaceRequestDialog({
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Container Info Summary */}
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-md shadow-sm">
             <h3 className="text-sm font-medium text-text-primary mb-3">
               Lệnh Giao Trả được chọn:
             </h3>
@@ -151,7 +142,7 @@ export default function CreateMarketplaceRequestDialog({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-text-secondary">Thời gian rảnh:</span>
-                <span className="text-sm">{formatDateTime(listing.available_from_datetime)}</span>
+                <span className="text-sm">{formatDateTimeVN(listing.available_from_datetime)}</span>
               </div>
             </div>
           </div>
@@ -168,7 +159,7 @@ export default function CreateMarketplaceRequestDialog({
                 <span className="ml-2 text-text-secondary">Đang tải...</span>
               </div>
             ) : availableBookings.length === 0 ? (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md shadow-sm">
                 <p className="text-sm text-text-secondary">
                   Không có lệnh lấy rỗng nào phù hợp (cùng loại container {listing.container_type}).
                 </p>
@@ -181,7 +172,7 @@ export default function CreateMarketplaceRequestDialog({
                 {availableBookings.map((booking) => (
                   <label
                     key={booking.id}
-                    className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                    className={`flex items-center p-3 border rounded-md shadow-sm cursor-pointer transition-colors ${
                       selectedBookingId === booking.id
                         ? 'border-primary bg-primary/5'
                         : 'border-border hover:bg-gray-50'
@@ -214,7 +205,7 @@ export default function CreateMarketplaceRequestDialog({
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          Cần trước: {formatDateTime(booking.needed_by_datetime)}
+                          Cần trước: {formatDateTimeVN(booking.needed_by_datetime)}
                         </div>
                       </div>
                     </div>
@@ -226,7 +217,7 @@ export default function CreateMarketplaceRequestDialog({
 
           {/* Route Preview */}
           {selectedBooking && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-md">
+            <div className="p-4 bg-green-50 border border-green-200 rounded-md shadow-sm">
               <h3 className="text-sm font-medium text-text-primary mb-3">
                 Xem trước lộ trình ghép nối:
               </h3>
@@ -263,7 +254,7 @@ export default function CreateMarketplaceRequestDialog({
 
           {/* Error Message */}
           {errorMessage && (
-            <div className="p-3 text-sm text-danger bg-red-50 border border-red-200 rounded-md">
+            <div className="p-3 text-sm text-danger bg-red-50 border border-red-200 rounded-md shadow-sm">
               {errorMessage}
             </div>
           )}

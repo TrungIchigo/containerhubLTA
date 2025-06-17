@@ -8,7 +8,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
       <input
         type={type}
         className={cn(
-          "form-input",
+          "form-input shadow-sm",
           className
         )}
         ref={ref}

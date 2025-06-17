@@ -9,6 +9,7 @@ import CreateMarketplaceRequestDialog from './CreateMarketplaceRequestDialog'
 import { RatingDisplay } from '@/components/ui/star-rating'
 import { useMarketplaceStore } from '@/stores/marketplace-store'
 import type { MarketplaceListing } from '@/lib/types'
+import { formatDateTimeVN } from '@/lib/utils'
 
 interface MarketplaceListingsTableProps {
   listings: MarketplaceListing[]
@@ -42,15 +43,7 @@ export default function MarketplaceListingsTable({ listings }: MarketplaceListin
     }
   }, [selectedListingId])
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+
 
   const handleCreateRequest = (listing: MarketplaceListing) => {
     setSelectedListing(listing)
@@ -180,7 +173,7 @@ export default function MarketplaceListingsTable({ listings }: MarketplaceListin
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-text-secondary" />
                         <span className="text-text-secondary text-sm">
-                          {formatDateTime(listing.available_from_datetime)}
+                          {formatDateTimeVN(listing.available_from_datetime)}
                         </span>
                       </div>
                     </td>

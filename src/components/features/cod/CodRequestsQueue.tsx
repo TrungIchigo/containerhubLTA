@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { MoreHorizontal, CheckCircle, DollarSign, MessageSquare, Clock } from 'lucide-react'
+import { MoreHorizontal, CheckCircle, DollarSign, MessageSquare, Clock, XCircle, AlertCircle, Eye, FileCheck, FileMinus } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast'
 import CodApprovalDialog from './CodApprovalDialog'
 import CodApprovalWithFeeDialog from './CodApprovalWithFeeDialog'
 import CodRequestMoreInfoDialog from './CodRequestMoreInfoDialog'
+import { formatDateTimeVN } from '@/lib/utils'
 import type { CodRequestWithDetails } from '@/lib/types'
 
 export default function CodRequestsQueue() {
@@ -59,15 +60,7 @@ export default function CodRequestsQueue() {
     loadRequests()
   }
 
-  const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+
 
   const getStatusBadge = (status: string) => {
     const statusMap = {
@@ -199,7 +192,7 @@ export default function CodRequestsQueue() {
                       </td>
                       <td className="table-cell">
                         <div className="text-sm">
-                          {formatDateTime(request.created_at)}
+                          {formatDateTimeVN(request.created_at)}
                         </div>
                       </td>
                       <td className="table-cell">

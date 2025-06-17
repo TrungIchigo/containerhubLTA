@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { MoreHorizontal, MessageSquare, MapPin, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+import { MoreHorizontal, MessageSquare, MapPin, Clock, CheckCircle, XCircle, AlertCircle, FileText } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +14,7 @@ import {
 import SubmitInfoDialog from './SubmitInfoDialog'
 import { cancelCodRequest } from '@/lib/actions/cod'
 import { useToast } from '@/hooks/use-toast'
+import { formatDateTimeVN } from '@/lib/utils'
 import type { CodRequestWithDetails } from '@/lib/types'
 
 interface CodRequestsTableProps {
@@ -26,15 +27,7 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
-  const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+
 
   const getStatusBadge = (status: string) => {
     const statusMap = {
@@ -195,7 +188,7 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
                       </td>
                       <td className="table-cell">
                         <div className="text-sm">
-                          {formatDateTime(request.created_at)}
+                          {formatDateTimeVN(request.created_at)}
                         </div>
                       </td>
                       <td className="table-cell">

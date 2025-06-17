@@ -6,6 +6,8 @@ import RequestQueueTable from '@/components/features/carrier-admin/RequestQueueT
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Ship, MapPin, RefreshCw, MessageSquare } from 'lucide-react'
 import CodRequestsQueue from '@/components/features/cod/CodRequestsQueue'
+import DynamicGreeting from '@/components/common/DynamicGreeting'
+import EnhancedEmptyState from '@/components/common/EnhancedEmptyState'
 
 export default async function CarrierAdminPage() {
   // Authentication check
@@ -21,19 +23,27 @@ export default async function CarrierAdminPage() {
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-          <Ship className="w-6 h-6 text-white" />
+      {/* Enhanced Page Header */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
+            <Ship className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary">
+              Cổng Hãng Tàu - Quản lý Yêu Cầu Tái Sử Dụng
+            </h1>
+            <p className="text-text-secondary mt-1">
+              Xem và xử lý các yêu cầu tái sử dụng container cho hãng tàu {user.profile?.organization?.name}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-3xl font-bold text-text-primary">
-            Cổng Hãng Tàu - Quản lý Yêu Cầu Tái Sử Dụng
-          </h1>
-          <p className="text-text-secondary mt-1">
-            Xem và xử lý các yêu cầu tái sử dụng container cho hãng tàu {user.profile?.organization?.name}
-          </p>
-        </div>
+
+        {/* Dynamic Greeting with Quick Actions */}
+        <DynamicGreeting 
+          userName={user.profile?.full_name || 'Bạn'}
+          userRole="CARRIER_ADMIN"
+        />
       </div>
 
       <CarrierDashboardContent />
@@ -64,11 +74,34 @@ async function CarrierDashboardContent() {
             </TabsList>
 
             <TabsContent value="street-turn" className="space-y-4">
-              <RequestQueueTable requests={dashboardData.pendingRequests} />
+              <div>
+                <h3 className="text-h3 font-semibold text-text-primary mb-2">
+                  Yêu cầu Tái Sử Dụng Chờ Duyệt
+                </h3>
+                <p className="text-body text-text-secondary mb-4">
+                  Xem xét và phê duyệt các yêu cầu tái sử dụng container
+                </p>
+                {dashboardData.pendingRequests.length > 0 ? (
+                  <RequestQueueTable requests={dashboardData.pendingRequests} />
+                ) : (
+                  <EnhancedEmptyState
+                    type="pending-requests"
+                    actionHref="/carrier-admin/requests"
+                  />
+                )}
+              </div>
             </TabsContent>
 
             <TabsContent value="cod" className="space-y-4">
-              <CodRequestsQueue />
+              <div>
+                <h3 className="text-h3 font-semibold text-text-primary mb-2">
+                  Yêu cầu Đổi Nơi Trả (COD)
+                </h3>
+                <p className="text-body text-text-secondary mb-4">
+                  Quản lý yêu cầu thay đổi địa điểm trả container
+                </p>
+                <CodRequestsQueue />
+              </div>
             </TabsContent>
           </Tabs>
         </>

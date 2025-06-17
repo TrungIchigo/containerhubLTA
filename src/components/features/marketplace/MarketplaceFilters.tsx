@@ -36,17 +36,15 @@ export default function MarketplaceFilters({ shippingLines }: MarketplaceFilters
 
   // Helper function to get display value for Select components
   const getSelectDisplayValue = (filterValue: string, type: 'container_type' | 'max_distance_km' | 'min_rating' | 'shipping_line' | 'location') => {
-    if (!filterValue) {
+    if (!filterValue || filterValue.trim() === '') {
+      // Return special values for display
       switch (type) {
-        case 'container_type':
-        case 'min_rating':
-        case 'shipping_line':
-        case 'location':
-          return 'all'
         case 'max_distance_km':
           return 'unlimited'
-        default:
+        case 'min_rating':
           return 'all'
+        default:
+          return undefined
       }
     }
     return filterValue
@@ -63,7 +61,6 @@ export default function MarketplaceFilters({ shippingLines }: MarketplaceFilters
   })
 
   const containerTypes = [
-    { value: 'all', label: 'Tất cả' },
     { value: '20FT', label: '20FT' },
     { value: '40FT', label: '40FT' },
     { value: '40HQ', label: '40HQ' },
@@ -72,13 +69,11 @@ export default function MarketplaceFilters({ shippingLines }: MarketplaceFilters
 
   // Prepare shipping lines options for Select
   const shippingLineOptions = [
-    { value: 'all', label: 'Tất cả' },
     ...shippingLines.map(line => ({ value: line.name, label: line.name }))
   ]
 
   // Prepare location options for Select
   const locationOptions = [
-    { value: 'all', label: 'Tất cả' },
     ...VIETNAM_PROVINCES.map(province => ({ value: province.value, label: province.label }))
   ]
 

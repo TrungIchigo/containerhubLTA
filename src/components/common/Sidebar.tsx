@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { BarChart3, Truck, Ship, FileText, Settings, Store, Activity, TrendingUp } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import SupportContact from './SupportContact'
 
 interface NavigationItem {
   name: string
@@ -22,7 +23,7 @@ export default function Sidebar() {
   })
   
   const allNavigation: NavigationItem[] = [
-    { name: 'Dashboard', href: '/dashboard', icon: BarChart3, roles: ['DISPATCHER', 'CARRIER_ADMIN'] },
+    { name: 'Báo Cáo', href: '/reports', icon: BarChart3, roles: ['DISPATCHER', 'CARRIER_ADMIN'] },
     { name: 'Bảng Điều Phối', href: '/dispatcher', icon: Truck, roles: ['DISPATCHER'] },
     { name: 'Thị Trường', href: '/marketplace', icon: Store, roles: ['DISPATCHER'] },
     { name: 'Quản lý Yêu Cầu Tái Sử Dụng', href: '/dispatcher/requests', icon: FileText, roles: ['DISPATCHER'] },
@@ -100,54 +101,62 @@ export default function Sidebar() {
 
   return (
     <aside className="hidden lg:block fixed left-0 top-[73px] bottom-0 w-60 bg-secondary-dark text-secondary-foreground shadow-sm z-40 overflow-y-auto">
-      <div className="p-4">
-        {/* Quick Stats Section */}
-        <div className="mb-6 bg-secondary/20 rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-3">
-            <Activity className="w-4 h-4 text-accent" />
-            <span className="text-sm font-medium">Thống Kê Nhanh</span>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-secondary-light">
-                {userRole === 'DISPATCHER' ? 'Yêu cầu của tôi' : 'Yêu cầu chờ duyệt'}
-              </span>
-              <span className="font-semibold text-accent">{stats.totalRequests}</span>
+      <div className="flex flex-col h-full">
+        <div className="flex-1 p-4">
+          {/* Quick Stats Section */}
+          <div className="mb-6 bg-secondary/20 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-3">
+              <Activity className="w-4 h-4 text-accent" />
+              <span className="text-sm font-medium">Thống Kê Nhanh</span>
             </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-secondary-light">
-                {userRole === 'DISPATCHER' ? 'Cơ hội khả dụng' : 'Quy tắc đang hoạt động'}
-              </span>
-              <span className="font-semibold text-accent">{stats.activeListings}</span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-secondary-light">
+                  {userRole === 'DISPATCHER' ? 'Yêu cầu của tôi' : 'Yêu cầu chờ duyệt'}
+                </span>
+                <span className="font-semibold text-accent">{stats.totalRequests}</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-secondary-light">
+                  {userRole === 'DISPATCHER' ? 'Cơ hội khả dụng' : 'Quy tắc đang hoạt động'}
+                </span>
+                <span className="font-semibold text-accent">{stats.activeListings}</span>
+              </div>
+            </div>
           </div>
+          
+          {/* Navigation Menu */}
+          <nav className="space-y-1">
+            {navigation.map((item) => {
+              const IconComponent = item.icon
+              const isActive = pathname === item.href || 
+                (item.href === '/dispatcher/requests' && pathname.startsWith('/dispatcher/requests')) ||
+                (item.href === '/carrier-admin/rules' && pathname.startsWith('/carrier-admin/rules')) ||
+                (item.href === '/marketplace' && pathname.startsWith('/marketplace'))
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-button text-sm font-medium transition-all duration-200 group hover:bg-primary/10 hover:text-primary ${
+                    isActive
+                      ? 'bg-primary text-primary-foreground shadow-button'
+                      : 'text-secondary-light hover:bg-secondary-light/10 hover:text-secondary-foreground'
+                  }`}
+                >
+                  <IconComponent className={`w-4 h-4 ${
+                    isActive ? 'text-primary-foreground' : 'text-secondary-light group-hover:text-secondary-foreground'
+                  }`} />
+                  <span>{item.name}</span>
+                </Link>
+              )
+            })}
+          </nav>
         </div>
-      </div>
-      
-      <nav className="space-y-1">
-        {navigation.map((item) => {
-          const IconComponent = item.icon
-          const isActive = pathname === item.href || 
-            (item.href === '/dispatcher/requests' && pathname.startsWith('/dispatcher/requests')) ||
-            (item.href === '/carrier-admin/rules' && pathname.startsWith('/carrier-admin/rules')) ||
-            (item.href === '/marketplace' && pathname.startsWith('/marketplace'))
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-button text-sm font-medium transition-all duration-200 group ${
-                isActive
-                  ? 'bg-primary text-primary-foreground shadow-button'
-                  : 'text-secondary-light hover:bg-secondary-light/10 hover:text-secondary-foreground'
-              }`}
-            >
-              <IconComponent className={`w-4 h-4 ${
-                isActive ? 'text-primary-foreground' : 'text-secondary-light group-hover:text-secondary-foreground'
-              }`} />
-              <span>{item.name}</span>
-            </Link>
-          )
-        })}
-      </nav>
+
+        {/* Support Contact at bottom */}
+        <div className="p-4">
+          <SupportContact compact={true} />
+        </div>
       </div>
     </aside>
   )

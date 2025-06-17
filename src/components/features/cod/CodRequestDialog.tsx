@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, MapPin, Package, Building2 } from 'lucide-react'
+import { Loader2, MapPin, Package, Building2, Info } from 'lucide-react'
 import { createCodRequest } from '@/lib/actions/cod'
 import { useToast } from '@/hooks/use-toast'
 import LocationSelector from '@/components/common/LocationSelector'
@@ -115,7 +115,7 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
               
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4 text-primary" />
-                <span className="font-medium">Nơi trả hiện tại:</span>
+                <span className="font-medium">Nơi trả theo lệnh gốc:</span>
                 <span className="text-text-secondary">
                   {container.drop_off_location}
                 </span>
@@ -165,7 +165,7 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
               {...form.register('reason_for_request')}
             />
             <p className="text-sm text-text-secondary">
-              Cung cấp lý do sẽ giúp hãng tàu xem xét yêu cầu nhanh hơn
+              <span className="flex items-center gap-2"><Info className="h-4 w-4 text-primary" /> Cung cấp lý do sẽ giúp hãng tàu xem xét yêu cầu nhanh hơn</span>
             </p>
           </div>
 

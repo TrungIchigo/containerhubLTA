@@ -10,21 +10,24 @@ export const LOGO_URL = 'https://uelfhngfhiirnxinvtbg.supabase.co/storage/v1/obj
  */
 export const APP_CONFIG = {
   name: 'i-ContainerHub@LTA',
-  shortName: 'iC',
-  description: 'Nền tảng tối ưu hóa logistics container',
-  tagline: 'LTA Platform'
+  version: '1.0.0',
+  description: 'Hệ thống tối ưu hóa tái sử dụng container'
 } as const
 
 /**
  * Navigation routes
  */
 export const ROUTES = {
-  DASHBOARD: '/dashboard',
+  HOME: '/',
+  DASHBOARD: '/reports',
   LOGIN: '/login',
   REGISTER: '/register',
+  FORGOT_PASSWORD: '/forgot-password',
+  RESET_PASSWORD: '/reset-password',
   DISPATCHER: '/dispatcher',
   CARRIER_ADMIN: '/carrier-admin',
-  REQUESTS: '/dispatcher/requests'
+  MARKETPLACE: '/marketplace',
+  ACCOUNT: '/account'
 } as const 
 
 /**
@@ -78,19 +81,100 @@ export const VIETNAM_PROVINCES = [
  * Maximum distance options for marketplace filter
  */
 export const DISTANCE_OPTIONS = [
-  { value: '10', label: '10km' },
-  { value: '20', label: '20km' },
-  { value: '30', label: '30km' },
-  { value: '50', label: '50km' },
-  { value: '100', label: '100km' },
-  { value: 'unlimited', label: 'Không giới hạn' }
+  { value: 'unlimited', label: 'Không giới hạn' },
+  { value: '50', label: 'Trong vòng 50km' },
+  { value: '100', label: 'Trong vòng 100km' },
+  { value: '200', label: 'Trong vòng 200km' },
+  { value: '500', label: 'Trong vòng 500km' }
 ] as const
 
 /**
  * Partner rating filter options
  */
 export const RATING_FILTER_OPTIONS = [
-  { value: 'all', label: 'Tất cả' },
-  { value: '3', label: 'Từ 3 sao trở lên' },
-  { value: '4', label: 'Từ 4 sao trở lên' }
-] as const 
+  { value: 'all', label: 'Tất cả đánh giá' },
+  { value: '4', label: '4 sao trở lên' },
+  { value: '3', label: '3 sao trở lên' },
+  { value: '2', label: '2 sao trở lên' }
+] as const
+
+/**
+ * Organization types
+ */
+export const ORGANIZATION_TYPES = [
+  { value: 'SHIPPING_LINE', label: 'Hãng Tàu' },
+  { value: 'TRUCKING_COMPANY', label: 'Công ty Vận tải' },
+  { value: 'FREIGHT_FORWARDER', label: 'Công ty Logistics' },
+  { value: 'TERMINAL_OPERATOR', label: 'Nhà điều hành cảng' }
+]
+
+/**
+ * User roles
+ */
+export const USER_ROLES = [
+  { value: 'DISPATCHER', label: 'Điều phối viên' },
+  { value: 'CARRIER_ADMIN', label: 'Quản trị viên hãng tàu' },
+  { value: 'SYSTEM_ADMIN', label: 'Quản trị viên hệ thống' }
+]
+
+/**
+ * Status options for various entities
+ */
+export const STATUS_OPTIONS = {
+  IMPORT_CONTAINER: [
+    { value: 'AVAILABLE', label: 'Sẵn sàng', color: 'green' },
+    { value: 'MATCHED', label: 'Đã ghép nối', color: 'blue' },
+    { value: 'DELIVERED', label: 'Đã giao', color: 'gray' }
+  ],
+  EXPORT_BOOKING: [
+    { value: 'PENDING', label: 'Đang chờ', color: 'yellow' },
+    { value: 'MATCHED', label: 'Đã ghép nối', color: 'blue' },
+    { value: 'FULFILLED', label: 'Đã hoàn thành', color: 'green' }
+  ],
+  STREET_TURN_REQUEST: [
+    { value: 'PENDING', label: 'Chờ duyệt', color: 'yellow' },
+    { value: 'APPROVED', label: 'Đã duyệt', color: 'green' },
+    { value: 'DECLINED', label: 'Bị từ chối', color: 'red' }
+  ]
+}
+
+/**
+ * Depot locations in Vietnam
+ */
+export const DEPOT_LOCATIONS = [
+  {
+    id: 'hcm-cat-lai',
+    name: 'Cảng Cát Lái',
+    city: 'TP. Hồ Chí Minh',
+    address: 'Khu vực cảng Cát Lái, Quận 2, TP. Hồ Chí Minh',
+    coordinates: { lat: 10.7903, lng: 106.7581 }
+  },
+  {
+    id: 'hcm-hiep-phuoc',
+    name: 'Cảng Hiệp Phước',
+    city: 'TP. Hồ Chí Minh',
+    address: 'Khu Công nghiệp Hiệp Phước, Huyện Nhà Bè, TP. Hồ Chí Minh',
+    coordinates: { lat: 10.6832, lng: 106.7043 }
+  },
+  {
+    id: 'hanoi-noi-bai',
+    name: 'ICD Nội Bài',
+    city: 'Hà Nội',
+    address: 'Sóc Sơn, Hà Nội',
+    coordinates: { lat: 21.2187, lng: 105.8042 }
+  },
+  {
+    id: 'hai-phong-lach-huyen',
+    name: 'Cảng Lạch Huyện',
+    city: 'Hải Phòng',
+    address: 'Huyện An Dương, Hải Phòng',
+    coordinates: { lat: 20.7537, lng: 106.7638 }
+  },
+  {
+    id: 'da-nang-tien-sa',
+    name: 'Cảng Tiên Sa',
+    city: 'Đà Nẵng',
+    address: 'Quận Sơn Trà, Đà Nẵng',
+    coordinates: { lat: 16.1063, lng: 108.2633 }
+  }
+] 

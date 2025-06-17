@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import ReviewDialog from '@/components/features/reviews/ReviewDialog'
 import { Star } from 'lucide-react'
+import { formatDateVN } from '@/lib/utils'
 
 interface StreetTurnRequest {
   id: string
@@ -79,13 +80,7 @@ const getStatusBadge = (request: StreetTurnRequest) => {
   return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
 }
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-}
+
 
 const formatRequestId = (id: string) => {
   // Show first 8 characters of ID for display
@@ -171,7 +166,7 @@ export default function RequestHistoryTable({ requests, className, userReviews =
                   )}
                 </td>
                 <td className="table-cell">
-                  {formatDate(request.created_at)}
+                  {formatDateVN(request.created_at)}
                 </td>
                 <td className="table-cell">
                   {getStatusBadge(request)}

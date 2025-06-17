@@ -14,6 +14,7 @@ import AddImportContainerForm from './AddImportContainerForm'
 import CodRequestDialog from '@/components/features/cod/CodRequestDialog'
 import type { ImportContainer, Organization } from '@/lib/types'
 import { useState } from 'react'
+import { formatDateTimeVN } from '@/lib/utils'
 
 interface ImportContainersTableProps {
   containers: (ImportContainer & {
@@ -40,16 +41,6 @@ export default function ImportContainersTable({
   const getStatusBadge = (status: string) => {
     const currentStatus = statusMap[status as keyof typeof statusMap] || { text: status, variant: 'outline' as const }
     return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
-  }
-
-  const formatDateTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
   }
 
   const handleCodRequest = (container: ImportContainer) => {
@@ -110,7 +101,7 @@ export default function ImportContainersTable({
                         {container.drop_off_location}
                       </td>
                       <td className="table-cell text-text-secondary">
-                        {formatDateTime(container.available_from_datetime)}
+                        {formatDateTimeVN(container.available_from_datetime)}
                       </td>
                       <td className="table-cell text-center">
                         {getStatusBadge(container.status)}

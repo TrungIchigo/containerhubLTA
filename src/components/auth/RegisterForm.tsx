@@ -4,18 +4,19 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2, CheckCircle, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
-import { LOGO_URL } from '@/lib/constants'
+import NewOrganizationForm from './NewOrganizationForm'
+import { Organization } from '@/lib/types'
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
     fullName: '',
     companyName: '',
-    organizationType: 'TRUCKING_COMPANY',
+    organizationType: 'TRUCKING_COMPANY' as 'TRUCKING_COMPANY' | 'SHIPPING_LINE',
     email: '',
     password: ''
   })
@@ -25,21 +26,93 @@ export default function RegisterForm() {
   const [debugInfo, setDebugInfo] = useState('')
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [countdown, setCountdown] = useState(3)
+  
+  // New organization check states
+  const [checkResult, setCheckResult] = useState<{
+    found: boolean
+    organization?: Organization
+    suggestions?: Organization[]
+  } | null>(null)
+  const [isChecking, setIsChecking] = useState(false)
+  const [showNewOrgForm, setShowNewOrgForm] = useState(false)
+  const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null)
+  
   const router = useRouter()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+    
+    // Reset organization check when company name changes
+    if (name === 'companyName') {
+      setCheckResult(null)
+      setSelectedOrganizationId(null)
+    }
   }
 
   const handleRadioChange = (value: string) => {
-    setFormData(prev => ({ ...prev, organizationType: value }))
+    setFormData(prev => ({ ...prev, organizationType: value as 'TRUCKING_COMPANY' | 'SHIPPING_LINE' }))
+    // Reset check when organization type changes
+    setCheckResult(null)
+    setSelectedOrganizationId(null)
+  }
+
+  // Function to check if organization exists
+  const handleOrgCheck = async () => {
+    console.log('handleOrgCheck called with:', formData.companyName, formData.organizationType)
+    
+    if (!formData.companyName.trim() || formData.companyName.trim().length < 3) {
+      console.log('Skipping check - name too short or empty')
+      return
+    }
+
+    setIsChecking(true)
+    setCheckResult(null)
+    
+    try {
+      console.log('Making API call to /api/organizations/check')
+      const response = await fetch('/api/organizations/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.companyName.trim(),
+          type: formData.organizationType
+        })
+      })
+
+      console.log('API response status:', response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('API error response:', errorText)
+        throw new Error('Failed to check organization')
+      }
+
+      const result = await response.json()
+      console.log('API result:', result)
+      setCheckResult(result)
+      
+      if (result.found && result.organization) {
+        setSelectedOrganizationId(result.organization.id)
+        console.log('Found organization, selected ID:', result.organization.id)
+      } else {
+        console.log('No organization found')
+      }
+    } catch (error) {
+      console.error('Error checking organization:', error)
+      // Silently fail for organization check - user can still register
+      setCheckResult(null)
+    } finally {
+      setIsChecking(false)
+    }
   }
 
   const handleRegister = async () => {
     try {
       setDebugInfo('Starting registration process...')
-      const supabase = createClient()
+      const supabase = await createClient()
       
       // Test permissions first
       setDebugInfo('Testing database permissions...')
@@ -53,51 +126,80 @@ export default function RegisterForm() {
         throw new Error(`Database permission error: ${testError.message}`)
       }
 
-      setDebugInfo('Permissions OK. Checking organization...')
+      setDebugInfo('Permissions OK. Processing organization...')
       
       // Bước 1: Xử lý tổ chức
       let organizationId: string
       
-      // Kiểm tra xem tổ chức đã tồn tại chưa
-      const { data: existingOrg, error: orgCheckError } = await supabase
-        .from('organizations')
-        .select('id')
-        .eq('name', formData.companyName)
-        .single()
-
-      if (orgCheckError && orgCheckError.code !== 'PGRST116') {
-        console.error('Organization check error:', orgCheckError)
-        throw new Error(`Organization check failed: ${orgCheckError.message}`)
-      }
-
-      if (existingOrg) {
-        organizationId = existingOrg.id
-        setDebugInfo(`Found existing organization: ${organizationId}`)
+      if (selectedOrganizationId) {
+        // Use pre-selected organization from check
+        organizationId = selectedOrganizationId
+        setDebugInfo(`Using existing organization: ${organizationId}`)
       } else {
-        setDebugInfo('Creating new organization...')
-        // Tạo tổ chức mới
-        const { data: newOrg, error: orgError } = await supabase
+        // Fallback: Check again or create new
+        const { data: existingOrg, error: orgCheckError } = await supabase
           .from('organizations')
-          .insert({
-            name: formData.companyName,
-            type: formData.organizationType
-          })
-          .select('id')
+          .select('id, name, type')
+          .eq('name', formData.companyName.trim())
+          .eq('type', formData.organizationType)
           .single()
 
-        if (orgError) {
-          console.error('Organization creation error:', orgError)
-          throw new Error(`Failed to create organization: ${orgError.message}`)
+        if (orgCheckError && orgCheckError.code !== 'PGRST116') {
+          console.error('Organization check error:', orgCheckError)
+          throw new Error(`Organization check failed: ${orgCheckError.message}`)
         }
-        organizationId = newOrg.id
-        setDebugInfo(`Created new organization: ${organizationId}`)
+
+        if (existingOrg) {
+          organizationId = existingOrg.id
+          setDebugInfo(`Found existing organization: ${organizationId}`)
+        } else {
+          setDebugInfo('Creating new organization...')
+          
+          // Try to create new organization with better error handling
+          const { data: newOrg, error: orgError } = await supabase
+            .from('organizations')
+            .insert({
+              name: formData.companyName.trim(),
+              type: formData.organizationType,
+              status: 'ACTIVE' // Simple registration without verification
+            })
+            .select('id')
+            .single()
+
+          if (orgError) {
+            console.error('Organization creation error:', orgError)
+            
+            // Handle duplicate organization name specifically
+            if (orgError.message?.includes('duplicate key value violates unique constraint') && 
+                orgError.message?.includes('organizations_name_key')) {
+              // Try to find the existing organization and use it
+              const { data: existingDuplicate, error: duplicateCheckError } = await supabase
+                .from('organizations')
+                .select('id, name, type')
+                .eq('name', formData.companyName.trim())
+                .single()
+              
+              if (!duplicateCheckError && existingDuplicate) {
+                organizationId = existingDuplicate.id
+                setDebugInfo(`Using existing organization with same name: ${organizationId}`)
+              } else {
+                throw new Error(`Tên công ty "${formData.companyName}" đã tồn tại trong hệ thống. Vui lòng kiểm tra lại hoặc liên hệ admin để được hỗ trợ.`)
+              }
+            } else {
+              throw new Error(`Failed to create organization: ${orgError.message}`)
+            }
+          } else {
+            organizationId = newOrg.id
+            setDebugInfo(`Created new organization: ${organizationId}`)
+          }
+        }
       }
 
       // Email validation and normalization
       const normalizedEmail = formData.email.toLowerCase().trim()
       setDebugInfo(`Using email: ${normalizedEmail}`)
 
-      // Bước 2: Đăng ký người dùng - disable email confirmation for testing
+      // Bước 2: Đăng ký người dùng - with better error handling
       setDebugInfo('Creating user account...')
       const { data, error } = await supabase.auth.signUp({
         email: normalizedEmail,
@@ -117,12 +219,18 @@ export default function RegisterForm() {
         setDebugInfo(`Auth error: ${error.message}`)
         
         // Handle specific Supabase auth errors
-        if (error.message?.includes('Email not confirmed')) {
+        if (error.message?.includes('Anonymous sign-ins are disabled')) {
+          throw new Error('Đăng ký tài khoản hiện đang bị vô hiệu hóa. Vui lòng liên hệ admin để được hỗ trợ đăng ký tài khoản.')
+        } else if (error.message?.includes('Email not confirmed')) {
           throw new Error('Email cần được xác nhận. Vui lòng kiểm tra hộp thư của bạn.')
-        } else if (error.message?.includes('invalid_email') || error.message?.includes('Email address') && error.message?.includes('invalid')) {
+        } else if (error.message?.includes('invalid_email') || (error.message?.includes('Email address') && error.message?.includes('invalid'))) {
           throw new Error('Email không hợp lệ. Vui lòng sử dụng email cá nhân (ví dụ: example@gmail.com)')
+        } else if (error.message?.includes('User already registered') || error.message?.includes('already registered')) {
+          throw new Error('Email này đã được đăng ký. Vui lòng sử dụng email khác hoặc đăng nhập.')
+        } else if (error.message?.includes('Password should be')) {
+          throw new Error('Mật khẩu không đủ mạnh. Vui lòng sử dụng mật khẩu có ít nhất 6 ký tự.')
         } else {
-          throw error
+          throw new Error(`Lỗi đăng ký tài khoản: ${error.message}`)
         }
       }
 
@@ -180,14 +288,19 @@ export default function RegisterForm() {
       console.error('Registration error:', error)
       setDebugInfo(`Error: ${error.message}`)
       
+      // Enhanced error handling with specific messages
       if (error.message?.includes('already registered') || error.message?.includes('User already registered')) {
-        setErrorMessage('Email này đã được sử dụng. Vui lòng sử dụng email khác.')
+        setErrorMessage('Email này đã được sử dụng. Vui lòng sử dụng email khác hoặc đăng nhập nếu bạn đã có tài khoản.')
       } else if (error.message?.includes('weak_password')) {
         setErrorMessage('Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu mạnh hơn (ít nhất 6 ký tự).')
-      } else if (error.message?.includes('invalid_email') || error.message?.includes('Email address') && error.message?.includes('invalid')) {
+      } else if (error.message?.includes('invalid_email') || (error.message?.includes('Email address') && error.message?.includes('invalid'))) {
         setErrorMessage('Email không hợp lệ. Vui lòng sử dụng email từ nhà cung cấp phổ biến (Gmail, Outlook, Yahoo, etc.)')
       } else if (error.message?.includes('Email not confirmed')) {
         setErrorMessage('Vui lòng xác nhận email trước khi tiếp tục.')
+      } else if (error.message?.includes('Anonymous sign-ins are disabled')) {
+        setErrorMessage('Đăng ký tài khoản hiện đang bị vô hiệu hóa. Vui lòng liên hệ admin để được hỗ trợ.')
+      } else if (error.message?.includes('duplicate key value violates unique constraint')) {
+        setErrorMessage('Tên công ty đã tồn tại trong hệ thống. Vui lòng kiểm tra lại tên công ty hoặc liên hệ admin.')
       } else {
         setErrorMessage(`Lỗi đăng ký: ${error.message}`)
       }
@@ -200,26 +313,11 @@ export default function RegisterForm() {
     setErrorMessage('')
     setDebugInfo('')
 
-    // Enhanced validation
+    // Validation
     if (!formData.fullName || !formData.companyName || !formData.email || !formData.password) {
       setErrorMessage('Vui lòng điền đầy đủ thông tin.')
       setIsLoading(false)
       return
-    }
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(formData.email)) {
-      setErrorMessage('Email không đúng định dạng. Vui lòng nhập email hợp lệ.')
-      setIsLoading(false)
-      return
-    }
-
-    // Suggest using common email providers for better compatibility
-    const commonProviders = ['gmail.com', 'outlook.com', 'yahoo.com', 'hotmail.com']
-    const emailDomain = formData.email.split('@')[1]?.toLowerCase()
-    if (emailDomain && !commonProviders.includes(emailDomain)) {
-      setDebugInfo(`Đang sử dụng email domain: ${emailDomain}. Nếu gặp lỗi, hãy thử với Gmail/Outlook.`)
     }
 
     if (formData.password.length < 6) {
@@ -232,62 +330,94 @@ export default function RegisterForm() {
     setIsLoading(false)
   }
 
-  return (
-    <>
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4 text-center shadow-xl">
-            <div className="mb-4">
-              <div className="mx-auto mb-4 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-text-primary mb-2">Đăng ký thành công!</h3>
-              <div className="text-sm text-text-secondary space-y-1">
-                <p><strong>Họ tên:</strong> {formData.fullName}</p>
-                <p><strong>Công ty:</strong> {formData.companyName}</p>
-                <p><strong>Loại hình:</strong> {formData.organizationType === 'TRUCKING_COMPANY' ? 'Công ty Vận tải' : 'Hãng tàu'}</p>
-                <p><strong>Email:</strong> {formData.email}</p>
-              </div>
-            </div>
-            <p className="text-sm text-text-secondary mb-4">
-              Đang chuyển hướng trong <span className="font-semibold text-primary">{countdown}</span> giây...
-            </p>
-          </div>
-        </div>
-      )}
+  // Clean up interval on unmount
+  useEffect(() => {
+    return () => {
+      // Clear any running intervals when component unmounts
+    }
+  }, [])
 
-      <Card className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg">
-      <CardHeader className="text-center pb-6">
-        <div className="mx-auto mb-4">
-          <Image
-            src={LOGO_URL}
-            alt="i-ContainerHub Logo"
-            width={200}
-            height={200}
-            className="rounded-full"
-            priority
-          />
-        </div>
-        <h1 className="text-2xl font-bold text-text-primary mb-2">Tạo Tài Khoản Mới</h1>
-        <p className="text-text-secondary">
-          Đã có tài khoản?{' '}
-          <Link href="/login" className="text-primary hover:text-primary-dark font-medium">
-            Đăng nhập ngay
+  // Handle new organization registration success
+  const handleNewOrgSuccess = (orgId: string) => {
+    setSelectedOrganizationId(orgId)
+    setShowNewOrgForm(false)
+    setCheckResult(null)
+    // Show success message
+    setDebugInfo('Tổ chức mới đã được đăng ký thành công!')
+  }
+
+  // Handle new organization registration cancel
+  const handleNewOrgCancel = () => {
+    setShowNewOrgForm(false)
+  }
+
+  // If showing new organization form, render it instead of register form
+  if (showNewOrgForm) {
+    return (
+      <div className="grid gap-8">
+        {/* Logo */}
+        <div className="flex justify-center">
+          <Link href="/">
+            <Image
+              src="https://uelfhngfhiirnxinvtbg.supabase.co/storage/v1/object/public/assets//logo.png"
+              alt="i-ContainerHub Logo"
+              width={200}
+              height={200}
+            />
           </Link>
-        </p>
-      </CardHeader>
-      
-      <CardContent className="px-6 pb-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* Họ và Tên */}
-          <div>
-            <label htmlFor="fullName" className="form-label">
-              Họ và Tên
-            </label>
+        </div>
+        
+        <div className="grid gap-3 text-center">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            Đăng Ký Tổ Chức
+          </h1>
+        </div>
+
+        <NewOrganizationForm
+          onSuccess={handleNewOrgSuccess}
+          onCancel={handleNewOrgCancel}
+          initialData={{
+            name: formData.companyName,
+            type: formData.organizationType as any
+          }}
+          userEmail={formData.email}
+          userPassword={formData.password}
+          fullName={formData.fullName}
+        />
+      </div>
+    )
+  }
+
+      return (
+     <div className="grid gap-8">
+       {/* Logo */}
+       <div className="flex justify-center">
+         <Link href="/">
+           <Image
+             src="https://uelfhngfhiirnxinvtbg.supabase.co/storage/v1/object/public/assets//logo.png"
+             alt="i-ContainerHub Logo"
+             width={200}
+             height={200}
+           />
+         </Link>
+       </div>
+       
+       <div className="grid gap-3 text-center">
+         <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+           Đăng Ký
+         </h1>
+         <p className="text-lg text-gray-600">
+           Đã có tài khoản?{" "}
+           <Link href="/login" className="font-semibold text-primary hover:text-blue-600 transition-colors">
+             Đăng nhập ngay
+           </Link>
+         </p>
+       </div>
+      <form onSubmit={handleSubmit}>
+        <div className="grid gap-4">
+          {/* Họ và tên */}
+          <div className="grid gap-2">
+            <Label htmlFor="fullName">Họ và tên</Label>
             <Input
               id="fullName"
               name="fullName"
@@ -295,81 +425,156 @@ export default function RegisterForm() {
               value={formData.fullName}
               onChange={handleInputChange}
               placeholder="Nguyễn Văn A"
-              className="form-input"
               required
             />
           </div>
 
-          {/* Tên Công ty */}
-          <div>
-            <label htmlFor="companyName" className="form-label">
-              Tên Công ty / Tổ chức
-            </label>
-            <Input
-              id="companyName"
-              name="companyName"
-              type="text"
-              value={formData.companyName}
-              onChange={handleInputChange}
-              placeholder="Công ty Vận tải ABC"
-              className="form-input"
-              required
-            />
+          {/* Tên công ty */}
+          <div className="grid gap-2">
+            <Label htmlFor="companyName">Tên công ty/tổ chức</Label>
+            <div className="relative">
+              <Input
+                id="companyName"
+                name="companyName"
+                type="text"
+                value={formData.companyName}
+                onChange={handleInputChange}
+                onBlur={handleOrgCheck}
+                placeholder="Công ty Vận tải ABC"
+                required
+              />
+              {isChecking && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                </div>
+              )}
+              {!isChecking && formData.companyName.trim().length >= 3 && (
+                <button
+                  type="button"
+                  onClick={handleOrgCheck}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-blue-600 hover:text-blue-800"
+                  title="Kiểm tra lại"
+                >
+                  🔍
+                </button>
+              )}
+            </div>
+            
+            {/* Organization check results */}
+            {checkResult && (
+              <div className="mt-2">
+                {checkResult.found ? (
+                  <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-3 rounded-md">
+                    <CheckCircle className="h-4 w-4" />
+                    <span>
+                      ✅ Đã tìm thấy "{checkResult.organization?.name}". Tài khoản của bạn sẽ được liên kết với tổ chức này.
+                    </span>
+                  </div>
+                ) : (
+                  <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-md">
+                    <div className="flex items-center gap-2 text-sm text-yellow-700 mb-2">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="font-medium">Tổ chức chưa có trên hệ thống</span>
+                    </div>
+                    <p className="text-sm text-yellow-600 mb-3">
+                      Chúng tôi không tìm thấy tổ chức nào có tên tương tự. Để đảm bảo tính chính xác, vui lòng đăng ký thông tin tổ chức của bạn.
+                    </p>
+                    {!formData.fullName.trim() && (
+                      <p className="text-sm text-red-600 mb-3 font-medium">
+                        ⚠️ Vui lòng điền đầy đủ "Họ và tên" trước khi đăng ký tổ chức mới.
+                      </p>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowNewOrgForm(true)}
+                      disabled={!formData.fullName.trim() || !formData.email.trim()}
+                      className="bg-yellow-100 border-yellow-300 text-yellow-700 hover:bg-yellow-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Đăng ký Tổ chức Mới
+                    </Button>
+                    {(!formData.fullName.trim() || !formData.email.trim()) && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        Cần điền "Họ và tên" và "Email" trước khi đăng ký tổ chức mới
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Manual new organization option - always available */}
+            {!checkResult && formData.companyName.trim().length >= 3 && (
+              <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-sm text-blue-700 mb-2">
+                  💡 Nếu tổ chức của bạn chưa có trên hệ thống, bạn có thể đăng ký mới:
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowNewOrgForm(true)}
+                  disabled={!formData.fullName.trim() || !formData.email.trim()}
+                  className="bg-blue-100 border-blue-300 text-blue-700 hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Đăng ký Tổ chức Mới
+                </Button>
+                {(!formData.fullName.trim() || !formData.email.trim()) && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Cần điền "Họ và tên" và "Email" trước khi đăng ký tổ chức mới
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Loại Hình Tổ Chức */}
-          <div>
-            <label className="form-label">
-              Loại hình tổ chức
-            </label>
-            <div className="flex items-center gap-6 mt-2">
-              <label className="flex items-center cursor-pointer">
+          {/* Loại tổ chức */}
+          <div className="grid gap-2">
+            <Label>Loại tổ chức</Label>
+            <div className="flex gap-4">
+              <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="radio"
                   name="organizationType"
                   value="TRUCKING_COMPANY"
                   checked={formData.organizationType === 'TRUCKING_COMPANY'}
-                  onChange={() => handleRadioChange('TRUCKING_COMPANY')}
-                  className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary focus:ring-2"
+                  onChange={(e) => handleRadioChange(e.target.value)}
+                  className="text-primary"
                 />
-                <span className="ml-2 text-sm font-medium text-text-primary">Công ty Vận tải</span>
+                <span>Công ty vận tải</span>
               </label>
-              <label className="flex items-center cursor-pointer">
+              <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="radio"
                   name="organizationType"
                   value="SHIPPING_LINE"
                   checked={formData.organizationType === 'SHIPPING_LINE'}
-                  onChange={() => handleRadioChange('SHIPPING_LINE')}
-                  className="w-4 h-4 text-primary bg-gray-100 border-gray-300 focus:ring-primary focus:ring-2"
+                  onChange={(e) => handleRadioChange(e.target.value)}
+                  className="text-primary"
                 />
-                <span className="ml-2 text-sm font-medium text-text-primary">Hãng tàu</span>
+                <span>Hãng tàu</span>
               </label>
             </div>
           </div>
 
           {/* Email */}
-          <div>
-            <label htmlFor="email" className="form-label">
-              Địa chỉ email
-            </label>
+          <div className="grid gap-2">
+            <Label htmlFor="email">Địa chỉ email</Label>
             <Input
               id="email"
               name="email"
               type="email"
               value={formData.email}
               onChange={handleInputChange}
-              placeholder="dispatcher@vantai-abc.com"
-              className="form-input"
+              placeholder="admin@vantai-abc.com"
               required
             />
           </div>
 
           {/* Mật khẩu */}
-          <div>
-            <label htmlFor="password" className="form-label">
-              Mật khẩu
-            </label>
+          <div className="grid gap-2">
+            <Label htmlFor="password">Mật khẩu</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -378,7 +583,6 @@ export default function RegisterForm() {
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="••••••••"
-                className="form-input-password"
                 required
               />
               <button
@@ -398,24 +602,52 @@ export default function RegisterForm() {
             </div>
           )}
 
-          {/* Nút Đăng Ký */}
-          <Button 
-            type="submit" 
-            className="btn-primary w-full"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Đang xử lý...
-              </>
-            ) : (
-              'Đăng Ký'
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
-    </>
+          {/* Debug Info */}
+          {debugInfo && (
+            <div className="p-3 text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-md">
+              {debugInfo}
+            </div>
+          )}
+
+
+
+                     <Button 
+             type="submit" 
+             className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-blue-600 hover:from-primary-dark hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl" 
+             disabled={isLoading || (checkResult && !checkResult.found && !showNewOrgForm) || false}
+           >
+             {isLoading ? (
+               <>
+                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                 Đang xử lý...
+               </>
+             ) : (
+               'Tạo Tài Khoản'
+             )}
+           </Button>
+        </div>
+      </form>
+
+      {/* Modal thành công */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="text-green-500 mb-4">
+                <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Đăng ký thành công!
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Tài khoản của bạn đã được tạo thành công. Đang chuyển hướng trong {countdown} giây...
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   )
 } 
