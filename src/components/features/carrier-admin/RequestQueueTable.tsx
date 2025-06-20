@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle, XCircle, ArrowRight, Clock, MapPin, Calendar } from 'lucide-react'
 import ApproveRequestDialog from './ApproveRequestDialog'
 import DeclineRequestDialog from './DeclineRequestDialog'
-import { formatDateTimeVN, formatDateVN } from '@/lib/utils'
+import { formatStoredDateTimeVN, formatDateVN } from '@/lib/utils'
 
 interface RequestQueueTableProps {
   requests: any[]
@@ -108,7 +108,6 @@ export default function RequestQueueTable({ requests }: RequestQueueTableProps) 
                             {container?.drop_off_location}
                           </span>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-text-secondary ml-0" />
                         <div className="flex items-center gap-2 text-body-small">
                           <MapPin className="w-4 h-4 text-danger" />
                           <span className="text-text-secondary">Đến:</span>
@@ -124,13 +123,13 @@ export default function RequestQueueTable({ requests }: RequestQueueTableProps) 
                         <div>
                           <span className="text-text-secondary">Rảnh từ:</span>
                           <div className="font-medium text-primary">
-                            {formatDateTimeVN(container?.available_from_datetime)}
+                            {formatStoredDateTimeVN(container?.available_from_datetime)}
                           </div>
                         </div>
                         <div>
                           <span className="text-text-secondary">Cần trước:</span>
                           <div className="font-medium text-danger">
-                            {formatDateTimeVN(booking?.needed_by_datetime)}
+                            {formatStoredDateTimeVN(booking?.needed_by_datetime)}
                           </div>
                         </div>
                       </div>

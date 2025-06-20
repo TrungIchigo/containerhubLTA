@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle, Package, Building2, MapPin, Loader2 } from 'lucide-react'
+import { CheckCircle, Package, Building2, MapPin, Loader2, DollarSign } from 'lucide-react'
 import { handleCodDecision } from '@/lib/actions/cod'
 import { useToast } from '@/hooks/use-toast'
 import type { CodRequestWithDetails } from '@/lib/types'
@@ -26,11 +26,11 @@ export default function CodApprovalDialog({ isOpen, onClose, request }: CodAppro
       const result = await handleCodDecision(request.id, 'APPROVED')
 
       if (result.success) {
-        toast({
-          title: "✅ Thành công",
-          description: result.message,
-          variant: "default"
-        })
+            toast({
+      title: "✅ Thành công",
+      description: result.message,
+      variant: "success"
+    })
         onClose()
       } else {
         throw new Error(result.message)
@@ -119,15 +119,42 @@ export default function CodApprovalDialog({ isOpen, onClose, request }: CodAppro
             </div>
           </div>
 
+          {/* Phí COD */}
+          {request.cod_fee && (
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-text-primary border-b pb-2">
+                Phí COD
+              </h3>
+              
+              <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-blue-600" />
+                  <span className="font-medium text-blue-800">
+                    Phí đã tính: {request.cod_fee.toLocaleString('vi-VN')} VNĐ
+                  </span>
+                </div>
+                <p className="text-xs text-blue-700 mt-1">
+                  Hệ thống đã tự động tính phí dựa trên khoảng cách giữa các depot. 
+                  Phí này sẽ được giữ nguyên khi phê duyệt.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Xác nhận */}
           <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
             <div className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
               <div>
-                <h4 className="font-medium text-green-800">Phê duyệt miễn phí</h4>
+                <h4 className="font-medium text-green-800">
+                  {request.cod_fee ? 'Phê duyệt với phí đã tính' : 'Phê duyệt miễn phí'}
+                </h4>
                 <p className="text-sm text-green-700 mt-1">
-                  Bạn đang phê duyệt yêu cầu thay đổi nơi trả container này mà không tính phí bổ sung.
-                  Container sẽ được cập nhật địa điểm mới và sẵn sàng cho các hoạt động tiếp theo.
+                  {request.cod_fee 
+                    ? `Bạn đang phê duyệt yêu cầu này với phí COD ${request.cod_fee.toLocaleString('vi-VN')} VNĐ đã được tính tự động.`
+                    : 'Bạn đang phê duyệt yêu cầu thay đổi nơi trả container này mà không tính phí bổ sung.'
+                  }
+                  {' '}Container sẽ được cập nhật địa điểm mới và sẵn sàng cho các hoạt động tiếp theo.
                 </p>
               </div>
             </div>

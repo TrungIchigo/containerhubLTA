@@ -10,7 +10,8 @@ import {
   FileText,
   Settings,
   LogOut,
-  Shield
+  Shield,
+  Receipt
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -29,6 +30,11 @@ const adminNavItems = [
     label: 'Tất cả tổ chức',
     href: '/admin/organizations',
     icon: Users
+  },
+  {
+    label: 'Quản lý Tài chính',
+    href: '/admin/billing',
+    icon: Receipt
   },
   {
     label: 'Báo cáo',

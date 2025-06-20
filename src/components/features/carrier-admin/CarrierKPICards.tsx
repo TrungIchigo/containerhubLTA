@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Clock, CheckCircle, RotateCcw, TrendingUp } from 'lucide-react'
+import { Clock, CheckCircle, RotateCcw, TrendingUp, MessageSquare, MapPin } from 'lucide-react'
 import Link from 'next/link'
 
 interface CarrierKPICardsProps {
@@ -10,113 +10,127 @@ interface CarrierKPICardsProps {
   }
 }
 
+interface CarrierKPICardsInlineProps {
+  pendingCodRequests: number
+  pendingStreetTurnRequests: number
+  approvedButUnpaidCodRequests: number
+}
+
+export function CarrierKPICardsInline({ 
+  pendingCodRequests, 
+  pendingStreetTurnRequests, 
+  approvedButUnpaidCodRequests 
+}: CarrierKPICardsInlineProps) {
+  return (
+    <div className="flex items-center gap-4">
+      {/* Yêu cầu COD */}
+      <div className="bg-gradient-to-r from-blue-400 to-blue-500 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+            <MapPin className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <div className="text-blue-100 text-xs font-medium uppercase tracking-wide">Yêu cầu COD</div>
+            <div className="text-2xl font-bold">{pendingCodRequests}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Yêu cầu Tái Sử Dụng */}
+      <div className="bg-gradient-to-r from-amber-400 to-orange-400 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+            <RotateCcw className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <div className="text-orange-100 text-xs font-medium uppercase tracking-wide">Yêu cầu Tái Sử Dụng</div>
+            <div className="text-2xl font-bold">{pendingStreetTurnRequests}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* COD Đã Duyệt Chưa Thanh Toán */}
+      <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+            <CheckCircle className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <div className="text-emerald-100 text-xs font-medium uppercase tracking-wide">COD Đã Duyệt</div>
+            <div className="text-2xl font-bold">{approvedButUnpaidCodRequests}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function CarrierKPICards({ kpis }: CarrierKPICardsProps) {
   const kpiData = [
     {
       title: 'Yêu Cầu Chờ Duyệt',
       value: kpis.pendingCount,
       icon: Clock,
-      bgGradient: 'bg-gradient-to-br from-warning/15 to-warning/25',
-      iconBg: 'bg-warning/20',
-      iconColor: 'text-warning-foreground',
-      borderColor: 'border-l-4 border-l-warning',
+      iconColor: 'text-text-primary',
+      bgGradient: 'bg-gradient-to-br from-yellow-50 to-yellow-200',
       href: '/carrier-admin?tab=street-turn',
-      description: 'yêu cầu đang chờ xử lý',
-      trend: kpis.pendingCount > 0 ? 'urgent' : 'normal'
+      isUrgent: kpis.pendingCount > 0
     },
     {
       title: 'Đã Duyệt Tháng Này',
       value: kpis.approvedThisMonth,
       icon: CheckCircle,
-      bgGradient: 'bg-gradient-to-br from-primary/10 to-primary/20',
-      iconBg: 'bg-primary/20',
-      iconColor: 'text-primary',
-      borderColor: 'border-l-4 border-l-primary',
+      iconColor: 'text-text-primary',
+      bgGradient: 'bg-gradient-to-br from-green-50 to-green-200',
       href: '/carrier-admin/requests?status=approved',
-      description: 'yêu cầu đã phê duyệt',
-      trend: 'positive'
+      isUrgent: false
     },
     {
       title: 'Tổng Lượt Tái Sử Dụng',
       value: kpis.totalApproved,
       icon: RotateCcw,
-      bgGradient: 'bg-gradient-to-br from-success/10 to-success/20',
-      iconBg: 'bg-success/20',
-      iconColor: 'text-success',
-      borderColor: 'border-l-4 border-l-success',
+      iconColor: 'text-text-primary',
+      bgGradient: 'bg-gradient-to-br from-blue-50 to-blue-200',
       href: '/dashboard',
-      description: 'lượt tái sử dụng thành công',
-      trend: 'growth'
+      isUrgent: false
     }
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       {kpiData.map((kpi) => {
         const IconComponent = kpi.icon
         return (
           <Link key={kpi.title} href={kpi.href} className="block group">
-            <Card className={`
-              kpi-card 
-              ${kpi.bgGradient} 
-              ${kpi.borderColor}
-              border-0 
-              cursor-pointer 
-              transition-all 
-              duration-200 
-              hover:shadow-lg 
-              hover:scale-[1.02]
-              hover:-translate-y-1
-              ${kpi.trend === 'urgent' ? 'ring-2 ring-warning/20' : ''}
-            `}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="space-y-1">
-                  <CardTitle className="text-sm font-medium text-text-secondary">
-                    {kpi.title}
-                  </CardTitle>
-                  {/* Trend indicator */}
-                  {kpi.trend === 'urgent' && kpi.value > 0 && (
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-warning rounded-full animate-pulse"></div>
-                      <span className="text-xs text-warning font-medium">Cần xử lý</span>
+            <Card className={`border cursor-pointer transition-all duration-200 hover:shadow-md ${kpi.bgGradient} ${kpi.isUrgent ? 'ring-2 ring-orange-300/50' : ''}`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-lg font-medium text-text-primary mb-1">
+                      {kpi.title}
+                    </p>
+                    <div className="flex items-baseline gap-2">
+                      <p className="text-2xl font-bold text-text-primary">
+                        {kpi.value.toLocaleString()}
+                      </p>
+                      {kpi.value > 0 && kpi.title !== 'Yêu Cầu Chờ Duyệt' && (
+                        <TrendingUp className="w-4 h-4 text-green-600" />
+                      )}
                     </div>
-                  )}
-                </div>
-                {/* Large decorative icon */}
-                <div className={`
-                  w-16 h-16 
-                  ${kpi.iconBg} 
-                  rounded-lg 
-                  flex items-center justify-center
-                  opacity-20
-                  group-hover:opacity-30
-                  transition-opacity
-                `}>
-                  <IconComponent className={`w-8 h-8 ${kpi.iconColor}`} />
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {/* Large metric value */}
-                <div className="flex items-baseline gap-2 mb-2">
-                  <div className="text-4xl font-bold text-text-primary group-hover:scale-105 transition-transform">
-                    {kpi.value.toLocaleString()}
+                    {kpi.isUrgent && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-orange-600 font-medium">Cần xử lý</span>
+                      </div>
+                    )}
                   </div>
-                  {/* Growth indicator for positive metrics */}
-                  {(kpi.trend === 'positive' || kpi.trend === 'growth') && kpi.value > 0 && (
-                    <TrendingUp className="w-5 h-5 text-success" />
-                  )}
-                </div>
-                {/* Description */}
-                <p className="text-sm text-text-secondary">
-                  {kpi.description}
-                </p>
-                {/* Action indicator */}
-                <div className="flex items-center justify-between mt-3">
-                  <div className={`p-1.5 rounded ${kpi.iconBg}`}>
-                    <IconComponent className={`w-4 h-4 ${kpi.iconColor}`} />
+                  <div className="flex flex-col items-center gap-2">
+                    <IconComponent className={`w-6 h-6 ${kpi.iconColor}`} />
                   </div>
-                  <span className="text-xs text-text-secondary group-hover:text-primary transition-colors">
-                    {kpi.trend === 'urgent' && kpi.value > 0 ? 'Xử lý ngay →' : 'Xem chi tiết →'}
+                </div>
+                <div className="mt-3 flex justify-end">
+                  <span className="text-xs text-text-primary group-hover:text-blue-600 transition-colors">
+                    {kpi.isUrgent ? 'Xử lý ngay →' : 'Xem chi tiết →'}
                   </span>
                 </div>
               </CardContent>

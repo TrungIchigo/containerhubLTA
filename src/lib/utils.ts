@@ -30,6 +30,26 @@ export function formatDateTimeVN(date: string | Date): string {
   })
 }
 
+// Format datetime for display - handles UTC stored data correctly
+export function formatStoredDateTimeVN(utcDateTime: string | Date): string {
+  if (!utcDateTime) return ''
+  
+  // Convert UTC datetime back to Vietnam local time for display
+  const utcDate = new Date(utcDateTime)
+  const vnOffset = 7 * 60 // Vietnam is UTC+7 (420 minutes)
+  const localTime = utcDate.getTime() + (vnOffset * 60 * 1000)
+  const localDate = new Date(localTime)
+  
+  // Format the local date without timezone conversion
+  return localDate.toLocaleString('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
 export function formatDateVN(date: string | Date): string {
   const d = new Date(date)
   return d.toLocaleDateString('vi-VN', {

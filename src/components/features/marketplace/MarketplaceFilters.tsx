@@ -14,6 +14,7 @@ import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
 import { DateRange } from 'react-day-picker'
 import { VIETNAM_PROVINCES, DISTANCE_OPTIONS, RATING_FILTER_OPTIONS } from '@/lib/constants'
+import ContainerTypeSelect from '@/components/common/ContainerTypeSelect'
 import type { Organization } from '@/lib/types'
 
 interface MarketplaceFiltersProps {
@@ -34,21 +35,7 @@ export default function MarketplaceFilters({ shippingLines }: MarketplaceFilters
     end_date: searchParams.get('end_date') || ''
   })
 
-  // Helper function to get display value for Select components
-  const getSelectDisplayValue = (filterValue: string, type: 'container_type' | 'max_distance_km' | 'min_rating' | 'shipping_line' | 'location') => {
-    if (!filterValue || filterValue.trim() === '') {
-      // Return special values for display
-      switch (type) {
-        case 'max_distance_km':
-          return 'unlimited'
-        case 'min_rating':
-          return 'all'
-        default:
-          return undefined
-      }
-    }
-    return filterValue
-  }
+
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     if (filters.start_date && filters.end_date) {
@@ -60,20 +47,15 @@ export default function MarketplaceFilters({ shippingLines }: MarketplaceFilters
     return undefined
   })
 
-  const containerTypes = [
-    { value: '20FT', label: '20FT' },
-    { value: '40FT', label: '40FT' },
-    { value: '40HQ', label: '40HQ' },
-    { value: '45FT', label: '45FT' }
-  ]
-
   // Prepare shipping lines options for Select
   const shippingLineOptions = [
+    { value: 'all', label: 'Tất cả hãng tàu' },
     ...shippingLines.map(line => ({ value: line.name, label: line.name }))
   ]
 
   // Prepare location options for Select
   const locationOptions = [
+    { value: 'all', label: 'Tất cả tỉnh/thành' },
     ...VIETNAM_PROVINCES.map(province => ({ value: province.value, label: province.label }))
   ]
 
@@ -140,32 +122,19 @@ export default function MarketplaceFilters({ shippingLines }: MarketplaceFilters
           <Label htmlFor="container_type" className="text-sm font-medium text-gray-700">
             Loại Container
           </Label>
-          <Select
-            value={getSelectDisplayValue(filters.container_type, 'container_type')}
+          <ContainerTypeSelect
+            value={filters.container_type || 'all'}
             onValueChange={(value: string) => handleFilterChange('container_type', value)}
-          >
-            <SelectTrigger className="h-10 border-gray-200 hover:border-green-400 focus:border-green-500 focus:ring-green-500">
-              <SelectValue placeholder="Chọn loại container" />
-            </SelectTrigger>
-            <SelectContent>
-              {containerTypes.map((type) => (
-                <SelectItem 
-                  key={type.value} 
-                  value={type.value}
-                  className="hover:bg-green-50 focus:bg-green-50"
-                >
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            placeholder="Chọn loại container"
+            className="h-10 border-gray-200 hover:border-green-400 focus:border-green-500 focus:ring-green-500"
+          />
         </div>
 
         {/* Shipping Line Select */}
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">Hãng Tàu</Label>
           <Select
-            value={getSelectDisplayValue(filters.shipping_line_name, 'shipping_line')}
+            value={filters.shipping_line_name || 'all'}
             onValueChange={(value: string) => handleFilterChange('shipping_line_name', value)}
           >
             <SelectTrigger className="h-10 border-gray-200 hover:border-green-400 focus:border-green-500 focus:ring-green-500">
@@ -189,7 +158,7 @@ export default function MarketplaceFilters({ shippingLines }: MarketplaceFilters
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">Địa điểm</Label>
           <Select
-            value={getSelectDisplayValue(filters.location, 'location')}
+            value={filters.location || 'all'}
             onValueChange={(value: string) => handleFilterChange('location', value)}
           >
             <SelectTrigger className="h-10 border-gray-200 hover:border-green-400 focus:border-green-500 focus:ring-green-500">
@@ -213,7 +182,7 @@ export default function MarketplaceFilters({ shippingLines }: MarketplaceFilters
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">Khoảng cách tối đa</Label>
           <Select
-            value={getSelectDisplayValue(filters.max_distance_km, 'max_distance_km')}
+            value={filters.max_distance_km || 'unlimited'}
             onValueChange={(value: string) => handleFilterChange('max_distance_km', value)}
           >
             <SelectTrigger className="h-10 border-gray-200 hover:border-green-400 focus:border-green-500 focus:ring-green-500">
@@ -240,7 +209,7 @@ export default function MarketplaceFilters({ shippingLines }: MarketplaceFilters
         <div className="space-y-2">
           <Label className="text-sm font-medium text-gray-700">Đánh giá đối tác</Label>
           <Select
-            value={getSelectDisplayValue(filters.min_rating, 'min_rating')}
+            value={filters.min_rating || 'all'}
             onValueChange={(value: string) => handleFilterChange('min_rating', value)}
           >
             <SelectTrigger className="h-10 border-gray-200 hover:border-green-400 focus:border-green-500 focus:ring-green-500">

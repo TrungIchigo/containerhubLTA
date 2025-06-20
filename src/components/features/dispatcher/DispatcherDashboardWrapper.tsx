@@ -6,6 +6,7 @@ import { DispatcherRealtimeUpdater } from './DispatcherRealtimeUpdater'
 import { Toaster } from '@/components/ui/toaster'
 import AddImportContainerForm from '@/components/dispatcher/AddImportContainerForm'
 import AddExportBookingForm from '@/components/dispatcher/AddExportBookingForm'
+import FloatingActionMenu from '@/components/dispatcher/FloatingActionMenu'
 
 interface DispatcherDashboardWrapperProps {
   userOrgId: string
@@ -58,6 +59,12 @@ export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines 
       {/* Main content */}
       {children}
       
+      {/* Floating Action Menu */}
+      <FloatingActionMenu
+        onAddImport={() => setShowImportDialog(true)}
+        onAddExport={() => setShowExportDialog(true)}
+      />
+      
       {/* Action Dialogs */}
       <AddImportContainerForm 
         shippingLines={shippingLines}
@@ -66,6 +73,7 @@ export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines 
       />
       
       <AddExportBookingForm 
+        shippingLines={shippingLines}
         isOpen={showExportDialog}
         onOpenChange={handleExportDialogChange}
       />

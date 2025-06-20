@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { BarChart3, Truck, Ship, FileText, Settings, Store, Activity, TrendingUp } from 'lucide-react'
+import { BarChart3, Truck, Ship, FileText, Settings, Store, Activity, TrendingUp, Receipt } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import SupportContact from './SupportContact'
 
@@ -27,6 +27,7 @@ export default function Sidebar() {
     { name: 'Bảng Điều Phối', href: '/dispatcher', icon: Truck, roles: ['DISPATCHER'] },
     { name: 'Thị Trường', href: '/marketplace', icon: Store, roles: ['DISPATCHER'] },
     { name: 'Quản lý Yêu Cầu', href: '/dispatcher/requests', icon: FileText, roles: ['DISPATCHER'] },
+    { name: 'Thanh Toán', href: '/billing', icon: Receipt, roles: ['DISPATCHER'] },
     { name: 'Cổng Hãng Tàu', href: '/carrier-admin', icon: Ship, roles: ['CARRIER_ADMIN'] },
     { name: 'Quy tắc Tự động', href: '/carrier-admin/rules', icon: Settings, roles: ['CARRIER_ADMIN'] },
   ]
@@ -130,9 +131,18 @@ export default function Sidebar() {
             {navigation.map((item) => {
               const IconComponent = item.icon
               const isActive = pathname === item.href || 
+                (item.href === '/dispatcher' && (
+                  pathname.startsWith('/dispatcher/containers') ||
+                  pathname.startsWith('/dispatcher/bookings') ||
+                  pathname.startsWith('/dispatcher/street-turns') ||
+                  pathname.startsWith('/dispatcher/dropoff-orders') ||
+                  pathname.startsWith('/dispatcher/pickup-orders') ||
+                  pathname.startsWith('/dispatcher/suggestions')
+                )) ||
                 (item.href === '/dispatcher/requests' && pathname.startsWith('/dispatcher/requests')) ||
                 (item.href === '/carrier-admin/rules' && pathname.startsWith('/carrier-admin/rules')) ||
-                (item.href === '/marketplace' && pathname.startsWith('/marketplace'))
+                (item.href === '/marketplace' && pathname.startsWith('/marketplace')) ||
+                (item.href === '/billing' && pathname.startsWith('/billing'))
               return (
                 <Link
                   key={item.name}

@@ -48,6 +48,11 @@ export interface ImportContainer {
   is_listed_on_marketplace: boolean
   latitude: number | null
   longitude: number | null
+  condition_images: string[] | null
+  attached_documents: string[] | null
+  city_id: string | null
+  depot_id: string | null
+  cargo_type_id: string | null
   created_at: string
 }
 
@@ -59,7 +64,12 @@ export interface ExportBooking {
   pick_up_location: string
   needed_by_datetime: string
   trucking_company_org_id: string
+  shipping_line_org_id: string
   status: AssetStatus
+  attached_documents: string[] | null
+  city_id: string | null
+  depot_id: string | null
+  cargo_type_id: string | null
   created_at: string
 }
 
@@ -102,6 +112,7 @@ export interface ImportContainerWithOrgs extends ImportContainer {
 
 export interface ExportBookingWithOrg extends ExportBooking {
   trucking_company: Organization
+  shipping_line?: Organization
 }
 
 export interface StreetTurnRequestWithDetails extends StreetTurnRequest {
@@ -151,6 +162,7 @@ export interface CreateExportBookingForm {
   city_id: string
   depot_id: string
   needed_by_datetime: string
+  shipping_line_org_id: string
   attached_documents?: string[]
 }
 
@@ -197,8 +209,8 @@ export interface MarketplaceFilters {
 }
 
 // COD (Change of Destination) types
-export type CodRequestStatus = 'PENDING' | 'APPROVED' | 'DECLINED' | 'AWAITING_INFO' | 'EXPIRED' | 'REVERSED'
-export type AuditLogAction = 'CREATED' | 'APPROVED' | 'DECLINED' | 'INFO_REQUESTED' | 'INFO_SUBMITTED' | 'EXPIRED' | 'REVERSED' | 'CANCELLED'
+export type CodRequestStatus = 'PENDING' | 'APPROVED' | 'DECLINED' | 'AWAITING_INFO' | 'EXPIRED' | 'REVERSED' | 'PENDING_PAYMENT' | 'PAID' | 'PROCESSING_AT_DEPOT' | 'COMPLETED'
+export type AuditLogAction = 'CREATED' | 'APPROVED' | 'DECLINED' | 'INFO_REQUESTED' | 'INFO_SUBMITTED' | 'EXPIRED' | 'REVERSED' | 'CANCELLED' | 'DELIVERY_CONFIRMED' | 'PAYMENT_CONFIRMED' | 'DEPOT_PROCESSING_STARTED' | 'COMPLETED'
 
 export interface CodRequest {
   id: string
@@ -216,6 +228,10 @@ export interface CodRequest {
   created_at: string
   updated_at: string | null
   expires_at: string | null
+  delivery_confirmed_at: string | null
+  payment_confirmed_at: string | null
+  depot_processing_started_at: string | null
+  completed_at: string | null
 }
 
 export interface CodAuditLog {

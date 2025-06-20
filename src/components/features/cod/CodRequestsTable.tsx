@@ -86,7 +86,7 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
         toast({
           title: "✅ Thành công",
           description: result.message,
-          variant: "default"
+          variant: "success"
         })
         // Reload page to refresh data
         window.location.reload()
@@ -151,8 +151,8 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
                     <th className="table-header">Ngày gửi</th>
                     <th className="table-header">Hết hạn</th>
                     <th className="table-header">Phí COD</th>
-                    <th className="table-header text-center">Trạng thái</th>
-                    <th className="table-header text-center">Hành động</th>
+                    <th className="table-header text-center w-32">Trạng thái</th>
+                    <th className="table-header text-center w-24">Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -213,10 +213,12 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
                           )}
                         </div>
                       </td>
-                      <td className="table-cell text-center">
-                        {getStatusBadge(request.status)}
+                      <td className="table-cell text-center w-32">
+                        <div className="whitespace-nowrap">
+                          {getStatusBadge(request.status)}
+                        </div>
                       </td>
-                      <td className="table-cell text-center">
+                      <td className="table-cell text-center w-24">
                         {request.status === 'PENDING' || request.status === 'AWAITING_INFO' ? (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

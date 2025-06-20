@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from './auth'
 import { revalidatePath } from 'next/cache'
+import { createMarketplaceFee } from './billing'
 import type { MarketplaceFilters, MarketplaceListing, CreateMarketplaceRequestForm, Organization } from '@/lib/types'
 
 // Get marketplace listings with filters
@@ -40,7 +41,11 @@ export async function getMarketplaceListings(filters: MarketplaceFilters = {}) {
     `)
     .eq('is_listed_on_marketplace', true)
     .eq('status', 'AVAILABLE')
-    .neq('trucking_company_org_id', userOrgId) // Exclude own company's listings
+    
+  // Only exclude own company if we have a valid organization ID
+  if (userOrgId) {
+    query = query.neq('trucking_company_org_id', userOrgId)
+  }
 
   // Apply filters
   if (filters.container_type) {
@@ -66,18 +71,29 @@ export async function getMarketplaceListings(filters: MarketplaceFilters = {}) {
     throw error
   }
 
-  // Fetch rating details for each organization in parallel
+  // Fetch rating details for each organization in parallel - with error handling
   const organizationIds = [...new Set(rawListings?.map(item => item.trucking_company_org_id).filter(Boolean) || [])]
-  const ratingPromises = organizationIds.map(async (orgId) => {
-    const { data: ratingData } = await supabase.rpc('get_org_rating_details', { org_id: orgId })
-    return { orgId, ...ratingData }
-  })
+  let ratingsMap: Record<string, any> = {}
   
-  const ratings = await Promise.all(ratingPromises)
-  const ratingsMap = ratings.reduce((acc, rating) => {
-    acc[rating.orgId] = rating
-    return acc
-  }, {} as Record<string, any>)
+  try {
+    const ratingPromises = organizationIds.map(async (orgId) => {
+      try {
+        const { data: ratingData } = await supabase.rpc('get_org_rating_details', { org_id: orgId })
+        return { orgId, ...ratingData }
+      } catch (error) {
+        console.warn(`Failed to get rating for org ${orgId}:`, error)
+        return { orgId, average_rating: 0, review_count: 0 }
+      }
+    })
+    
+    const ratings = await Promise.all(ratingPromises)
+    ratingsMap = ratings.reduce((acc, rating) => {
+      acc[rating.orgId] = rating
+      return acc
+    }, {} as Record<string, any>)
+  } catch (error) {
+    console.warn('Failed to fetch ratings, using defaults:', error)
+  }
 
   // Transform data to match MarketplaceListing interface
   const listings: MarketplaceListing[] = (rawListings || []).map((item: any) => ({

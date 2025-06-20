@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useMarketplaceStore } from '@/stores/marketplace-store'
+import { formatStoredDateTimeVN } from '@/lib/utils'
 import type { MarketplaceListing } from '@/lib/types'
 
 interface SimpleMapProps {
@@ -115,7 +116,7 @@ export default function SimpleMap({
               <div style="font-size: 12px; line-height: 1.4;">
                 <p><strong>Loại Container:</strong> ${listing.container_type}</p>
                 <p><strong>Địa Điểm:</strong> ${listing.drop_off_location}</p>
-                <p><strong>Có Sẵn Từ:</strong> ${new Date(listing.available_from_datetime).toLocaleDateString('vi-VN')}</p>
+                <p><strong>Có Sẵn Từ:</strong> ${formatStoredDateTimeVN(listing.available_from_datetime)}</p>
                 <p><strong>Hãng Tàu:</strong> ${listing.shipping_line.name}</p>
                 <p><strong>Công Ty Vận Tải:</strong> ${listing.trucking_company.name}</p>
               </div>

@@ -45,11 +45,11 @@ export default function SubmitInfoDialog({ isOpen, onClose, request }: SubmitInf
       const result = await submitAdditionalInfo(request.id, data.additional_info)
 
       if (result.success) {
-        toast({
-          title: "✅ Thành công",
-          description: result.message,
-          variant: "default"
-        })
+              toast({
+        title: "✅ Thành công",
+        description: result.message,
+        variant: "success"
+      })
         onClose()
       } else {
         throw new Error(result.message)

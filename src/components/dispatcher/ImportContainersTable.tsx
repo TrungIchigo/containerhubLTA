@@ -10,15 +10,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import AddImportContainerForm from './AddImportContainerForm'
 import CodRequestDialog from '@/components/features/cod/CodRequestDialog'
 import type { ImportContainer, Organization } from '@/lib/types'
 import { useState } from 'react'
-import { formatDateTimeVN } from '@/lib/utils'
+import { formatStoredDateTimeVN } from '@/lib/utils'
 
 interface ImportContainersTableProps {
   containers: (ImportContainer & {
     shipping_line?: Organization
+    container_type?: any // Can be string or object from joined data
   })[]
   shippingLines: Organization[]
 }
@@ -34,7 +34,7 @@ export default function ImportContainersTable({
   const statusMap = {
     'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const },
     'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const },
-    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt đổi nơi trả', variant: 'pending' as const },
+    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending' as const },
     'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const },
   }
 
@@ -50,17 +50,7 @@ export default function ImportContainersTable({
 
   return (
     <>
-      <Card className="card mb-8">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-h3 text-text-primary">Quản lý Lệnh Giao Trả</CardTitle>
-            <p className="text-body-small text-text-secondary mt-1">
-              Tổng cộng: {containers.length} lệnh
-            </p>
-          </div>
-          <AddImportContainerForm shippingLines={shippingLines} />
-        </CardHeader>
-        
+      <Card className="card mb-8">               
         <CardContent>
           {containers.length === 0 ? (
             <div className="text-center py-12 text-text-secondary">
@@ -72,41 +62,46 @@ export default function ImportContainersTable({
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="table-header">Số Container</th>
-                    <th className="table-header">Loại</th>
-                    <th className="table-header">Hãng Tàu</th>
-                    <th className="table-header">Địa Điểm Dỡ Hàng</th>
-                    <th className="table-header">Thời Gian Rảnh</th>
-                    <th className="table-header text-center">Trạng Thái</th>
-                    <th className="table-header text-center">Hành Động</th>
+                    <th className="text-left p-3 font-medium text-text-primary">Số Container</th>
+                    <th className="text-left p-3 font-medium text-text-primary">Loại</th>
+                    <th className="text-left p-3 font-medium text-text-primary">Hãng Tàu</th>
+                    <th className="text-left p-3 font-medium text-text-primary">Địa Điểm Dỡ Hàng</th>
+                    <th className="text-left p-3 font-medium text-text-primary">Thời Gian Rảnh</th>
+                    <th className="text-center p-3 font-medium text-text-primary w-32">Trạng Thái</th>
+                    <th className="text-center p-3 font-medium text-text-primary w-24">Hành Động</th>
                   </tr>
                 </thead>
                 <tbody>
                   {containers.map((container) => (
-                    <tr key={container.id} className="table-row">
-                      <td className="table-cell">
-                        <div className="text-label text-text-primary">
+                    <tr key={container.id} className="border-b border-border hover:bg-gray-50">
+                      <td className="p-3">
+                        <div className="font-medium text-text-primary">
                           {container.container_number}
                         </div>
                       </td>
-                      <td className="table-cell">
+                      <td className="p-3">
                         <Badge variant="outline">
-                          {container.container_type}
+                          {typeof container.container_type === 'object' 
+                            ? container.container_type?.code || container.container_type?.name || 'N/A'
+                            : container.container_type || 'N/A'
+                          }
                         </Badge>
                       </td>
-                      <td className="table-cell text-text-secondary">
+                      <td className="p-3 text-text-secondary">
                         {container.shipping_line?.name || 'N/A'}
                       </td>
-                      <td className="table-cell text-text-secondary">
+                      <td className="p-3 text-text-secondary">
                         {container.drop_off_location}
                       </td>
-                      <td className="table-cell text-text-secondary">
-                        {formatDateTimeVN(container.available_from_datetime)}
+                      <td className="p-3 text-text-secondary">
+                        {formatStoredDateTimeVN(container.available_from_datetime)}
                       </td>
-                      <td className="table-cell text-center">
-                        {getStatusBadge(container.status)}
+                      <td className="p-3 text-center w-32">
+                        <div className="whitespace-nowrap">
+                          {getStatusBadge(container.status)}
+                        </div>
                       </td>
-                      <td className="table-cell text-center">
+                      <td className="p-3 text-center w-24">
                         {container.status === 'AVAILABLE' ? (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

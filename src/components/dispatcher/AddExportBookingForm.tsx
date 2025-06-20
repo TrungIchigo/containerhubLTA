@@ -12,9 +12,10 @@ import { Plus, Loader2, Package, FileText } from 'lucide-react'
 import { addExportBooking } from '@/lib/actions/dispatcher'
 import { useCargoTypes } from '@/hooks/useCargoTypes'
 import DocumentUploader from '@/components/common/DocumentUploader'
-import LocationSelector from '@/components/common/LocationSelector'
+import DepotSelector from '@/components/common/DepotSelector'
 import ContainerTypeSelect from '@/components/common/ContainerTypeSelect'
 import { createClient } from '@/lib/supabase/client'
+import type { Organization } from '@/lib/types'
 import { validateContainerNumber, datetimeLocalToUTC, utcToDatetimeLocal } from '@/lib/utils'
 
 const formSchema = z.object({
@@ -22,23 +23,25 @@ const formSchema = z.object({
   container_type_id: z.string().min(1, 'Loại container là bắt buộc'),
   cargo_type_id: z.string().min(1, 'Loại hàng hóa là bắt buộc'),
   city_id: z.string().min(1, 'Thành phố là bắt buộc'),
-  depot_id: z.string().min(1, 'Depot/Địa điểm là bắt buộc'),
+  depot_id: z.string().min(1, 'Địa điểm lấy hàng là bắt buộc'),
   needed_by_datetime: z.string().min(1, 'Thời gian cần container là bắt buộc'),
+  shipping_line_org_id: z.string().min(1, 'Hãng tàu là bắt buộc'),
   attached_documents: z.array(z.string()).optional()
 })
 
 type FormData = z.infer<typeof formSchema>
 
 interface AddExportBookingFormProps {
+  shippingLines: Organization[]
   isOpen?: boolean
   onOpenChange?: (open: boolean) => void
 }
 
-export default function AddExportBookingForm(props: AddExportBookingFormProps = {}) {
-  const { 
-    isOpen: externalIsOpen,
-    onOpenChange: externalOnOpenChange 
-  } = props
+export default function AddExportBookingForm({
+  shippingLines,
+  isOpen: externalIsOpen,
+  onOpenChange: externalOnOpenChange
+}: AddExportBookingFormProps) {
   
   const [internalIsOpen, setInternalIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -59,6 +62,7 @@ export default function AddExportBookingForm(props: AddExportBookingFormProps = 
       city_id: '',
       depot_id: '',
       needed_by_datetime: '',
+      shipping_line_org_id: '',
       attached_documents: []
     }
   })
@@ -95,9 +99,14 @@ export default function AddExportBookingForm(props: AddExportBookingFormProps = 
         city_id: '',
         depot_id: '',
         needed_by_datetime: '',
+        shipping_line_org_id: '',
         attached_documents: []
       })
-      setIsOpen(false)
+      if (externalOnOpenChange) {
+        externalOnOpenChange(false)
+      } else {
+        setIsOpen(false)
+      }
     } catch (error: any) {
       console.error('Error adding booking:', error)
       form.setError('root', { 
@@ -111,12 +120,15 @@ export default function AddExportBookingForm(props: AddExportBookingFormProps = 
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-green-600 hover:bg-green-700 text-white">
-          <Plus className="mr-2 h-4 w-4" />
-          Thêm Lệnh Lấy Rỗng
-        </Button>
-      </DialogTrigger>
+      {/* Only show trigger button when not controlled externally */}
+      {!externalIsOpen && !externalOnOpenChange && (
+        <DialogTrigger asChild>
+          <Button className="bg-green-600 hover:bg-green-700 text-white">
+            <Plus className="mr-2 h-4 w-4" />
+            Thêm Lệnh Lấy Rỗng
+          </Button>
+        </DialogTrigger>
+      )}
       
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -164,6 +176,28 @@ export default function AddExportBookingForm(props: AddExportBookingFormProps = 
                 )}
               </div>
 
+              {/* Hãng Tàu */}
+              <div className="space-y-2">
+                <Label htmlFor="shipping_line_org_id">Hãng Tàu <span className="text-red-500">*</span></Label>
+                <select
+                  id="shipping_line_org_id"
+                  className="w-full px-3 py-2 border border-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                  {...form.register('shipping_line_org_id')}
+                >
+                  <option value="">Chọn hãng tàu</option>
+                  {shippingLines.map((line) => (
+                    <option key={line.id} value={line.id}>
+                      {line.name}
+                    </option>
+                  ))}
+                </select>
+                {form.formState.errors.shipping_line_org_id && (
+                  <p className="text-sm text-red-600">
+                    {form.formState.errors.shipping_line_org_id.message}
+                  </p>
+                )}
+              </div>
+
               {/* Thời Gian Cần Lấy Rỗng */}
               <div className="space-y-2">
                 <Label htmlFor="needed_by_datetime">Thời Gian Cần Lấy Rỗng <span className="text-red-500">*</span></Label>
@@ -183,7 +217,7 @@ export default function AddExportBookingForm(props: AddExportBookingFormProps = 
 
             {/* Location Selection */}
             <div className="space-y-2">
-              <LocationSelector
+              <DepotSelector
                 cityValue={form.watch('city_id')}
                 depotValue={form.watch('depot_id')}
                 onCityChange={(cityId) => form.setValue('city_id', cityId)}
@@ -272,7 +306,13 @@ export default function AddExportBookingForm(props: AddExportBookingFormProps = 
             <Button
               type="button"
               variant="outline"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                if (externalOnOpenChange) {
+                  externalOnOpenChange(false)
+                } else {
+                  setIsOpen(false)
+                }
+              }}
               disabled={isLoading}
             >
               Hủy

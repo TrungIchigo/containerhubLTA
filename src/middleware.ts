@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { can, Permission, type UserWithProfile } from '@/lib/authorization'
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -69,6 +70,11 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  // API routes - let them handle their own authentication
+  if (path.startsWith('/api/')) {
+    return supabaseResponse
+  }
+
   // Get user session
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -81,11 +87,13 @@ export async function middleware(request: NextRequest) {
   if (user && (path === '/login' || path === '/register')) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, organization_id')
       .eq('id', user.id)
       .single()
 
-    if (profile?.role === 'SYSTEM_ADMIN') {
+    const userWithProfile: UserWithProfile = { ...user, profile }
+
+    if (can(userWithProfile, Permission.VIEW_ADMIN_DASHBOARD)) {
       return NextResponse.redirect(new URL('/admin/dashboard', request.url))
     } else {
       return NextResponse.redirect(new URL('/reports', request.url))
@@ -96,11 +104,13 @@ export async function middleware(request: NextRequest) {
   if (isAdminRoute && user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, organization_id')
       .eq('id', user.id)
       .single()
 
-    if (profile?.role !== 'SYSTEM_ADMIN') {
+    const userWithProfile: UserWithProfile = { ...user, profile }
+
+    if (!can(userWithProfile, Permission.VIEW_ADMIN_DASHBOARD)) {
       return NextResponse.redirect(new URL('/reports', request.url))
     }
   }

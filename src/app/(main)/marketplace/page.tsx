@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import MarketplaceFilters from '@/components/features/marketplace/MarketplaceFilters'
 import MarketplaceListingsTable from '@/components/features/marketplace/MarketplaceListingsTable'
 import DynamicMap from '@/components/ui/dynamic-map'
-import { Store, Filter, Map } from 'lucide-react'
+import { Store, Filter, Map, Recycle } from 'lucide-react'
 import type { MarketplaceFilters as MarketplaceFiltersType } from '@/lib/types'
 
 interface MarketplacePageProps {
@@ -36,7 +36,7 @@ async function MarketplaceContent({ searchParams }: MarketplacePageProps) {
     return (
       <>
         {/* Filters Section */}
-        <div className="card">
+        <div className="card relative z-30">
           <div className="flex items-center gap-2 mb-4">
             <Filter className="w-5 h-5 text-primary" />
             <h2 className="text-h3 font-semibold text-text-primary">
@@ -46,8 +46,27 @@ async function MarketplaceContent({ searchParams }: MarketplacePageProps) {
           <MarketplaceFilters shippingLines={shippingLines} />
         </div>
 
+        {/* Results Section */}
+        <div className="relative z-20">
+          <div className="card">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Recycle className="w-5 h-5 text-green-600" />
+                <h2 className="text-h3 font-semibold text-text-primary">
+                  Cơ Hội Tái Sử Dụng Container
+                </h2>
+              </div>
+              <span className="text-body-small text-text-secondary">
+                {listings.length} cơ hội{Object.values(filters).some(v => v) ? ' (đã lọc)' : ''}
+              </span>
+            </div>
+            
+            <MarketplaceListingsTable listings={listings} />
+          </div>
+        </div>
+
         {/* Map Section */}
-        <div className="card">
+        <div className="card relative z-10">
           <div className="flex items-center gap-2 mb-4">
             <Map className="w-5 h-5 text-primary" />
             <h2 className="text-h3 font-semibold text-text-primary">
@@ -55,20 +74,6 @@ async function MarketplaceContent({ searchParams }: MarketplacePageProps) {
             </h2>
           </div>
           <DynamicMap listings={listings} height="400px" />
-        </div>
-
-        {/* Results Section */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-h3 font-semibold text-text-primary">
-              Cơ Hội Tái Sử Dụng Container
-            </h2>
-            <span className="text-body-small text-text-secondary">
-              {listings.length} cơ hội{Object.values(filters).some(v => v) ? ' (đã lọc)' : ''}
-            </span>
-          </div>
-          
-          <MarketplaceListingsTable listings={listings} />
         </div>
       </>
     )
@@ -88,7 +93,7 @@ function LoadingSkeleton() {
   return (
     <>
       {/* Filter skeleton */}
-      <div className="card">
+      <div className="card relative z-30">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
           <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
@@ -100,23 +105,17 @@ function LoadingSkeleton() {
         </div>
       </div>
 
-      {/* Map skeleton */}
-      <div className="card">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
-          <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
-        </div>
-        <div className="h-96 bg-gray-200 rounded animate-pulse"></div>
-      </div>
-
       {/* Table skeleton */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="h-6 w-64 bg-gray-200 rounded animate-pulse"></div>
-          <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
-        </div>
-        
-        <div className="card p-0 overflow-hidden">
+      <div className="relative z-20">
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-6 w-64 bg-gray-200 rounded animate-pulse"></div>
+            </div>
+            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -156,6 +155,15 @@ function LoadingSkeleton() {
             </table>
           </div>
         </div>
+      </div>
+
+      {/* Map skeleton */}
+      <div className="card relative z-10">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-6 w-32 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+        <div className="h-96 bg-gray-200 rounded animate-pulse"></div>
       </div>
     </>
   )

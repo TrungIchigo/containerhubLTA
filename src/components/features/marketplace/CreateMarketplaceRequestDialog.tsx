@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Loader2, ArrowRight, MapPin, Calendar, Truck } from 'lucide-react'
 import { createMarketplaceRequest, getUserExportBookings } from '@/lib/actions/marketplace'
 import { useToast } from '@/hooks/use-toast'
-import { formatDateTimeVN } from '@/lib/utils'
+import { formatStoredDateTimeVN } from '@/lib/utils'
 import type { MarketplaceListing } from '@/lib/types'
 
 // Interface cho booking data từ API
@@ -142,7 +142,7 @@ export default function CreateMarketplaceRequestDialog({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-text-secondary">Thời gian rảnh:</span>
-                <span className="text-sm">{formatDateTimeVN(listing.available_from_datetime)}</span>
+                <span className="text-sm">{formatStoredDateTimeVN(listing.available_from_datetime)}</span>
               </div>
             </div>
           </div>
@@ -205,7 +205,7 @@ export default function CreateMarketplaceRequestDialog({
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          Cần trước: {formatDateTimeVN(booking.needed_by_datetime)}
+                          Cần trước: {formatStoredDateTimeVN(booking.needed_by_datetime)}
                         </div>
                       </div>
                     </div>

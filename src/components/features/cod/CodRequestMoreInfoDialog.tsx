@@ -45,11 +45,11 @@ export default function CodRequestMoreInfoDialog({ isOpen, onClose, request }: C
       const result = await requestMoreInfo(request.id, data.carrier_comment)
 
       if (result.success) {
-        toast({
-          title: "✅ Thành công",
-          description: result.message,
-          variant: "default"
-        })
+              toast({
+        title: "✅ Thành công",
+        description: result.message,
+        variant: "success"
+      })
         onClose()
       } else {
         throw new Error(result.message)

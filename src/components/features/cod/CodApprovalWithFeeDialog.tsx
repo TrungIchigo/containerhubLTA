@@ -34,7 +34,7 @@ export default function CodApprovalWithFeeDialog({ isOpen, onClose, request }: C
   const form = useForm<ApprovalWithFeeFormData>({
     resolver: zodResolver(approvalWithFeeSchema),
     defaultValues: {
-      cod_fee: 0
+      cod_fee: request.cod_fee || 0 // Sử dụng phí đã tính hoặc 0
     }
   })
 
@@ -45,11 +45,11 @@ export default function CodApprovalWithFeeDialog({ isOpen, onClose, request }: C
       const result = await handleCodDecision(request.id, 'APPROVED', data.cod_fee)
 
       if (result.success) {
-        toast({
-          title: "✅ Thành công",
-          description: result.message,
-          variant: "default"
-        })
+              toast({
+        title: "✅ Thành công",
+        description: result.message,
+        variant: "success"
+      })
         onClose()
       } else {
         throw new Error(result.message)
@@ -149,6 +149,21 @@ export default function CodApprovalWithFeeDialog({ isOpen, onClose, request }: C
               Phí COD
             </h3>
             
+            {/* Hiển thị phí đã tính */}
+            {request.cod_fee && (
+              <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-green-600" />
+                  <span className="font-medium text-green-800">
+                    Phí đã tính tự động: {formatCurrency(request.cod_fee)}
+                  </span>
+                </div>
+                <p className="text-xs text-green-700 mt-1">
+                  Hệ thống đã tự động tính phí dựa trên khoảng cách giữa các depot
+                </p>
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="cod_fee">
                 Phí thay đổi nơi trả (VNĐ) *
@@ -168,13 +183,17 @@ export default function CodApprovalWithFeeDialog({ isOpen, onClose, request }: C
                 </p>
               )}
               
+              <p className="text-xs text-text-secondary">
+                Bạn có thể giữ nguyên phí đã tính hoặc điều chỉnh theo chính sách của hãng tàu
+              </p>
+              
               {/* Preview phí */}
               {form.watch('cod_fee') > 0 && (
                 <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                   <div className="flex items-center gap-2">
                     <DollarSign className="h-4 w-4 text-blue-600" />
                     <span className="font-medium text-blue-800">
-                      Phí COD: {formatCurrency(form.watch('cod_fee'))}
+                      Phí COD cuối cùng: {formatCurrency(form.watch('cod_fee'))}
                     </span>
                   </div>
                 </div>

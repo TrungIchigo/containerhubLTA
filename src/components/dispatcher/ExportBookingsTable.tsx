@@ -1,11 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import AddExportBookingForm from './AddExportBookingForm'
-import { formatDateTimeVN } from '@/lib/utils'
-import type { ExportBooking } from '@/lib/types'
+import { formatStoredDateTimeVN } from '@/lib/utils'
+import type { ExportBooking, Organization } from '@/lib/types'
 
 interface ExportBookingsTableProps {
-  bookings: ExportBooking[]
+  bookings: (ExportBooking & {
+    shipping_line?: Organization
+    container_type?: any // Can be string or object from joined data
+  })[]
 }
 
 export default function ExportBookingsTable({ bookings }: ExportBookingsTableProps) {
@@ -21,20 +23,8 @@ export default function ExportBookingsTable({ bookings }: ExportBookingsTablePro
     return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
   }
 
-
-
   return (
-    <Card className="mb-8">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle className="text-text-primary">Quản lý Lệnh Lấy Rỗng</CardTitle>
-          <p className="text-sm text-text-secondary mt-1">
-            Tổng cộng: {bookings.length} lệnh
-          </p>
-        </div>
-        <AddExportBookingForm />
-      </CardHeader>
-      
+    <Card className="mb-8">      
       <CardContent>
         {bookings.length === 0 ? (
           <div className="text-center py-8 text-text-secondary">
@@ -48,6 +38,7 @@ export default function ExportBookingsTable({ bookings }: ExportBookingsTablePro
                 <tr className="border-b border-border">
                   <th className="text-left p-3 font-medium text-text-primary">Số Booking</th>
                   <th className="text-left p-3 font-medium text-text-primary">Loại Container</th>
+                  <th className="text-left p-3 font-medium text-text-primary">Hãng Tàu</th>
                   <th className="text-left p-3 font-medium text-text-primary">Địa Điểm Lấy Hàng</th>
                   <th className="text-left p-3 font-medium text-text-primary">Thời Gian Cần</th>
                   <th className="text-center p-3 font-medium text-text-primary">Trạng Thái</th>
@@ -63,14 +54,17 @@ export default function ExportBookingsTable({ bookings }: ExportBookingsTablePro
                     </td>
                     <td className="p-3">
                       <Badge variant="outline">
-                        {booking.required_container_type}
+                        {booking.container_type?.code || booking.required_container_type || 'N/A'}
                       </Badge>
+                    </td>
+                    <td className="p-3 text-text-secondary">
+                      {booking.shipping_line?.name || 'N/A'}
                     </td>
                     <td className="p-3 text-text-secondary">
                       {booking.pick_up_location}
                     </td>
                     <td className="p-3 text-text-secondary">
-                      {formatDateTimeVN(booking.needed_by_datetime)}
+                      {formatStoredDateTimeVN(booking.needed_by_datetime)}
                     </td>
                     <td className="p-3 text-center">
                       {getStatusBadge(booking.status)}

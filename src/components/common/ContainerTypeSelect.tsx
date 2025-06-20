@@ -46,6 +46,11 @@ const ContainerTypeSelect = forwardRef<HTMLButtonElement, ContainerTypeSelectPro
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
+          <SelectItem value="all" key="all">
+            <div className="flex flex-col">
+              <span className="font-medium">Tất cả loại container</span>
+            </div>
+          </SelectItem>
           {containerTypes.map((type) => (
             <SelectItem key={type.id} value={type.id}>
               <div className="flex flex-col">

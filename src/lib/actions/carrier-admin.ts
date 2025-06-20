@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from './auth'
 import { revalidatePath } from 'next/cache'
+import { createMarketplaceFee } from './billing'
 import { debugUserData } from '../debug'
 
 // Get carrier admin dashboard data
@@ -40,6 +41,34 @@ export async function getCarrierAdminDashboardData() {
     if (organization.status !== 'ACTIVE') {
       console.error('Organization is not active:', organization.status)
       throw new Error('Organization is not active')
+    }
+
+    // Get COD requests for this shipping line
+    const { data: codRequests, error: codError } = await supabase
+      .from('cod_requests')
+      .select(`
+        *,
+        import_container:import_containers!cod_requests_dropoff_order_id_fkey(
+          id,
+          container_number,
+          container_type,
+          drop_off_location
+        ),
+        requested_depot:depots!cod_requests_requested_depot_id_fkey(
+          id,
+          name,
+          address
+        ),
+        requesting_org:organizations!cod_requests_requesting_org_id_fkey(
+          id,
+          name
+        )
+      `)
+      .eq('approving_org_id', orgId)
+      .order('created_at', { ascending: false })
+
+    if (codError) {
+      console.error('Error fetching COD requests:', codError)
     }
 
     // Get pending requests for this shipping line with better error handling
@@ -91,6 +120,7 @@ export async function getCarrierAdminDashboardData() {
     }
 
     console.log('Found pending requests:', pendingRequests?.length || 0)
+    console.log('Found COD requests:', codRequests?.length || 0)
 
     // Get KPI data with individual error handling
     let approvedThisMonth = []
@@ -138,13 +168,17 @@ export async function getCarrierAdminDashboardData() {
     const kpis = {
       pendingCount: pendingRequests?.length || 0,
       approvedThisMonth: approvedThisMonth.length,
-      totalApproved: totalApproved.length
+      totalApproved: totalApproved.length,
+      // COD specific KPIs
+      pendingCodRequests: codRequests?.filter(r => r.status === 'PENDING').length || 0,
+      approvedButUnpaidCodRequests: codRequests?.filter(r => ['APPROVED', 'PENDING_PAYMENT'].includes(r.status)).length || 0
     }
 
     console.log('KPI data:', kpis)
 
     return {
       pendingRequests: pendingRequests || [],
+      codRequests: codRequests || [],
       kpis,
       organization
     }
@@ -217,6 +251,19 @@ export async function approveRequest(requestId: string) {
   if (containerError || bookingError) {
     console.error('Error updating container/booking status:', { containerError, bookingError })
     // Don't throw here as the main operation succeeded
+  }
+
+  // Tạo phí giao dịch marketplace nếu là loại MARKETPLACE
+  if (request.match_type === 'MARKETPLACE') {
+    const billingResult = await createMarketplaceFee(
+      request.pickup_trucking_org_id, // Bên "mua" cơ hội sẽ trả phí
+      requestId
+    )
+
+    if (!billingResult.success) {
+      console.error('Warning: Không thể tạo phí giao dịch marketplace:', billingResult.error)
+      // Không throw error vì request đã được approved thành công
+    }
   }
 
   // Revalidate all relevant pages

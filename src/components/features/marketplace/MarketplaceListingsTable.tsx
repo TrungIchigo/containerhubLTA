@@ -9,7 +9,7 @@ import CreateMarketplaceRequestDialog from './CreateMarketplaceRequestDialog'
 import { RatingDisplay } from '@/components/ui/star-rating'
 import { useMarketplaceStore } from '@/stores/marketplace-store'
 import type { MarketplaceListing } from '@/lib/types'
-import { formatDateTimeVN } from '@/lib/utils'
+import { formatStoredDateTimeVN } from '@/lib/utils'
 
 interface MarketplaceListingsTableProps {
   listings: MarketplaceListing[]
@@ -173,7 +173,7 @@ export default function MarketplaceListingsTable({ listings }: MarketplaceListin
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-text-secondary" />
                         <span className="text-text-secondary text-sm">
-                          {formatDateTimeVN(listing.available_from_datetime)}
+                          {formatStoredDateTimeVN(listing.available_from_datetime)}
                         </span>
                       </div>
                     </td>

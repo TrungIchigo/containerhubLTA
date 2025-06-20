@@ -18,89 +18,51 @@ export default function KPICards({
       title: 'Container Sẵn Sàng',
       value: availableContainers,
       icon: Container,
-      bgGradient: 'bg-gradient-to-br from-white to-primary/5',
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
-      borderColor: 'border-l-4 border-l-primary',
-      href: '/dispatcher#import-containers',
-      description: 'containers sẵn sàng tái sử dụng'
+      iconColor: 'text-text-primary',
+      bgGradient: 'bg-gradient-to-br from-blue-50 to-blue-300',
+      href: '/dispatcher/containers'
     },
     {
       title: 'Booking Đang Chờ',
       value: availableBookings,
       icon: FileText,
-      bgGradient: 'bg-gradient-to-br from-warning/10 to-warning/20',
-      iconBg: 'bg-warning/20',
-      iconColor: 'text-warning-foreground',
-      borderColor: 'border-l-4 border-l-warning',
-      href: '/dispatcher#export-bookings',
-      description: 'bookings cần container rỗng'
+      iconColor: 'text-text-primary',
+      bgGradient: 'bg-gradient-to-br from-yellow-50 to-yellow-200',
+      href: '/dispatcher/bookings'
     },
     {
       title: 'Tái Sử Dụng Đã Duyệt',
       value: approvedStreetTurns,
       icon: CheckCircle,
-      bgGradient: 'bg-gradient-to-br from-white to-primary/5',
-      iconBg: 'bg-primary/10',
-      iconColor: 'text-primary',
-      borderColor: 'border-l-4 border-l-primary',
-      href: '/dispatcher/requests',
-      description: 'yêu cầu đã được phê duyệt'
+      iconColor: 'text-text-primary',
+      bgGradient: 'bg-gradient-to-br from-white to-primary/50',
+      href: '/dispatcher/street-turns'
     }
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       {cards.map((card, index) => {
         const Icon = card.icon
         return (
           <Link key={index} href={card.href} className="block group">
-            <Card className={`
-              kpi-card 
-              ${card.bgGradient} 
-              ${card.borderColor}
-              border-0 
-              cursor-pointer 
-              transition-all 
-              duration-200 
-              hover:shadow-lg 
-              hover:scale-[1.02]
-              hover:-translate-y-1
-            `}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="space-y-1">
-                  <CardTitle className="text-sm font-medium text-text-secondary">
-                    {card.title}
-                  </CardTitle>
-                </div>
-                {/* Large decorative icon */}
-                <div className={`
-                  w-16 h-16 
-                  ${card.iconBg} 
-                  rounded-lg 
-                  flex items-center justify-center
-                  opacity-20
-                  group-hover:opacity-30
-                  transition-opacity
-                `}>
-                  <Icon className={`w-8 h-8 ${card.iconColor}`} />
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {/* Large metric value */}
-                <div className="text-4xl font-bold text-text-primary mb-2 group-hover:scale-105 transition-transform">
-                  {card.value.toLocaleString()}
-                </div>
-                {/* Description */}
-                <p className="text-sm text-text-secondary">
-                  {card.description}
-                </p>
-                {/* Small icon indicator */}
-                <div className="flex items-center justify-between mt-3">
-                  <div className={`p-1.5 rounded ${card.iconBg}`}>
-                    <Icon className={`w-4 h-4 ${card.iconColor}`} />
+            <Card className={`border cursor-pointer transition-all duration-200 hover:shadow-md ${card.bgGradient}`}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="text-lg font-medium text-text-primary mb-1">
+                      {card.title}
+                    </p>
+                    <p className="text-2xl font-bold text-text-primary">
+                      {card.value.toLocaleString()}
+                    </p>
                   </div>
-                  <span className="text-xs text-text-secondary group-hover:text-primary transition-colors">
+                  <div className="flex flex-col items-center gap-2">
+                    <Icon className={`w-6 h-6 ${card.iconColor}`} />
+                  </div>
+                </div>
+                <div className="mt-3 flex justify-end">
+                  <span className="text-xs text-text-primary group-hover:text-primary transition-colors">
                     Xem chi tiết →
                   </span>
                 </div>

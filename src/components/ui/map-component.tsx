@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { formatStoredDateTimeVN } from '@/lib/utils'
 import type { MarketplaceListing } from '@/lib/types'
 
 interface MapComponentProps {
@@ -129,7 +130,7 @@ export default function MapComponent({
                 <div className="space-y-1 text-xs">
                   <p><strong>Loại Container:</strong> {listing.container_type}</p>
                   <p><strong>Địa Điểm:</strong> {listing.drop_off_location}</p>
-                  <p><strong>Có Sẵn Từ:</strong> {new Date(listing.available_from_datetime).toLocaleDateString('vi-VN')}</p>
+                  <p><strong>Có Sẵn Từ:</strong> {formatStoredDateTimeVN(listing.available_from_datetime)}</p>
                   <p><strong>Hãng Tàu:</strong> {listing.shipping_line.name}</p>
                   <p><strong>Công Ty Vận Tải:</strong> {listing.trucking_company.name}</p>
                 </div>

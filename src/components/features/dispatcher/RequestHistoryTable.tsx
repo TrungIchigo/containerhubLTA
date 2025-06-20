@@ -52,35 +52,23 @@ const getStatusBadge = (request: StreetTurnRequest) => {
     return (
       <div className="flex items-center gap-1">
         <Badge variant="approved">Tự động duyệt</Badge>
-        <span className="text-xs text-blue-600">🤖</span>
+        <span className="text-xs">🤖</span>
       </div>
     )
   }
   
   // Marketplace requests with partner approval pending
   if (match_type === 'MARKETPLACE' && dropoff_org_approval_status === 'PENDING') {
-    return (
-      <div className="flex flex-col gap-1">
-        <Badge variant="pending">Chờ đối tác</Badge>
-        <span className="text-xs text-text-secondary">Đợi công ty bán duyệt</span>
-      </div>
-    )
+    return <Badge variant="pending">Chờ đối tác</Badge>
   }
   
   // Marketplace requests with partner declined
   if (match_type === 'MARKETPLACE' && dropoff_org_approval_status === 'DECLINED') {
-    return (
-      <div className="flex flex-col gap-1">
-        <Badge variant="declined">Đối tác từ chối</Badge>
-        <span className="text-xs text-text-secondary">Yêu cầu bị hủy</span>
-      </div>
-    )
+    return <Badge variant="declined">Đối tác từ chối</Badge>
   }
   
   return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
 }
-
-
 
 const formatRequestId = (id: string) => {
   // Show first 8 characters of ID for display
@@ -133,8 +121,8 @@ export default function RequestHistoryTable({ requests, className, userReviews =
               <th className="table-header">Hãng tàu</th>
               <th className="table-header">Đối tác</th>
               <th className="table-header">Ngày gửi</th>
-              <th className="table-header">Trạng thái</th>
-              <th className="table-header">Hành động</th>
+              <th className="table-header w-32">Trạng thái</th>
+              <th className="table-header w-40">Hành động</th>
             </tr>
           </thead>
           <tbody>
@@ -168,10 +156,12 @@ export default function RequestHistoryTable({ requests, className, userReviews =
                 <td className="table-cell">
                   {formatDateVN(request.created_at)}
                 </td>
-                <td className="table-cell">
-                  {getStatusBadge(request)}
+                <td className="table-cell w-32">
+                  <div className="whitespace-nowrap">
+                    {getStatusBadge(request)}
+                  </div>
                 </td>
-                <td className="table-cell">
+                <td className="table-cell w-40">
                   <div className="flex space-x-2">
                     <button className="text-primary hover:text-primary-dark text-sm font-medium transition-colors">
                       Xem chi tiết
