@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { verifyOtp, resendOtp } from '@/lib/actions/auth'
+import { Loader } from '@/components/ui/loader'
 
 interface OtpFormProps {
   email: string
@@ -137,7 +138,7 @@ export default function OtpForm({
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader className="mr-2 h-4 w-4 animate-spin" />
                 Đang gửi...
               </>
             ) : canResendOtp ? (
@@ -168,7 +169,9 @@ export default function OtpForm({
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <div className="mr-2 w-4 h-4">
+                  <Loader size="sm" />
+                </div>
                 Đang xác thực...
               </>
             ) : (

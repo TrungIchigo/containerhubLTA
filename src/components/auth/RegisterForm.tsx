@@ -1,18 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Eye, EyeOff, Loader2, CheckCircle, AlertTriangle } from 'lucide-react'
+import { Eye, EyeOff, Loader2, CheckCircle, AlertTriangle, Container, Truck, Shield, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 import NewOrganizationForm from './NewOrganizationForm'
 import { Organization } from '@/lib/types'
+import { gsap } from 'gsap'
 
 export default function RegisterForm() {
+  console.log('RegisterForm component rendering...')
+  
   const [formData, setFormData] = useState({
     fullName: '',
     companyName: '',
@@ -38,6 +41,173 @@ export default function RegisterForm() {
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null)
   
   const router = useRouter()
+
+  // GSAP Refs
+  const containerRef = useRef<HTMLDivElement>(null)
+  const logoRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLDivElement>(null)
+  const subtitleRef = useRef<HTMLParagraphElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const floatingIcon1Ref = useRef<HTMLDivElement>(null)
+  const floatingIcon2Ref = useRef<HTMLDivElement>(null)
+  const floatingIcon3Ref = useRef<HTMLDivElement>(null)
+  const floatingIcon4Ref = useRef<HTMLDivElement>(null)
+
+  // GSAP Animations
+  useLayoutEffect(() => {
+    // Đảm bảo container luôn hiển thị
+    if (containerRef.current) {
+      containerRef.current.style.opacity = '1'
+      containerRef.current.style.visibility = 'visible'
+    }
+
+    // Chỉ chạy animations trên desktop
+    const isDesktop = window.innerWidth >= 1024
+    if (!isDesktop) return
+
+    let retryCount = 0
+    const maxRetries = 10
+
+    const startAnimations = () => {
+      const refs = [containerRef, logoRef, titleRef, subtitleRef, formRef, buttonRef]
+      const floatingRefs = [floatingIcon1Ref, floatingIcon2Ref, floatingIcon3Ref, floatingIcon4Ref]
+      
+      if (refs.some(ref => !ref.current)) {
+        retryCount++
+        if (retryCount < maxRetries) {
+          setTimeout(startAnimations, 200)
+          return
+        }
+        return
+      }
+
+      console.log('Starting RegisterForm GSAP animations')
+
+      const tl = gsap.timeline({ delay: 0.3 })
+
+      // Set initial states - but ensure form is visible first
+      const allElements = refs.map(ref => ref.current).filter(Boolean)
+      
+      // Make sure container is visible immediately
+      if (containerRef.current) {
+        containerRef.current.style.opacity = '1'
+        containerRef.current.style.visibility = 'visible'
+      }
+      
+      gsap.set(allElements.filter(el => el !== containerRef.current), {
+        opacity: 0,
+        y: 50,
+        scale: 0.9
+      })
+
+      // Floating icons initial state
+      const floatingElements = floatingRefs.map(ref => ref.current).filter(Boolean)
+      gsap.set(floatingElements, {
+        opacity: 0,
+        scale: 0,
+        rotation: 0
+      })
+
+      // Sequential entrance animations
+      tl.to(logoRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 1,
+        ease: "back.out(1.7)"
+      })
+      .to(titleRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        ease: "power3.out"
+      }, "-=0.5")
+      .to(subtitleRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: "power2.out"
+      }, "-=0.4")
+      .to(formRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        ease: "power3.out"
+      }, "-=0.3")
+      .to(buttonRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: "back.out(1.2)"
+      }, "-=0.4")
+
+      // Floating icons entrance
+      tl.to(floatingElements, {
+        opacity: 0.6,
+        scale: 1,
+        duration: 0.8,
+        ease: "back.out(1.7)",
+        stagger: 0.1
+      }, "-=0.5")
+
+      // Continuous floating animations
+      floatingElements.forEach((element, index) => {
+        if (element) {
+          gsap.to(element, {
+            y: -20,
+            duration: 2 + index * 0.5,
+            repeat: -1,
+            yoyo: true,
+            ease: "power1.inOut",
+            delay: index * 0.3
+          })
+          
+          gsap.to(element, {
+            rotation: 360,
+            duration: 8 + index * 2,
+            repeat: -1,
+            ease: "none"
+          })
+        }
+      })
+    }
+
+    const timer = setTimeout(startAnimations, 100)
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Success/Error feedback animations
+  useEffect(() => {
+    if (showSuccessModal && buttonRef.current) {
+      gsap.to(buttonRef.current, {
+        scale: 1.05,
+        duration: 0.3,
+        ease: "back.out(1.7)",
+        yoyo: true,
+        repeat: 1
+      })
+    }
+  }, [showSuccessModal])
+
+  useEffect(() => {
+    if (errorMessage && formRef.current) {
+      gsap.fromTo(formRef.current, 
+        { x: 0 },
+        { 
+          x: 10,
+          duration: 0.1,
+          ease: "power2.out",
+          yoyo: true,
+          repeat: 5
+        }
+      )
+    }
+  }, [errorMessage])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -388,33 +558,55 @@ export default function RegisterForm() {
     )
   }
 
-      return (
-     <div className="grid gap-8">
-       {/* Logo */}
-       <div className="flex justify-center">
-         <Link href="/">
-           <Image
-             src="https://uelfhngfhiirnxinvtbg.supabase.co/storage/v1/object/public/assets//logo.png"
-             alt="i-ContainerHub Logo"
-             width={200}
-             height={200}
-           />
-         </Link>
+        return (
+    <div 
+      ref={containerRef} 
+      className="relative w-full h-full min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-br from-background via-primary-light/10 to-secondary-light/10 overflow-hidden lg:min-h-screen lg:h-screen"
+      style={{ opacity: 1, visibility: 'visible' }}
+    >
+       {/* Floating Background Elements */}
+       <div ref={floatingIcon1Ref} className="absolute top-20 left-20 text-primary/20 pointer-events-none">
+         <Container size={48} />
        </div>
-       
-       <div className="grid gap-3 text-center">
-         <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-           Đăng Ký
-         </h1>
-         <p className="text-lg text-gray-600">
-           Đã có tài khoản?{" "}
-           <Link href="/login" className="font-semibold text-primary hover:text-blue-600 transition-colors">
-             Đăng nhập ngay
+       <div ref={floatingIcon2Ref} className="absolute top-32 right-32 text-secondary/20 pointer-events-none">
+         <Truck size={40} />
+       </div>
+       <div ref={floatingIcon3Ref} className="absolute bottom-40 left-32 text-accent/20 pointer-events-none">
+         <Shield size={44} />
+       </div>
+       <div ref={floatingIcon4Ref} className="absolute bottom-20 right-20 text-primary/20 pointer-events-none">
+         <Sparkles size={36} />
+       </div>
+
+       <div className="relative z-10 w-full max-w-md mx-auto p-8" style={{ minHeight: '400px' }}>
+         {/* Logo */}
+         <div ref={logoRef} className="flex justify-center mb-8">
+           <Link href="/">
+             <Image
+               src="https://uelfhngfhiirnxinvtbg.supabase.co/storage/v1/object/public/assets//logo.png"
+               alt="i-ContainerHub Logo"
+               width={200}
+               height={200}
+               className="drop-shadow-lg"
+             />
            </Link>
-         </p>
-       </div>
-      <form onSubmit={handleSubmit}>
-        <div className="grid gap-4">
+         </div>
+         
+         <div className="grid gap-3 text-center mb-8">
+           <div ref={titleRef}>
+             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+               Đăng Ký
+             </h1>
+           </div>
+           <p ref={subtitleRef} className="text-lg text-gray-600">
+             Đã có tài khoản?{" "}
+             <Link href="/login" className="font-semibold text-primary hover:text-blue-600 transition-colors">
+               Đăng nhập ngay
+             </Link>
+           </p>
+         </div>
+          <form ref={formRef} onSubmit={handleSubmit}>
+            <div className="grid gap-4">
           {/* Họ và tên */}
           <div className="grid gap-2">
             <Label htmlFor="fullName">Họ và tên</Label>
@@ -611,43 +803,45 @@ export default function RegisterForm() {
 
 
 
-                     <Button 
-             type="submit" 
-             className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-blue-600 hover:from-primary-dark hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl" 
-             disabled={isLoading || (checkResult && !checkResult.found && !showNewOrgForm) || false}
-           >
-             {isLoading ? (
-               <>
-                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                 Đang xử lý...
-               </>
-             ) : (
-               'Tạo Tài Khoản'
-             )}
-           </Button>
-        </div>
-      </form>
-
-      {/* Modal thành công */}
-      {showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
-            <div className="text-center">
-              <div className="text-green-500 mb-4">
-                <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Đăng ký thành công!
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Tài khoản của bạn đã được tạo thành công. Đang chuyển hướng trong {countdown} giây...
-              </p>
+              <Button 
+                ref={buttonRef}
+                type="submit" 
+                className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-blue-600 hover:from-primary-dark hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl" 
+                disabled={isLoading || (checkResult && !checkResult.found && !showNewOrgForm) || false}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  'Tạo Tài Khoản'
+                )}
+              </Button>
             </div>
-          </div>
+          </form>
+
+          {/* Modal thành công */}
+          {showSuccessModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+                <div className="text-center">
+                  <div className="text-green-500 mb-4">
+                    <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Đăng ký thành công!
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Tài khoản của bạn đã được tạo thành công. Đang chuyển hướng trong {countdown} giây...
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </div>
-  )
+      </div>
+    )
 } 

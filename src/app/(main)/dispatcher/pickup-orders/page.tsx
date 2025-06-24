@@ -12,6 +12,7 @@ import { DispatcherDashboardWrapper } from '@/components/features/dispatcher/Dis
 import { createClient } from '@/lib/supabase/client'
 import Pagination from '@/components/common/Pagination'
 import CreateBookingDialog from '@/components/features/dispatcher/CreateBookingDialog'
+import { Loading } from '@/components/ui/loader'
 
 export default function PickupOrdersPage() {
   const router = useRouter()
@@ -202,7 +203,7 @@ export default function PickupOrdersPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loading text="Đang tải danh sách lệnh lấy rỗng..." />
       </div>
     )
   }

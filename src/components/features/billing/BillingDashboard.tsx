@@ -38,6 +38,7 @@ import {
   getUnpaidTransactions
 } from '@/lib/actions/billing'
 import type { Invoice, Transaction } from '@/lib/types/billing'
+import { Loading } from '@/components/ui/loader'
 
 export function BillingDashboard() {
   const [isLoading, setIsLoading] = useState(true)
@@ -149,10 +150,7 @@ export function BillingDashboard() {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-            <p className="text-sm text-muted-foreground mt-2">Đang tải dữ liệu...</p>
-          </div>
+          <Loading text="Đang tải dữ liệu thanh toán..." />
         </CardContent>
       </Card>
     )

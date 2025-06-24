@@ -10,6 +10,7 @@ import MatchSuggestions from '@/components/dispatcher/MatchSuggestions'
 import SuggestionFilters from '@/components/dispatcher/SuggestionFilters'
 import { DispatcherDashboardWrapper } from '@/components/features/dispatcher/DispatcherDashboardWrapper'
 import { createClient } from '@/lib/supabase/client'
+import { Loading } from '@/components/ui/loader'
 
 export default function SuggestionsPage() {
   const router = useRouter()
@@ -201,7 +202,7 @@ export default function SuggestionsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loading text="Đang tải gợi ý..." />
       </div>
     )
   }

@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Container, Truck, RefreshCw, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { Loading } from '@/components/ui/loader'
 
 interface DashboardData {
   importContainers: any[]
@@ -187,7 +188,7 @@ export default function DispatcherPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <Loading text="Đang tải dashboard..." />
       </div>
     )
   }

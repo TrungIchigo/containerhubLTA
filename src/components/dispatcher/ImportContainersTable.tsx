@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { MoreHorizontal, MapPin } from 'lucide-react'
+import { MoreHorizontal, MapPin, Eye } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import CodRequestDialog from '@/components/features/cod/CodRequestDialog'
+import ContainerDetailDialog from './ContainerDetailDialog'
 import type { ImportContainer, Organization } from '@/lib/types'
 import { useState } from 'react'
 import { formatStoredDateTimeVN } from '@/lib/utils'
@@ -29,6 +30,7 @@ export default function ImportContainersTable({
 }: ImportContainersTableProps) {
   const [selectedContainer, setSelectedContainer] = useState<ImportContainer | null>(null)
   const [isCodDialogOpen, setIsCodDialogOpen] = useState(false)
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
 
   // Status mapping cho container
   const statusMap = {
@@ -46,6 +48,11 @@ export default function ImportContainersTable({
   const handleCodRequest = (container: ImportContainer) => {
     setSelectedContainer(container)
     setIsCodDialogOpen(true)
+  }
+
+  const handleViewDetails = (container: ImportContainer) => {
+    setSelectedContainer(container)
+    setIsDetailDialogOpen(true)
   }
 
   return (
@@ -74,8 +81,11 @@ export default function ImportContainersTable({
                 <tbody>
                   {containers.map((container) => (
                     <tr key={container.id} className="border-b border-border hover:bg-gray-50">
-                      <td className="p-3">
-                        <div className="font-medium text-text-primary">
+                      <td 
+                        className="p-3 cursor-pointer hover:bg-blue-50"
+                        onClick={() => handleViewDetails(container)}
+                      >
+                        <div className="font-medium text-text-primary hover:text-blue-600">
                           {container.container_number}
                         </div>
                       </td>
@@ -102,15 +112,22 @@ export default function ImportContainersTable({
                         </div>
                       </td>
                       <td className="p-3 text-center w-24">
-                        {container.status === 'AVAILABLE' ? (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Mở menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Mở menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleViewDetails(container)}
+                              className="cursor-pointer"
+                            >
+                              <Eye className="mr-2 h-4 w-4" />
+                              Xem Chi Tiết
+                            </DropdownMenuItem>
+                            {container.status === 'AVAILABLE' && (
                               <DropdownMenuItem
                                 onClick={() => handleCodRequest(container)}
                                 className="cursor-pointer"
@@ -118,11 +135,9 @@ export default function ImportContainersTable({
                                 <MapPin className="mr-2 h-4 w-4" />
                                 Yêu cầu Đổi Nơi Trả
                               </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        ) : (
-                          <span className="text-text-secondary text-sm">-</span>
-                        )}
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
                     </tr>
                   ))}
@@ -142,6 +157,24 @@ export default function ImportContainersTable({
             setSelectedContainer(null)
           }}
           container={selectedContainer}
+        />
+      )}
+
+      {/* Container Detail Dialog */}
+      {selectedContainer && (
+        <ContainerDetailDialog
+          isOpen={isDetailDialogOpen}
+          onClose={() => {
+            setIsDetailDialogOpen(false)
+            setSelectedContainer(null)
+          }}
+          container={selectedContainer}
+          onUpdate={() => {
+            // Callback to refresh data after edit/delete
+            setIsDetailDialogOpen(false)
+            setSelectedContainer(null)
+            // The parent component would need to handle refresh
+          }}
         />
       )}
     </>

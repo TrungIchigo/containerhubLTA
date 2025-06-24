@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Eye, EyeOff, Loader2, CheckCircle } from 'lucide-react'
+import { Eye, EyeOff, Loader2, CheckCircle, Sparkles, Shield, Truck, Container } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
+import { gsap } from 'gsap'
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({
@@ -21,6 +22,15 @@ export default function LoginForm() {
   const [successMessage, setSuccessMessage] = useState('')
   const router = useRouter()
   const searchParams = useSearchParams()
+  
+  // Refs cho GSAP animations
+  const containerRef = useRef<HTMLDivElement>(null)
+  const backgroundRef = useRef<HTMLDivElement>(null)
+  const logoRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const subtitleRef = useRef<HTMLParagraphElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+  const floatingElementsRef = useRef<HTMLDivElement[]>([])
 
   // Check for success message from registration
   useEffect(() => {
@@ -38,6 +48,113 @@ export default function LoginForm() {
     }
   }, [searchParams])
 
+  // GSAP Animations phủ toàn màn hình
+  useEffect(() => {
+    // Đảm bảo tất cả refs đã được mount
+    if (!backgroundRef.current || !logoRef.current || !titleRef.current || !subtitleRef.current || !formRef.current) {
+      return
+    }
+
+    const tl = gsap.timeline()
+    
+    // Set initial states với null checks
+    if (backgroundRef.current) {
+      gsap.set(backgroundRef.current, {
+        opacity: 0,
+        scale: 1.1
+      })
+    }
+    
+    const formElements = [logoRef.current, titleRef.current, subtitleRef.current, formRef.current].filter(Boolean)
+    gsap.set(formElements, {
+      opacity: 0,
+      y: 50,
+      scale: 0.8
+    })
+
+    // Animated background gradient
+    if (backgroundRef.current) {
+      tl.to(backgroundRef.current, {
+        opacity: 1,
+        scale: 1,
+        duration: 1.2,
+        ease: "power2.out"
+      })
+    }
+
+    if (logoRef.current) {
+      tl.to(logoRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        ease: "back.out(1.7)"
+      }, "-=0.8")
+    }
+
+    if (titleRef.current) {
+      tl.to(titleRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: "power3.out"
+      }, "-=0.4")
+    }
+
+    if (subtitleRef.current) {
+      tl.to(subtitleRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: "power3.out"
+      }, "-=0.5")
+    }
+
+    if (formRef.current) {
+      tl.to(formRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.7,
+        ease: "power3.out"
+      }, "-=0.3")
+    }
+
+    // Floating elements animation với logistics icons
+    floatingElementsRef.current.forEach((el, index) => {
+      if (el) {
+        gsap.set(el, {
+          rotation: Math.random() * 360,
+          x: Math.random() * 200 - 100,
+          y: Math.random() * 200 - 100,
+        })
+        
+        gsap.to(el, {
+          rotation: `+=${360 + Math.random() * 360}`,
+          duration: 15 + Math.random() * 10,
+          repeat: -1,
+          ease: "none"
+        })
+        
+        gsap.to(el, {
+          y: `+=${Math.random() * 60 - 30}`,
+          x: `+=${Math.random() * 40 - 20}`,
+          duration: 4 + Math.random() * 3,
+          repeat: -1,
+          yoyo: true,
+          ease: "power1.inOut"
+        })
+      }
+    })
+
+    // Cleanup
+    return () => {
+      tl.kill()
+    }
+  }, [])
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -53,6 +170,15 @@ export default function LoginForm() {
       })
 
       if (error) throw error
+
+      // Success animation
+      gsap.to(formRef.current, {
+        scale: 1.05,
+        duration: 0.3,
+        yoyo: true,
+        repeat: 1,
+        ease: "power2.out"
+      })
 
       // Lấy thông tin user profile để redirect đúng dashboard
       const { data: profile } = await supabase
@@ -73,6 +199,15 @@ export default function LoginForm() {
     } catch (error: any) {
       console.error('Lỗi đăng nhập:', error)
       setErrorMessage('Email hoặc mật khẩu không chính xác.')
+      
+      // Error shake animation
+      gsap.to(formRef.current, {
+        x: -10,
+        duration: 0.1,
+        repeat: 5,
+        yoyo: true,
+        ease: "power2.out"
+      })
     }
   }
 
@@ -92,105 +227,180 @@ export default function LoginForm() {
     setIsLoading(false)
   }
 
-      return (
-     <div className="grid gap-8">
-       {/* Logo */}
-       <div className="flex justify-center">
-         <Link href="/">
-           <Image
-             src="https://uelfhngfhiirnxinvtbg.supabase.co/storage/v1/object/public/assets//logo.png"
-             alt="i-ContainerHub Logo"
-             width={200}
-             height={200}
-           />
-         </Link>
-       </div>
-       
-       <div className="grid gap-3 text-center">
-         <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-           Đăng Nhập
-         </h1>
-         <p className="text-lg text-gray-600">
-           Chưa có tài khoản?{" "}
-           <Link href="/register" className="font-semibold text-primary hover:text-blue-600 transition-colors">
-             Tạo tài khoản mới
-           </Link>
-         </p>
-       </div>
-      <form onSubmit={handleSubmit}>
-        <div className="grid gap-4">
-                     <div className="grid gap-3">
-             <Label htmlFor="email" className="text-gray-700 font-medium">Địa chỉ email</Label>
-             <Input
-               id="email"
-               name="email"
-               type="email"
-               value={formData.email}
-               onChange={handleInputChange}
-               placeholder="dispatcher@vantai-abc.com"
-               className="h-12 border-2 border-gray-200 focus:border-primary focus:ring-primary transition-colors"
-               required
-             />
-           </div>
-           <div className="grid gap-3">
-             <div className="flex items-center">
-               <Label htmlFor="password" className="text-gray-700 font-medium">Mật khẩu</Label>
-               <Link href="/forgot-password" className="ml-auto inline-block text-sm text-primary hover:text-blue-600 transition-colors">
-                 Quên mật khẩu?
-               </Link>
-             </div>
-             <div className="relative">
-               <Input
-                 id="password"
-                 name="password"
-                 type={showPassword ? 'text' : 'password'}
-                 value={formData.password}
-                 onChange={handleInputChange}
-                 placeholder="••••••••"
-                 className="h-12 border-2 border-gray-200 focus:border-primary focus:ring-primary transition-colors pr-12"
-                 required
-               />
-               <button
-                 type="button"
-                 onClick={() => setShowPassword(!showPassword)}
-                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
-               >
-                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-               </button>
-             </div>
-           </div>
+  return (
+    <div className="relative w-full h-full min-h-screen bg-background">
+      {/* Animated Background - phủ toàn cột bên trái */}
+      <div 
+        ref={backgroundRef}
+        className="absolute inset-0 bg-gradient-to-br from-background via-primary-light/10 to-background"
+      />
+      
+      {/* Floating Elements - Logistics themed phủ toàn màn hình */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(12)].map((_, i) => (
+          <div
+            key={i}
+            ref={el => {
+              if (el) floatingElementsRef.current[i] = el
+            }}
+            className="absolute opacity-8 text-primary/30"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              fontSize: `${1 + Math.random() * 1.5}rem`
+            }}
+          >
+            {i % 4 === 0 && <Container />}
+            {i % 4 === 1 && <Truck />}
+            {i % 4 === 2 && <Shield />}
+            {i % 4 === 3 && <Sparkles />}
+          </div>
+        ))}
+      </div>
 
-          {/* Thông báo thành công */}
-          {successMessage && (
-            <div className="flex items-center gap-3 p-4 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md">
-              <CheckCircle className="h-5 w-5 flex-shrink-0" />
-              <span>{successMessage}</span>
+      {/* Main Form Container - căn giữa trong toàn bộ không gian */}
+      <div ref={containerRef} className="relative z-10 flex items-center justify-center w-full h-full min-h-screen p-6">
+        <div className="w-full max-w-md">
+          <div className="grid gap-8">
+            
+            {/* Logo với Design System colors */}
+            <div ref={logoRef} className="flex justify-center">
+              <Link href="/" className="transform hover:scale-105 transition-transform duration-300">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl"></div>
+                  <Image
+                    src="https://uelfhngfhiirnxinvtbg.supabase.co/storage/v1/object/public/assets//logo.png"
+                    alt="i-ContainerHub Logo"
+                    width={120}
+                    height={120}
+                    className="relative z-10 drop-shadow-lg"
+                  />
+                </div>
+              </Link>
             </div>
-          )}
-
-          {/* Thông báo lỗi */}
-          {errorMessage && (
-            <div className="p-3 text-sm text-danger bg-red-50 border border-red-200 rounded-md">
-              {errorMessage}
+            
+            {/* Title Section với Green Logistics theme */}
+            <div className="grid gap-3 text-center">
+              <h1 
+                ref={titleRef}
+                className="text-4xl font-bold mb-2"
+              >
+                <span className="bg-gradient-to-r from-primary via-primary-dark to-secondary bg-clip-text text-transparent">
+                  Đăng Nhập
+                </span>
+              </h1>
+              <p 
+                ref={subtitleRef}
+                className="text-lg text-text-secondary"
+              >
+                Chưa có tài khoản?{" "}
+                <Link 
+                  href="/register" 
+                  className="font-semibold text-primary hover:text-primary-dark transition-colors duration-300 underline decoration-2 underline-offset-4"
+                >
+                  Tạo tài khoản mới
+                </Link>
+              </p>
             </div>
-          )}
 
-                     <Button 
-             type="submit" 
-             className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-blue-600 hover:from-primary-dark hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl" 
-             disabled={isLoading}
-           >
-             {isLoading ? (
-               <>
-                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                 Đang xử lý...
-               </>
-             ) : (
-               'Đăng Nhập'
-             )}
-           </Button>
+            {/* Form với Design System styling */}
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+              {/* Email Field */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-text-primary font-medium text-sm">
+                  Địa chỉ email
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="dispatcher@vantai-abc.com"
+                    className="h-12 bg-foreground border-border focus:border-primary focus:ring-primary text-text-primary placeholder:text-text-secondary rounded-input transition-all duration-300 hover:border-primary/50"
+                    required
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-input pointer-events-none"></div>
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-text-primary font-medium text-sm">
+                    Mật khẩu
+                  </Label>
+                  <Link 
+                    href="/forgot-password" 
+                    className="text-sm text-primary hover:text-primary-dark transition-colors duration-300"
+                  >
+                    Quên mật khẩu?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder="••••••••"
+                    className="h-12 bg-foreground border-border focus:border-primary focus:ring-primary text-text-primary placeholder:text-text-secondary rounded-input transition-all duration-300 hover:border-primary/50 pr-12"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-primary transition-colors duration-300"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-input pointer-events-none"></div>
+                </div>
+              </div>
+
+              {/* Success Message */}
+              {successMessage && (
+                <div className="flex items-center gap-3 p-4 text-sm text-primary bg-primary-light border border-primary/20 rounded-card backdrop-blur-sm">
+                  <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                  <span>{successMessage}</span>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {errorMessage && (
+                <div className="p-4 text-sm text-danger bg-red-50 border border-red-200 rounded-card">
+                  {errorMessage}
+                </div>
+              )}
+
+              {/* Submit Button với Green Logistics theme */}
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-lg font-semibold bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-primary-foreground border-none rounded-card shadow-button hover:shadow-card-hover transform hover:scale-105 transition-all duration-300" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  <>
+                    <Container className="mr-2 h-5 w-5" />
+                    Đăng Nhập
+                  </>
+                )}
+              </Button>
+            </form>
+
+            {/* Decorative Elements với Design System colors */}
+            <div className="absolute -top-8 -right-8 w-20 h-20 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-2xl pointer-events-none"></div>
+            <div className="absolute -bottom-8 -left-8 w-16 h-16 bg-gradient-to-br from-secondary/20 to-primary/20 rounded-full blur-2xl pointer-events-none"></div>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   )
 } 

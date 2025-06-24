@@ -1,7 +1,8 @@
 import { Suspense } from 'react'
+import React from 'react'
 import { BillingDashboard } from '@/components/features/billing/BillingDashboard'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Loader2, Receipt } from 'lucide-react'
+import { Receipt } from 'lucide-react'
 
 export default function BillingPage() {
   return (
@@ -27,10 +28,17 @@ export default function BillingPage() {
         fallback={
           <Card>
             <CardContent className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-                <p className="text-sm text-muted-foreground mt-2">Đang tải dữ liệu thanh toán...</p>
-              </div>
+              <div className="loader" style={{
+                width: '85px',
+                height: '50px',
+                '--g1': 'conic-gradient(from 90deg at left 3px top 3px, #0000 90deg, #4CAF50 0)',
+                '--g2': 'conic-gradient(from -90deg at bottom 3px right 3px, #0000 90deg, #4CAF50 0)',
+                background: 'var(--g1), var(--g1), var(--g1), var(--g2), var(--g2), var(--g2)',
+                backgroundPosition: 'left, center, right',
+                backgroundRepeat: 'no-repeat',
+                animation: 'wave-loader 1s infinite'
+              } as React.CSSProperties} />
+              <p className="text-sm text-muted-foreground mt-2">Đang tải dữ liệu thanh toán...</p>
             </CardContent>
           </Card>
         }

@@ -125,11 +125,6 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
             <MapPin className="h-5 w-5 text-primary" />
             Yêu Cầu Đổi Nơi Trả (COD)
           </CardTitle>
-          <p className="text-body-small text-text-secondary">
-            Tổng cộng: {requests.length} yêu cầu • 
-            Chờ duyệt: {requests.filter(r => r.status === 'PENDING').length} • 
-            Chờ bổ sung: {requests.filter(r => r.status === 'AWAITING_INFO').length}
-          </p>
         </CardHeader>
         
         <CardContent>
@@ -150,7 +145,7 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
                     <th className="table-header">Nơi trả mới</th>
                     <th className="table-header">Ngày gửi</th>
                     <th className="table-header">Hết hạn</th>
-                    <th className="table-header">Phí COD</th>
+                    <th className="table-header">Phí COD (VNĐ)</th>
                     <th className="table-header text-center w-32">Trạng thái</th>
                     <th className="table-header text-center w-24">Hành động</th>
                   </tr>
@@ -160,11 +155,8 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
                     <tr key={request.id} className="table-row">
                       <td className="table-cell">
                         <div className="space-y-1">
-                          <Badge variant="outline" className="font-mono text-xs">
-                            {request.import_container?.container_number}
-                          </Badge>
                           <div className="text-xs text-text-secondary">
-                            {request.import_container?.container_type}
+                            {request.import_container?.container_number}
                           </div>
                         </div>
                       </td>
@@ -206,7 +198,7 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
                         <div className="text-sm">
                           {request.cod_fee ? (
                             <span className="font-medium text-blue-600">
-                              {request.cod_fee.toLocaleString('vi-VN')} VNĐ
+                              {request.cod_fee.toLocaleString('vi-VN')}
                             </span>
                           ) : (
                             <span className="text-text-secondary">Miễn phí</span>
