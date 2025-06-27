@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link, useRouter } from '@/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
@@ -30,6 +30,7 @@ export default function UserNav() {
   const [loading, setLoading] = useState(true)
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
   const router = useRouter()
+  const t = useTranslations('Navigation')
 
   useEffect(() => {
     const loadUser = async () => {
@@ -91,7 +92,7 @@ export default function UserNav() {
         <DropdownMenuTrigger asChild>
           <Button 
             variant="ghost" 
-            className="flex items-center space-x-2 h-auto p-2 hover:bg-primary hover:text-primary-foreground"
+            className="flex border border-gray-200 shadow-sm items-center space-x-2 h-auto p-2 hover:bg-primary hover:text-primary-foreground hover:border-primary-dark"
           >
             <UserIcon className="h-4 w-4 text-text-secondary" />
             <div className="text-sm text-left">
@@ -121,12 +122,12 @@ export default function UserNav() {
           <DropdownMenuItem asChild>
             <Link href="/account" className="flex items-center">
               <Settings className="mr-2 h-4 w-4" />
-              <span>Quản lý Tài khoản</span>
+              <span>{t('account')}</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleLogoutClick} className="text-red-600">
             <LogOut className="mr-2 h-4 w-4" />
-            <span>Đăng xuất</span>
+            <span>{t('logout')}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -1,6 +1,6 @@
+import AuthGuard from '@/components/auth/AuthGuard'
 import Header from '@/components/common/Header'
 import Sidebar from '@/components/common/Sidebar'
-import AuthGuard from '@/components/auth/AuthGuard'
 
 export default function MainLayout({
   children,
@@ -13,15 +13,15 @@ export default function MainLayout({
         {/* Fixed Header */}
         <Header />
         
-        {/* Fixed Sidebar - hidden on mobile, visible on desktop */}
-          <Sidebar />
+        {/* Fixed Sidebar */}
+        <Sidebar />
         
         {/* Main Content with responsive margins */}
         <main className="lg:ml-60 mt-[73px] p-4 min-h-screen transition-all duration-300">
           <div className="space-y-4 max-w-full">
-              {children}
-            </div>
-          </main>
+            {children}
+          </div>
+        </main>
       </div>
     </AuthGuard>
   )

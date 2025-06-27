@@ -1,0 +1,101 @@
+{
+  "Common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm", 
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "submit": "Submit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "close": "Close",
+    "appSubtitle": "Logistics Technology Application"
+  },
+  "Auth": {
+    "loginTitle": "Login",
+    "registerTitle": "Register", 
+    "emailLabel": "Email address",
+    "passwordLabel": "Password",
+    "confirmPasswordLabel": "Confirm Password",
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "loginButton": "Login",
+    "registerButton": "Register",
+    "logout": "Logout",
+    "welcome": "Welcome",
+    "welcomeBack": "Welcome back",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create new account",
+    "invalidCredentials": "Invalid email or password.",
+    "fillAllFields": "Please fill in all fields.",
+    "processing": "Processing..."
+  },
+  "Navigation": {
+    "dashboard": "Dashboard",
+    "marketplace": "Marketplace",
+    "dispatcher": "Dispatcher",
+    "carrierAdmin": "Carrier Admin",
+    "admin": "Admin",
+    "reports": "Reports",
+    "account": "Account",
+    "settings": "Settings",
+    "billing": "Billing",
+    "logout": "Logout"
+  },
+  "Sidebar": {
+    "dashboard": "Dashboard",
+    "marketplace": "Marketplace",
+    "containers": "Containers",
+    "bookings": "Bookings",
+    "pickupOrders": "Pickup Orders",
+    "dropoffOrders": "Dropoff Orders", 
+    "streetTurns": "Street Turns",
+    "requests": "Requests",
+    "suggestions": "Suggestions",
+    "codRequests": "COD Requests",
+    "approvedCodRequests": "Approved COD",
+    "streetTurnRequests": "Street Turn Requests",
+    "rules": "Rules"
+  },
+  "Container": {
+    "status": "Status",
+    "available": "Available",
+    "inUse": "In Use", 
+    "maintenance": "Maintenance",
+    "containerNumber": "Container Number",
+    "type": "Type",
+    "size": "Size",
+    "location": "Location",
+    "owner": "Owner"
+  },
+  "COD": {
+    "title": "Change of Delivery",
+    "requestCOD": "Request COD",
+    "codFee": "COD Fee",
+    "newDeliveryLocation": "New Delivery Location",
+    "reason": "Reason",
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved", 
+      "rejected": "Rejected",
+      "pendingPayment": "Pending Payment",
+      "paid": "Paid",
+      "processingAtDepot": "Processing at Depot",
+      "completed": "Completed"
+    }
+  },
+  "Messages": {
+    "success": "Success!",
+    "error": "An error occurred!",
+    "warning": "Warning!",
+    "info": "Information",
+    "confirmDelete": "Are you sure you want to delete?"
+  }
+} 

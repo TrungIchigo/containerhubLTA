@@ -1,0 +1,101 @@
+{
+  "Common": {
+    "loading": "Đang tải...",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận", 
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "view": "Xem",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "export": "Xuất",
+    "import": "Nhập",
+    "submit": "Gửi",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "previous": "Trước đó",
+    "close": "Đóng",
+    "appSubtitle": "Ứng dụng Công nghệ Logistics"
+  },
+  "Auth": {
+    "loginTitle": "Đăng Nhập",
+    "registerTitle": "Đăng Ký", 
+    "emailLabel": "Địa chỉ email",
+    "passwordLabel": "Mật khẩu",
+    "confirmPasswordLabel": "Xác nhận mật khẩu",
+    "forgotPassword": "Quên mật khẩu?",
+    "rememberMe": "Ghi nhớ đăng nhập",
+    "loginButton": "Đăng nhập",
+    "registerButton": "Đăng ký",
+    "logout": "Đăng xuất",
+    "welcome": "Chào mừng",
+    "welcomeBack": "Chào mừng trở lại",
+    "noAccount": "Chưa có tài khoản?",
+    "createAccount": "Tạo tài khoản mới",
+    "invalidCredentials": "Email hoặc mật khẩu không chính xác.",
+    "fillAllFields": "Vui lòng điền đầy đủ thông tin.",
+    "processing": "Đang xử lý..."
+  },
+  "Navigation": {
+    "dashboard": "Bảng Điều Phối",
+    "marketplace": "Thị Trường",
+    "dispatcher": "Điều Phối",
+    "carrierAdmin": "Quản Lý Vận Tải",
+    "admin": "Quản Trị",
+    "reports": "Báo Cáo",
+    "account": "Tài Khoản",
+    "settings": "Cài Đặt",
+    "billing": "Thanh Toán",
+    "logout": "Đăng xuất"
+  },
+  "Sidebar": {
+    "dashboard": "Bảng Điều Phối",
+    "marketplace": "Thị Trường",
+    "containers": "Containers",
+    "bookings": "Đặt Chỗ",
+    "pickupOrders": "Lệnh Lấy Hàng",
+    "dropoffOrders": "Lệnh Giao Hàng", 
+    "streetTurns": "Street Turns",
+    "requests": "Yêu Cầu",
+    "suggestions": "Gợi Ý",
+    "codRequests": "Yêu Cầu COD",
+    "approvedCodRequests": "COD Đã Duyệt",
+    "streetTurnRequests": "Yêu Cầu Street Turn",
+    "rules": "Quy Tắc"
+  },
+  "Container": {
+    "status": "Trạng Thái",
+    "available": "Có Sẵn",
+    "inUse": "Đang Sử Dụng", 
+    "maintenance": "Bảo Trì",
+    "containerNumber": "Số Container",
+    "type": "Loại",
+    "size": "Kích Thước",
+    "location": "Vị Trí",
+    "owner": "Chủ Sở Hữu"
+  },
+  "COD": {
+    "title": "Change of Delivery",
+    "requestCOD": "Yêu Cầu COD",
+    "codFee": "Phí COD",
+    "newDeliveryLocation": "Địa Điểm Giao Hàng Mới",
+    "reason": "Lý Do",
+    "status": {
+      "pending": "Đang Chờ",
+      "approved": "Đã Duyệt", 
+      "rejected": "Bị Từ Chối",
+      "pendingPayment": "Chờ Thanh Toán",
+      "paid": "Đã Thanh Toán",
+      "processingAtDepot": "Đang Xử Lý Tại Depot",
+      "completed": "Hoàn Thành"
+    }
+  },
+  "Messages": {
+    "success": "Thành công!",
+    "error": "Có lỗi xảy ra!",
+    "warning": "Cảnh báo!",
+    "info": "Thông tin",
+    "confirmDelete": "Bạn có chắc chắn muốn xóa?"
+  }
+} 

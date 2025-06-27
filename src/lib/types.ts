@@ -70,6 +70,8 @@ export interface ExportBooking {
   city_id: string | null
   depot_id: string | null
   cargo_type_id: string | null
+  latitude: number | null
+  longitude: number | null
   created_at: string
 }
 
@@ -253,4 +255,37 @@ export interface CodRequestWithDetails extends CodRequest {
   }
   requesting_org: Organization
   approving_org: Organization
+}
+
+// New V2.0 Matching Algorithm Types
+export interface MatchingOpportunity {
+  pickupOrder: ExportBooking
+  overallScore: number
+  scenarioType: string
+  scoreDetails: {
+    distance: number
+    time: number
+    complexity: number
+    quality: number
+  }
+  extraTasks: string[]
+  estimatedCosts: Array<{
+    type: string
+    amount: number
+  }>
+}
+
+export interface StreetTurnSuggestionGroup {
+  dropOffOrder: ImportContainer
+  matchingOpportunities: MatchingOpportunity[]
+}
+
+export interface ScenarioAnalysis {
+  isInternal: boolean
+  isSameShippingLine: boolean
+  isSameDepot: boolean
+  needsCOD: boolean
+  needsVAS: boolean
+  complexityLevel: number
+  scenarioType: string
 } 

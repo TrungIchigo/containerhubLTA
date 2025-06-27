@@ -1,6 +1,7 @@
 import type { ImportContainer, ExportBooking } from '@/lib/types'
+import { generateMatchingSuggestions as generateMatchingSuggestionsV2 } from './matching-algorithm-v2'
 
-// Generate matching suggestions - Utility function (not server action)
+// Legacy function - kept for backward compatibility
 export function generateMatchingSuggestions(
   containers: ImportContainer[], 
   bookings: ExportBooking[]
@@ -70,4 +71,14 @@ export function generateMatchingSuggestions(
   }
   
   return suggestions
+}
+
+// New V2.0 function using the advanced algorithm
+export function generateAdvancedMatchingSuggestions(
+  userOrganizationId: string,
+  containers: ImportContainer[], 
+  bookings: ExportBooking[],
+  partnerRatings?: Record<string, number>
+) {
+  return generateMatchingSuggestionsV2(userOrganizationId, containers, bookings, partnerRatings)
 } 

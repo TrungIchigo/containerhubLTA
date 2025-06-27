@@ -1,8 +1,24 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { can, Permission, type UserWithProfile } from '@/lib/authorization'
+import createIntlMiddleware from 'next-intl/middleware'
+import { routing } from './navigation'
+
+// Create the intl middleware
+const intlMiddleware = createIntlMiddleware({
+  locales: ['vi', 'en'],
+  defaultLocale: 'vi'
+})
 
 export async function middleware(request: NextRequest) {
+  // First, handle internationalization routing
+  const intlResponse = intlMiddleware(request)
+  
+  // If intl middleware redirects (locale not in path), handle that first
+  if (intlResponse && intlResponse.status === 302) {
+    return intlResponse
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -28,9 +44,13 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Handle dashboard redirect to avoid routing conflict
+  // Handle dashboard redirect to avoid routing conflict (support locale)
   if (request.nextUrl.pathname === '/dashboard') {
-    return NextResponse.redirect(new URL('/reports', request.url))
+    return NextResponse.redirect(new URL('/vi/reports', request.url))
+  }
+  if (request.nextUrl.pathname.match(/^\/(vi|en)\/dashboard$/)) {
+    const locale = request.nextUrl.pathname.match(/^\/(vi|en)/)?.[1] || 'vi'
+    return NextResponse.redirect(new URL(`/${locale}/reports`, request.url))
   }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
@@ -47,7 +67,10 @@ export async function middleware(request: NextRequest) {
   // Get current path
   const path = request.nextUrl.pathname
 
-  // Public routes that don't require authentication
+  // Extract locale from path (e.g. /vi/login -> /login)
+  const pathWithoutLocale = path.replace(/^\/(vi|en)/, '') || '/'
+
+  // Public routes that don't require authentication (without locale prefix)
   const publicRoutes = [
     '/',
     '/login',
@@ -61,9 +84,9 @@ export async function middleware(request: NextRequest) {
   // Admin routes
   const adminRoutes = ['/admin']
   
-  // Check if the current path is public
-  const isPublicRoute = publicRoutes.includes(path)
-  const isAdminRoute = adminRoutes.some(route => path.startsWith(route))
+  // Check if the current path is public (use path without locale)
+  const isPublicRoute = publicRoutes.includes(pathWithoutLocale)
+  const isAdminRoute = adminRoutes.some(route => pathWithoutLocale.startsWith(route))
 
   // Auth callback route - always allow
   if (path.startsWith('/auth/callback')) {
@@ -80,11 +103,13 @@ export async function middleware(request: NextRequest) {
 
   // If user is not authenticated and trying to access protected route
   if (!user && !isPublicRoute) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    // Extract locale for proper redirect
+    const locale = path.match(/^\/(vi|en)/)?.[1] || 'vi'
+    return NextResponse.redirect(new URL(`/${locale}/login`, request.url))
   }
 
   // If user is authenticated but trying to access auth pages, redirect to appropriate dashboard
-  if (user && (path === '/login' || path === '/register')) {
+  if (user && (pathWithoutLocale === '/login' || pathWithoutLocale === '/register')) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role, organization_id')
@@ -93,10 +118,13 @@ export async function middleware(request: NextRequest) {
 
     const userWithProfile: UserWithProfile = { ...user, profile }
 
+    // Extract locale for proper redirect
+    const locale = path.match(/^\/(vi|en)/)?.[1] || 'vi'
+    
     if (can(userWithProfile, Permission.VIEW_ADMIN_DASHBOARD)) {
-      return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+      return NextResponse.redirect(new URL(`/${locale}/admin/dashboard`, request.url))
     } else {
-      return NextResponse.redirect(new URL('/reports', request.url))
+      return NextResponse.redirect(new URL(`/${locale}/reports`, request.url))
     }
   }
 
@@ -111,7 +139,9 @@ export async function middleware(request: NextRequest) {
     const userWithProfile: UserWithProfile = { ...user, profile }
 
     if (!can(userWithProfile, Permission.VIEW_ADMIN_DASHBOARD)) {
-      return NextResponse.redirect(new URL('/reports', request.url))
+      // Extract locale for proper redirect
+      const locale = path.match(/^\/(vi|en)/)?.[1] || 'vi'
+      return NextResponse.redirect(new URL(`/${locale}/reports`, request.url))
     }
   }
 

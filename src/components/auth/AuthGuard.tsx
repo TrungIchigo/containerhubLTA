@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import { Loading } from '@/components/ui/loader'
@@ -30,7 +30,7 @@ export default function AuthGuard({
         
         if (requireAuth && !user) {
           router.push(redirectTo)
-        } else if (!requireAuth && user && (window.location.pathname === '/login' || window.location.pathname === '/register')) {
+        } else if (!requireAuth && user && typeof window !== 'undefined' && (window.location.pathname === '/login' || window.location.pathname === '/register')) {
           // Get user profile to redirect to correct dashboard
           const { data: profile } = await supabase
             .from('profiles')

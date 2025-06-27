@@ -1,0 +1,15 @@
+id,code,name,description,created_at
+0776373e-9491-496d-923b-cb9473106dd9,40OT,40' Mở Nóc (40OT),Container 40' không có nóc cứng,2025-06-16 03:55:27.021436+00
+106815aa-56d2-4e31-a15a-ef7bdbfe5d97,20DC,20' Thường (20DC),"Container khô tiêu chuẩn, dài 20 feet, cao 8'6""",2025-06-16 03:55:27.021436+00
+151ab168-16fc-4679-a14a-617486235399,40RF,40' Lạnh (40RF),"Container lạnh tiêu chuẩn, dài 40 feet",2025-06-16 03:55:27.021436+00
+2973a078-bdb4-4a12-9717-aa596fc81f7c,40DC,40' Thường (40DC),"Container khô tiêu chuẩn, dài 40 feet, cao 8'6""",2025-06-16 03:55:27.021436+00
+3063f1c9-2f7b-47e1-a4cb-38d1ecf79f13,20RF,20' Lạnh (20RF),"Container lạnh tiêu chuẩn, dài 20 feet",2025-06-16 03:55:27.021436+00
+7ef0c644-cd21-47e7-b00b-d9df2e8ca7ab,20TK,20' Bồn (20TK),Container dạng bồn chuyên dụng để chở chất lỏng,2025-06-16 03:55:27.021436+00
+a0f35ca7-cdff-4b76-955b-85e2456492ff,40GP,40-foot General Purpose,Standard 40-foot container,2025-06-18 07:29:54.935248+00
+a8e9e4d8-a430-4b49-ab22-8511ff317437,20GP,20-foot General Purpose,Standard 20-foot container,2025-06-18 07:29:54.935248+00
+a9d92a14-5f7d-4730-b9c9-e689f5a00b80,20OT,20' Mở Nóc (20OT),"Container 20' không có nóc cứng, dùng để đóng hàng từ phía trên",2025-06-16 03:55:27.021436+00
+babd2f38-1da9-492f-98fb-599865a556f7,40HC,40' Cao (40HC),"Container khô cao, dài 40 feet, cao 9'6""",2025-06-16 03:55:27.021436+00
+baed63d0-4b42-4c7e-b5a6-b70082553bc7,45HC,45' Cao (45HC),"Container khô siêu dài, dài 45 feet, cao 9'6""",2025-06-16 03:55:27.021436+00
+cfabd462-95e5-450b-9018-0a535f0908e7,20FR,20' Flat Rack (20FR),"Container 20' có sàn và vách hai đầu, dùng cho hàng quá khổ",2025-06-16 03:55:27.021436+00
+ecce2283-75a0-4345-a133-d888de0e21fa,40HR,40' Lạnh Cao (40HR),"Container lạnh cao, dài 40 feet, cao 9'6""",2025-06-16 03:55:27.021436+00
+ecfd724c-3311-4416-a4e7-147c5e8990bc,40FR,40' Flat Rack (40FR),Container 40' có sàn và vách hai đầu,2025-06-16 03:55:27.021436+00

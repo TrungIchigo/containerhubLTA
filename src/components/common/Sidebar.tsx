@@ -1,7 +1,6 @@
 'use client'
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, usePathname } from '@/navigation'
 import { useEffect, useState } from 'react'
 import { BarChart3, Truck, Ship, FileText, Settings, Store, Activity, TrendingUp, Receipt } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'

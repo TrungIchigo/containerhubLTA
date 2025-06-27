@@ -1,0 +1,11 @@
+id,name,description,requires_special_handling,created_at
+1b45c2a6-09b0-421f-b1cc-750d6cd46f61,Hàng Nguy Hiểm (DG),"Hàng hóa thuộc danh mục nguy hiểm, tuân thủ quy định IMDG.",true,2025-06-13 03:27:52.000905+00
+32e1ee48-2231-405b-aa2b-ddc93bcecb36,Textiles,Hàng dệt may,false,2025-06-18 07:29:54.935248+00
+36c64276-28b6-45c9-a727-84762aed9886,Nông Sản,"Các sản phẩm nông nghiệp như gạo, cà phê, hạt điều...",false,2025-06-13 03:27:52.000905+00
+497b7575-96e8-40a4-95bd-01c2c76e6257,Hàng điện tử,"Các thiết bị, linh kiện điện tử.",false,2025-06-13 03:27:52.000905+00
+69bc5552-f8e1-4e70-b2d2-77ab70e9b484,Hàng Khô / Bách Hóa,Hàng hóa thông thường không yêu cầu điều kiện bảo quản đặc biệt.,false,2025-06-13 03:27:52.000905+00
+77a84655-0e9e-427c-9b1a-1921d3f0ac52,Machinery,Máy móc thiết bị,false,2025-06-18 07:29:54.935248+00
+f59419ce-3833-4866-b1c6-d3b4008b9aff,Hàng may mặc,"Quần áo, vải vóc, phụ liệu may mặc.",false,2025-06-13 03:27:52.000905+00
+f906807b-1a62-4361-98c2-67f2c53f5c7a,Hàng Quá Khổ / Quá Tải (OOG),Hàng hóa có kích thước vượt tiêu chuẩn của container thường.,true,2025-06-13 03:27:52.000905+00
+fc5f8956-3400-43e9-9337-b2927ffcc321,General Cargo,Hàng hóa tổng hợp,false,2025-06-18 07:29:54.935248+00
+fc79e5a3-64eb-4d06-950f-aa7efc6209ac,Hàng Lạnh / Đông Lạnh,"Hàng hóa yêu cầu bảo quản bằng container lạnh, có kiểm soát nhiệt độ.",true,2025-06-13 03:27:52.000905+00

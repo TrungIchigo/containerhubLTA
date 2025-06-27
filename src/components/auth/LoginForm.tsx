@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { Link, useRouter } from '@/navigation'
 import Image from 'next/image'
 import { Eye, EyeOff, Loader2, CheckCircle, Sparkles, Shield, Truck, Container } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,7 @@ export default function LoginForm() {
   const [successMessage, setSuccessMessage] = useState('')
   const router = useRouter()
   const searchParams = useSearchParams()
+  const t = useTranslations('Auth')
   
   // Refs cho GSAP animations
   const containerRef = useRef<HTMLDivElement>(null)
@@ -198,7 +200,7 @@ export default function LoginForm() {
       
     } catch (error: any) {
       console.error('Lỗi đăng nhập:', error)
-      setErrorMessage('Email hoặc mật khẩu không chính xác.')
+      setErrorMessage(t('invalidCredentials'))
       
       // Error shake animation
       gsap.to(formRef.current, {
@@ -218,7 +220,7 @@ export default function LoginForm() {
 
     // Validation
     if (!formData.email || !formData.password) {
-      setErrorMessage('Vui lòng điền đầy đủ thông tin.')
+      setErrorMessage(t('fillAllFields'))
       setIsLoading(false)
       return
     }
@@ -286,19 +288,19 @@ export default function LoginForm() {
                 className="text-4xl font-bold mb-2"
               >
                 <span className="bg-gradient-to-r from-primary via-primary-dark to-secondary bg-clip-text text-transparent">
-                  Đăng Nhập
+                  {t('loginTitle')}
                 </span>
               </h1>
               <p 
                 ref={subtitleRef}
                 className="text-lg text-text-secondary"
               >
-                Chưa có tài khoản?{" "}
+                {t('noAccount')}{" "}
                 <Link 
                   href="/register" 
                   className="font-semibold text-primary hover:text-primary-dark transition-colors duration-300 underline decoration-2 underline-offset-4"
                 >
-                  Tạo tài khoản mới
+                  {t('createAccount')}
                 </Link>
               </p>
             </div>
@@ -308,7 +310,7 @@ export default function LoginForm() {
               {/* Email Field */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-text-primary font-medium text-sm">
-                  Địa chỉ email
+                  {t('emailLabel')}
                 </Label>
                 <div className="relative">
                   <Input
@@ -329,13 +331,13 @@ export default function LoginForm() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password" className="text-text-primary font-medium text-sm">
-                    Mật khẩu
+                    {t('passwordLabel')}
                   </Label>
                   <Link 
                     href="/forgot-password" 
                     className="text-sm text-primary hover:text-primary-dark transition-colors duration-300"
                   >
-                    Quên mật khẩu?
+                    {t('forgotPassword')}
                   </Link>
                 </div>
                 <div className="relative">
@@ -384,12 +386,12 @@ export default function LoginForm() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Đang xử lý...
+                    {t('processing')}
                   </>
                 ) : (
                   <>
                     <Container className="mr-2 h-5 w-5" />
-                    Đăng Nhập
+                    {t('loginButton')}
                   </>
                 )}
               </Button>

@@ -1,15 +1,18 @@
 'use client'
 
-import Link from 'next/link'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/navigation'
 import UserNav from './UserNav'
 import GlobalSearchCommand from './GlobalSearchCommand'
+import { LanguageSwitcher } from './LanguageSwitcher'
 import { LOGO_URL, APP_CONFIG, ROUTES } from '@/lib/constants'
 import { createClient } from '@/lib/supabase/client'
 
 export default function Header() {
   const [userRole, setUserRole] = useState<string>('DISPATCHER')
+  const t = useTranslations('Common')
 
   useEffect(() => {
     // Get user role for search component using client-side Supabase
@@ -53,16 +56,19 @@ export default function Header() {
           />
           <div className="hidden sm:block">
             <h1 className="text-lg font-bold text-primary">{APP_CONFIG.name}</h1>
-            <p className="text-xs text-text-secondary">Logistics Technology Application</p>
+            <p className="text-xs text-text-secondary">{t('appSubtitle')}</p>
           </div>
         </Link>
 
-        {/* Right Side - Search and User Navigation */}
+        {/* Right Side - Search, Language Switcher and User Navigation */}
         <div className="flex items-center gap-4">
           {/* Global Search - Moved to right side */}
           <div className="hidden md:flex">
             <GlobalSearchCommand userRole={userRole} />
           </div>
+
+          {/* Language Switcher */}
+          <LanguageSwitcher />
 
           {/* User Navigation */}
           <UserNav />

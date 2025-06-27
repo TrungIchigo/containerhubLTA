@@ -4,13 +4,17 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, RefreshCcw } from 'lucide-react'
 import Link from 'next/link'
 import MatchSuggestions from '@/components/dispatcher/MatchSuggestions'
+import AdvancedMatchSuggestions from '@/components/dispatcher/AdvancedMatchSuggestions'
+import { SuggestionsContainer } from '@/components/features/dispatcher/suggestions/SuggestionsContainer'
 import SuggestionFilters from '@/components/dispatcher/SuggestionFilters'
 import { DispatcherDashboardWrapper } from '@/components/features/dispatcher/DispatcherDashboardWrapper'
 import { createClient } from '@/lib/supabase/client'
 import { Loading } from '@/components/ui/loader'
+import { generateAdvancedMatchingSuggestions } from '@/lib/utils/dispatcher'
+import type { StreetTurnSuggestionGroup } from '@/lib/types'
 
 export default function SuggestionsPage() {
   const router = useRouter()
@@ -19,6 +23,9 @@ export default function SuggestionsPage() {
   const [data, setData] = useState<any>(null)
   const [allSuggestions, setAllSuggestions] = useState<any[]>([])
   const [filteredSuggestions, setFilteredSuggestions] = useState<any[]>([])
+  const [advancedSuggestions, setAdvancedSuggestions] = useState<StreetTurnSuggestionGroup[]>([])
+  const [useAdvancedAlgorithm, setUseAdvancedAlgorithm] = useState(true)
+  const [useNewUI, setUseNewUI] = useState(true)
 
   useEffect(() => {
     loadData()
@@ -103,6 +110,13 @@ export default function SuggestionsPage() {
 
       // Generate suggestions
       const suggestions = generateMatchingSuggestions(importContainers || [], exportBookings || [])
+      
+      // Generate advanced suggestions using V2.0 algorithm
+      const advancedSuggestionsResult = generateAdvancedMatchingSuggestions(
+        orgId,
+        importContainers || [],
+        exportBookings || []
+      )
 
       const loadedData = {
         importContainers: importContainers || [],
@@ -113,6 +127,7 @@ export default function SuggestionsPage() {
       setData(loadedData)
       setAllSuggestions(suggestions)
       setFilteredSuggestions(suggestions)
+      setAdvancedSuggestions(advancedSuggestionsResult)
 
     } catch (err: any) {
       console.error('Error loading suggestions:', err)
@@ -233,30 +248,52 @@ export default function SuggestionsPage() {
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/dispatcher">
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary">
-                Gợi Ý Tái Sử Dụng Tốt Nhất
-              </h1>
-              <p className="text-text-secondary">
-                Danh sách chi tiết tất cả cơ hội tái sử dụng container ({filteredSuggestions.length} kết quả)
-              </p>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/dispatcher">
+                  <ArrowLeft className="h-5 w-5" />
+                </Link>
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-text-primary">
+                  Gợi Ý Tái Sử Dụng Tốt Nhất
+                </h1>
+                
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="sm" onClick={loadData}>
+                <RefreshCcw className="h-4 w-4" />
+                Tải lại
+              </Button>
             </div>
           </div>
 
-          {/* Filters */}
-          <SuggestionFilters
-            onFiltersChange={handleFiltersChange}
-            shippingLines={data?.shippingLines || []}
-          />
+          {/* Filters - Only show for legacy algorithm */}
+          {!useAdvancedAlgorithm && (
+            <SuggestionFilters
+              onFiltersChange={handleFiltersChange}
+              shippingLines={data?.shippingLines || []}
+            />
+          )}
 
           {/* Content */}
-          <MatchSuggestions suggestions={filteredSuggestions} />
+          {useAdvancedAlgorithm ? (
+            useNewUI ? (
+              <SuggestionsContainer 
+                suggestionGroups={advancedSuggestions} 
+                onUpdate={loadData}
+              />
+            ) : (
+              <AdvancedMatchSuggestions 
+                suggestions={advancedSuggestions} 
+                onUpdate={loadData}
+              />
+            )
+          ) : (
+            <MatchSuggestions suggestions={filteredSuggestions} />
+          )}
         </div>
       </div>
     </DispatcherDashboardWrapper>
