@@ -1,73 +1,188 @@
 import type { ImportContainer, ExportBooking } from '@/lib/types'
 
-// Generate matching suggestions - Utility function (not server action)
+interface MatchingScore {
+  total_score: number
+  distance_score: number
+  time_score: number
+  complexity_score: number
+  quality_score: number
+  partner_score?: number
+}
+
+interface ScoredExportBooking extends ExportBooking {
+  matching_score: MatchingScore
+  estimated_cost_saving: number
+  estimated_co2_saving_kg: number
+}
+
+interface MatchSuggestion {
+  import_container: ImportContainer
+  export_bookings: ScoredExportBooking[]
+  total_estimated_cost_saving: number
+  total_estimated_co2_saving_kg: number
+}
+
+const DISTANCE_REFERENCE_KM = 100 // Khoảng cách tham chiếu 100km
+const TIME_REFERENCE_HOURS = 72 // Thời gian tham chiếu 72 giờ
+
+function calculateDistanceScore(distanceKm: number): number {
+  const normalizedDistance = distanceKm / DISTANCE_REFERENCE_KM
+  const clippedDistance = Math.min(normalizedDistance, 1.0)
+  return 40 * (1 - clippedDistance)
+}
+
+function calculateTimeScore(waitingHours: number): number {
+  const normalizedTime = waitingHours / TIME_REFERENCE_HOURS
+  const clippedTime = Math.min(normalizedTime, 1.0)
+  return 20 * (1 - clippedTime)
+}
+
+function calculateComplexityScore(scenario: {
+  isStreetTurnAtDepot: boolean
+  isStreetTurnOnRoad: boolean
+  isDifferentCarrier: boolean
+  isSameShippingLine: boolean
+  hasCOD: boolean
+  hasVAS: boolean
+}): number {
+  let score = 0
+
+  if (scenario.isStreetTurnAtDepot && !scenario.isDifferentCarrier) score += 15
+  else if (scenario.isStreetTurnOnRoad && !scenario.isDifferentCarrier) score += 12
+  else if (scenario.isDifferentCarrier && scenario.isSameShippingLine) score += 8
+  
+  if (scenario.hasCOD) score += 5
+  if (scenario.hasVAS) score += 5
+  if (!scenario.isDifferentCarrier && !scenario.isSameShippingLine) score += 2
+
+  return Math.min(score, 15) // Cap at 15 points
+}
+
+function calculateQualityScore(containerQuality: string, requiredQuality: string, partnerRating?: number): number {
+  let score = 0
+  
+  // Quality match score (max 15)
+  if (containerQuality >= requiredQuality) {
+    score += 15
+  }
+
+  // Partner rating score (max 10)
+  if (partnerRating !== undefined) {
+    score += (partnerRating / 5) * 10
+  }
+
+  return score
+}
+
+function calculateMatchingScore(
+  container: ImportContainer,
+  booking: ExportBooking,
+  distanceKm: number,
+  scenario: {
+    isStreetTurnAtDepot: boolean
+    isStreetTurnOnRoad: boolean
+    isDifferentCarrier: boolean
+    isSameShippingLine: boolean
+    hasCOD: boolean
+    hasVAS: boolean
+  }
+): MatchingScore {
+  // Calculate waiting hours between container available time and booking needed time
+  const containerTime = new Date(container.available_from_datetime)
+  const bookingTime = new Date(booking.needed_by_datetime)
+  const waitingHours = Math.max(0, (bookingTime.getTime() - containerTime.getTime()) / (1000 * 60 * 60))
+
+  const distance_score = calculateDistanceScore(distanceKm)
+  const time_score = calculateTimeScore(waitingHours)
+  const complexity_score = calculateComplexityScore(scenario)
+  const quality_score = calculateQualityScore(
+    container.container_condition || 'A',
+    booking.required_condition || 'A',
+    scenario.isDifferentCarrier ? 4.5 : undefined // Example partner rating
+  )
+
+  const total_score = distance_score + time_score + complexity_score + quality_score
+
+  return {
+    total_score,
+    distance_score,
+    time_score,
+    complexity_score,
+    quality_score,
+    partner_score: scenario.isDifferentCarrier ? quality_score - 15 : undefined // Partner score is the remaining after quality match
+  }
+}
+
 export function generateMatchingSuggestions(
-  containers: ImportContainer[], 
+  containers: ImportContainer[],
   bookings: ExportBooking[]
-) {
-  const suggestions = []
-  
-  const availableContainers = containers.filter(c => c.status === 'AVAILABLE')
-  const availableBookings = bookings.filter(b => b.status === 'AVAILABLE')
-  
-  for (const container of availableContainers) {
-    for (const booking of availableBookings) {
-      // 1. Check if both belong to the same trucking company (internal matching only)
-      if (container.trucking_company_org_id !== booking.trucking_company_org_id) {
-        continue
+): MatchSuggestion[] {
+  const suggestions: MatchSuggestion[] = []
+
+  // Group compatible bookings for each container
+  containers.forEach(container => {
+    const compatibleBookings: ScoredExportBooking[] = []
+    let total_cost_saving = 0
+    let total_co2_saving = 0
+
+    bookings.forEach(booking => {
+      // Basic compatibility checks
+      if (
+        container.container_type !== booking.required_container_type ||
+        container.shipping_line?.id !== booking.shipping_line_id ||
+        new Date(container.available_from_datetime) >= new Date(booking.needed_by_datetime)
+      ) {
+        return
       }
-      
-      // 2. Check if both have the same shipping line
-      if (container.shipping_line_org_id !== booking.shipping_line_org_id) {
-        continue
+
+      // Calculate distance (example - replace with actual distance calculation)
+      const distanceKm = 20 // Example distance
+
+      // Determine scenario
+      const scenario = {
+        isStreetTurnAtDepot: container.drop_off_location === booking.pick_up_location,
+        isStreetTurnOnRoad: true, // Default to true for now
+        isDifferentCarrier: container.carrier_id !== booking.carrier_id,
+        isSameShippingLine: container.shipping_line?.id === booking.shipping_line_id,
+        hasCOD: false, // Determine based on actual conditions
+        hasVAS: container.container_condition !== booking.required_condition
       }
-      
-      // 3. Check city compatibility (temporarily disabled for testing)
-      // In the future, implement proper geographic proximity checking
-      // For now, skip city check to allow broader matching
-      // if (container.city_id && booking.city_id && container.city_id !== booking.city_id) {
-      //   continue
-      // }
-      
-      // 4. Check if container type matches (prefer container_type_id, fallback to legacy field)
-      const containerTypeMatches = container.container_type_id && booking.container_type_id 
-        ? container.container_type_id === booking.container_type_id
-        : container.container_type === booking.required_container_type;
-      
-      if (!containerTypeMatches) {
-        continue
+
+      // Calculate matching score
+      const matching_score = calculateMatchingScore(container, booking, distanceKm, scenario)
+
+      // Only include if score is above threshold (e.g., 50)
+      if (matching_score.total_score >= 50) {
+        // Calculate estimated savings
+        const cost_saving = 100 // Example value
+        const co2_saving = 242 // Example value in kg
+
+        compatibleBookings.push({
+          ...booking,
+          matching_score,
+          estimated_cost_saving: cost_saving,
+          estimated_co2_saving_kg: co2_saving
+        })
+
+        total_cost_saving += cost_saving
+        total_co2_saving += co2_saving
       }
-      
-      // 5. Check timing compatibility with 2-hour minimum gap requirement
-      const containerAvailable = new Date(container.available_from_datetime)
-      const bookingNeeded = new Date(booking.needed_by_datetime)
-      
-      // Container must be available before booking is needed
-      if (containerAvailable > bookingNeeded) {
-        continue
-      }
-      
-      // Calculate time difference in hours
-      const timeDifferenceMs = bookingNeeded.getTime() - containerAvailable.getTime()
-      const timeDifferenceHours = timeDifferenceMs / (1000 * 60 * 60)
-      
-      // Must have at least 2 hours gap between container available and booking needed
-      if (timeDifferenceHours < 2) {
-        continue
-      }
-      
-      // Calculate estimated savings (simplified calculation)
-      const estimatedCostSaving = Math.floor(Math.random() * 500) + 200 // $200-700
-      const estimatedCo2Saving = Math.floor(Math.random() * 100) + 50 // 50-150kg
-      
+    })
+
+    // Only create suggestion if there are compatible bookings
+    if (compatibleBookings.length > 0) {
+      // Sort bookings by score
+      compatibleBookings.sort((a, b) => b.matching_score.total_score - a.matching_score.total_score)
+
       suggestions.push({
         import_container: container,
-        export_booking: booking,
-        estimated_cost_saving: estimatedCostSaving,
-        estimated_co2_saving_kg: estimatedCo2Saving
+        export_bookings: compatibleBookings,
+        total_estimated_cost_saving: total_cost_saving,
+        total_estimated_co2_saving_kg: total_co2_saving
       })
     }
-  }
-  
-  return suggestions
+  })
+
+  // Sort suggestions by total savings
+  return suggestions.sort((a, b) => b.total_estimated_cost_saving - a.total_estimated_cost_saving)
 } 

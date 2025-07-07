@@ -6,12 +6,14 @@ import { useEffect, useState } from 'react'
 import { BarChart3, Truck, Ship, FileText, Settings, Store, Activity, TrendingUp, Receipt } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import SupportContact from './SupportContact'
+import DispatcherDropdown from './DispatcherDropdown'
 
 interface NavigationItem {
   name: string
   href: string
   icon: any
   roles: string[]
+  isDropdown?: boolean
 }
 
 export default function Sidebar() {
@@ -24,7 +26,7 @@ export default function Sidebar() {
   
   const allNavigation: NavigationItem[] = [
     { name: 'Báo Cáo', href: '/reports', icon: BarChart3, roles: ['DISPATCHER', 'CARRIER_ADMIN'] },
-    { name: 'Bảng Điều Phối', href: '/dispatcher', icon: Truck, roles: ['DISPATCHER'] },
+    { name: 'Bảng Điều Phối', href: '/dispatcher', icon: Truck, roles: ['DISPATCHER'], isDropdown: true },
     { name: 'Thị Trường', href: '/marketplace', icon: Store, roles: ['DISPATCHER'] },
     { name: 'Quản lý Yêu Cầu', href: '/dispatcher/requests', icon: FileText, roles: ['DISPATCHER'] },
     { name: 'Thanh Toán', href: '/billing', icon: Receipt, roles: ['DISPATCHER'] },
@@ -143,6 +145,11 @@ export default function Sidebar() {
                 (item.href === '/carrier-admin/rules' && pathname.startsWith('/carrier-admin/rules')) ||
                 (item.href === '/marketplace' && pathname.startsWith('/marketplace')) ||
                 (item.href === '/billing' && pathname.startsWith('/billing'))
+
+              if (item.isDropdown) {
+                return <DispatcherDropdown key={item.name} isActive={isActive} />
+              }
+
               return (
                 <Link
                   key={item.name}

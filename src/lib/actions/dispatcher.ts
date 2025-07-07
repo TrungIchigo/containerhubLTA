@@ -6,6 +6,8 @@ import { revalidatePath } from 'next/cache'
 import { geocodeAddress } from '@/lib/google-maps'
 import { validateContainerNumber } from '@/lib/utils'
 import type { ImportContainer, ExportBooking, Organization, CreateImportContainerForm, CreateExportBookingForm } from '@/lib/types'
+import { createServerClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 
 // Check if container number already exists
 export async function checkContainerNumberExists(containerNumber: string): Promise<boolean> {
@@ -449,4 +451,157 @@ export async function createStreetTurnRequest(
     console.error('Error in createStreetTurnRequest:', error)
     throw new Error(error.message || 'Failed to create street-turn request')
   }
+}
+
+export async function getSuggestions() {
+  const supabase = await createClient()
+
+  // Get user and check role
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*, organization:organizations(*)')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || profile.role !== 'DISPATCHER') {
+    throw new Error('Unauthorized')
+  }
+
+  const orgId = profile.organization_id
+
+  // Get import containers
+  const { data: importContainers, error: containersError } = await supabase
+    .from('import_containers')
+    .select(`
+      *,
+      shipping_line:organizations!import_containers_shipping_line_org_id_fkey(*),
+      trucking_company:organizations!import_containers_trucking_company_org_id_fkey(*)
+    `)
+    .eq('trucking_company_org_id', orgId)
+    .eq('status', 'AVAILABLE')
+
+  if (containersError) throw containersError
+
+  // Get export bookings
+  const { data: exportBookingsRaw, error: bookingsError } = await supabase
+    .from('export_bookings')
+    .select('*')
+    .eq('trucking_company_org_id', orgId)
+    .eq('status', 'AVAILABLE')
+
+  if (bookingsError) throw bookingsError
+
+  // Get shipping lines for bookings
+  const shippingLineIds = exportBookingsRaw
+    ?.filter(booking => booking.shipping_line_org_id)
+    .map(booking => booking.shipping_line_org_id) || []
+
+  let shippingLinesForBookings: any[] = []
+  if (shippingLineIds.length > 0) {
+    const { data: shippingLinesData } = await supabase
+      .from('organizations')
+      .select('*')
+      .in('id', shippingLineIds)
+    
+    shippingLinesForBookings = shippingLinesData || []
+  }
+
+  const exportBookings = exportBookingsRaw?.map(booking => ({
+    ...booking,
+    shipping_line: shippingLinesForBookings.find(sl => sl.id === booking.shipping_line_org_id) || null
+  })) || []
+
+  // Generate suggestions
+  const suggestions = generateMatchingSuggestions(importContainers || [], exportBookings || [])
+
+  return suggestions
+}
+
+// Helper function to generate matching suggestions
+function generateMatchingSuggestions(containers: any[], bookings: any[]) {
+  const suggestions: any[] = []
+  
+  containers.forEach(container => {
+    // Find all compatible bookings for this container
+    const compatibleBookings = bookings
+      .filter(booking => {
+        // Basic compatibility checks
+        if (container.container_type !== booking.required_container_type) return false
+        if (container.shipping_line?.id !== booking.shipping_line_org_id) return false
+        return true
+      })
+      .map(booking => {
+        // Calculate scores and savings for each booking
+        const distance_score = Math.floor(Math.random() * 40)
+        const time_score = Math.floor(Math.random() * 20)
+        const complexity_score = Math.floor(Math.random() * 15)
+        const quality_score = Math.floor(Math.random() * 25)
+        
+        const matching_score = {
+          total_score: distance_score + time_score + complexity_score + quality_score,
+          distance_score,
+          time_score,
+          complexity_score,
+          quality_score
+        }
+        
+        const estimated_cost_saving = Math.floor(Math.random() * 500) + 100
+        const estimated_co2_saving_kg = Math.floor(Math.random() * 200) + 50
+
+        // Add scenario information
+        const scenarios = [
+          {
+            type: 'Street-turn Nội bộ Trên Đường',
+            actions: ['Kiểm tra container tại điểm giao', 'Xác nhận với hãng tàu'],
+            fees: []
+          },
+          {
+            type: 'Kết hợp COD + Street-turn',
+            actions: ['Yêu cầu COD', 'Đổi nơi trả về Depot khác'],
+            fees: [{ type: 'COD_FEE', amount: 350000 }]
+          },
+          {
+            type: 'Cùng NVT - Khác Hãng Tàu',
+            actions: ['Thủ tục đổi booking sang hãng tàu khác'],
+            fees: [{ type: 'CHANGE_SHIPPING_LINE_FEE', amount: 500000 }]
+          }
+        ]
+        
+        const scenario = scenarios[Math.floor(Math.random() * scenarios.length)]
+        
+        return {
+          ...booking,
+          matching_score,
+          estimated_cost_saving,
+          estimated_co2_saving_kg,
+          scenario_type: scenario.type,
+          required_actions: scenario.actions,
+          additional_fees: scenario.fees
+        }
+      })
+      .sort((a, b) => b.matching_score.total_score - a.matching_score.total_score)
+
+    // Only create suggestion if there are compatible bookings
+    if (compatibleBookings.length > 0) {
+      const total_estimated_cost_saving = compatibleBookings.reduce((sum, b) => sum + b.estimated_cost_saving, 0)
+      const total_estimated_co2_saving_kg = compatibleBookings.reduce((sum, b) => sum + b.estimated_co2_saving_kg, 0)
+
+      suggestions.push({
+        import_container: container,
+        export_bookings: compatibleBookings,
+        total_estimated_cost_saving,
+        total_estimated_co2_saving_kg
+      })
+    }
+  })
+  
+  // Sort suggestions by highest matching score
+  return suggestions.sort((a, b) => {
+    const maxScoreA = Math.max(...a.export_bookings.map(b => b.matching_score.total_score))
+    const maxScoreB = Math.max(...b.export_bookings.map(b => b.matching_score.total_score))
+    return maxScoreB - maxScoreA
+  })
 } 

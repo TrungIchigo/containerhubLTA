@@ -75,15 +75,7 @@ const config: Config = {
   		},
   		// Typography - Inter font as specified in Design System
   		fontFamily: {
-  			sans: [
-  				'Inter',
-  				'system-ui',
-  				'-apple-system',
-  				'BlinkMacSystemFont',
-  				'Segoe UI',
-  				'Roboto',
-  				'sans-serif'
-  			]
+  			sans: ['var(--font-sans)', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
   		},
   		// Font sizes - more reasonable sizes
   		fontSize: {
