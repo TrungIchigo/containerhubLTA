@@ -9,13 +9,13 @@ interface MatchingScore {
   partner_score?: number
 }
 
-interface ScoredExportBooking extends ExportBooking {
+export interface ScoredExportBooking extends ExportBooking {
   matching_score: MatchingScore
   estimated_cost_saving: number
   estimated_co2_saving_kg: number
 }
 
-interface MatchSuggestion {
+export interface MatchSuggestion {
   import_container: ImportContainer
   export_bookings: ScoredExportBooking[]
   total_estimated_cost_saving: number
@@ -58,12 +58,16 @@ function calculateComplexityScore(scenario: {
   return Math.min(score, 15) // Cap at 15 points
 }
 
-function calculateQualityScore(containerQuality: string, requiredQuality: string, partnerRating?: number): number {
+function calculateQualityScore(container: ImportContainer, booking: ExportBooking, partnerRating?: number): number {
   let score = 0
   
   // Quality match score (max 15)
-  if (containerQuality >= requiredQuality) {
+  // Giả định container luôn đạt chất lượng yêu cầu nếu có condition_images
+  if (container.condition_images && container.condition_images.length > 0) {
     score += 15
+  } else {
+    // Nếu không có hình ảnh, cho điểm mặc định
+    score += 10
   }
 
   // Partner rating score (max 10)
@@ -96,8 +100,8 @@ function calculateMatchingScore(
   const time_score = calculateTimeScore(waitingHours)
   const complexity_score = calculateComplexityScore(scenario)
   const quality_score = calculateQualityScore(
-    container.container_condition || 'A',
-    booking.required_condition || 'A',
+    container,
+    booking,
     scenario.isDifferentCarrier ? 4.5 : undefined // Example partner rating
   )
 
@@ -129,7 +133,7 @@ export function generateMatchingSuggestions(
       // Basic compatibility checks
       if (
         container.container_type !== booking.required_container_type ||
-        container.shipping_line?.id !== booking.shipping_line_id ||
+        container.shipping_line_org_id !== booking.shipping_line_org_id ||
         new Date(container.available_from_datetime) >= new Date(booking.needed_by_datetime)
       ) {
         return
@@ -142,10 +146,10 @@ export function generateMatchingSuggestions(
       const scenario = {
         isStreetTurnAtDepot: container.drop_off_location === booking.pick_up_location,
         isStreetTurnOnRoad: true, // Default to true for now
-        isDifferentCarrier: container.carrier_id !== booking.carrier_id,
-        isSameShippingLine: container.shipping_line?.id === booking.shipping_line_id,
+        isDifferentCarrier: container.trucking_company_org_id !== booking.trucking_company_org_id,
+        isSameShippingLine: container.shipping_line_org_id === booking.shipping_line_org_id,
         hasCOD: false, // Determine based on actual conditions
-        hasVAS: container.container_condition !== booking.required_condition
+        hasVAS: false // Removed condition check since we don't have these fields
       }
 
       // Calculate matching score

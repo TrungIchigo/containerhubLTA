@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { geocodeAddress } from '@/lib/google-maps'
 import { validateContainerNumber } from '@/lib/utils'
 import type { ImportContainer, ExportBooking, Organization, CreateImportContainerForm, CreateExportBookingForm } from '@/lib/types'
-import { createServerClient } from '@/lib/supabase/server'
+import type { ScoredExportBooking } from '@/lib/utils/dispatcher'
 import { cookies } from 'next/headers'
 
 // Check if container number already exists
@@ -600,8 +600,8 @@ function generateMatchingSuggestions(containers: any[], bookings: any[]) {
   
   // Sort suggestions by highest matching score
   return suggestions.sort((a, b) => {
-    const maxScoreA = Math.max(...a.export_bookings.map(b => b.matching_score.total_score))
-    const maxScoreB = Math.max(...b.export_bookings.map(b => b.matching_score.total_score))
+    const maxScoreA = Math.max(...a.export_bookings.map((booking: ScoredExportBooking) => booking.matching_score.total_score))
+    const maxScoreB = Math.max(...b.export_bookings.map((booking: ScoredExportBooking) => booking.matching_score.total_score))
     return maxScoreB - maxScoreA
   })
 } 

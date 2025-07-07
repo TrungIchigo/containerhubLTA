@@ -13,14 +13,14 @@ export default async function SuggestionsPage() {
     
     return (
       <div className="container max-w-7xl mx-auto py-6">
-        <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-6">
           <Link href="/dispatcher" className="shrink-0">
             <Button variant="ghost" size="sm" className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               Quay lại
             </Button>
           </Link>
-          <div>
+            <div>
             <h1 className="text-2xl font-semibold">Gợi Ý Tái Sử Dụng Tốt Nhất</h1>
           </div>
         </div>
@@ -36,7 +36,7 @@ export default async function SuggestionsPage() {
           <MatchSuggestions initialSuggestions={suggestions} />
         </Suspense>
       </div>
-    )
+  )
   } catch (error: any) {
     console.error('Error loading suggestions:', error)
     return notFound()

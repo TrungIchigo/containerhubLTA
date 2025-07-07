@@ -110,8 +110,8 @@ export default async function DebugMatchingPage() {
                 <div key={index} className="text-sm bg-white p-2 rounded">
                   <strong>Match {index + 1}:</strong><br/>
                   Container: {suggestion.import_container.container_number}<br/>
-                  Booking: {suggestion.export_booking.booking_number}<br/>
-                  Est. Savings: ${suggestion.estimated_cost_saving}
+                  Bookings: {suggestion.export_bookings.map(b => b.booking_number).join(', ')}<br/>
+                  Est. Total Savings: ${suggestion.total_estimated_cost_saving}
                 </div>
               ))}
             </div>
