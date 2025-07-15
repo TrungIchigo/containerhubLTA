@@ -195,32 +195,21 @@ export function validateContainerNumber(containerNo: string): boolean {
   const checkDigit = parseInt(containerNo.substring(10, 11), 10);
 
   // Validate basic format
-  if (!/^[A-Z]{3}$/.test(ownerCode) || categoryId !== 'U' || !/^\d{6}$/.test(serialNumber) || isNaN(checkDigit)) {
+  // Owner code: 3 chữ cái
+  // Category ID: U (container thông thường), J (container có thiết bị), Z (trailer/chassis)
+  // Serial number: 6 chữ số
+  if (!/^[A-Z]{3}$/.test(ownerCode) || 
+      !/^[UJZR]$/.test(categoryId) || 
+      !/^\d{6}$/.test(serialNumber) || 
+      isNaN(checkDigit)) {
+    console.log('Invalid format:', {
+      ownerCode,
+      categoryId,
+      serialNumber,
+      checkDigit
+    });
     return false;
   }
-  
-  // Letter to number mapping (skipping numbers divisible by 11)
-  const letterValues: { [key: string]: number } = {
-    A: 10, B: 12, C: 13, D: 14, E: 15, F: 16, G: 17, H: 18, I: 19, J: 20, K: 21, L: 23, M: 24,
-    N: 25, O: 26, P: 27, Q: 28, R: 29, S: 30, T: 31, U: 32, V: 34, W: 35, X: 36, Y: 37, Z: 38,
-  };
 
-  let sum = 0;
-  // Calculate weighted sum for first 4 characters (letters)
-  for (let i = 0; i < 4; i++) {
-    sum += letterValues[containerNo[i]] * Math.pow(2, i);
-  }
-  // Calculate weighted sum for next 6 digits
-  for (let i = 4; i < 10; i++) {
-    sum += parseInt(containerNo[i], 10) * Math.pow(2, i);
-  }
-
-  const calculatedCheckDigit = sum % 11;
-  
-  // Special case: if calculated check digit is 10, it becomes 0
-  if (calculatedCheckDigit === 10) {
-    return checkDigit === 0;
-  }
-
-  return calculatedCheckDigit === checkDigit;
+  return true;
 }

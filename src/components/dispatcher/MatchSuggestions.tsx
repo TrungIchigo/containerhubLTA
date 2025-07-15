@@ -147,20 +147,20 @@ export default function MatchSuggestions({ initialSuggestions }: MatchSuggestion
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-3">
-                          <Badge variant="outline" className="font-mono">
+                          <Badge variant="outline" size="sm" className="font-mono">
                             {suggestion.import_container.container_number}
                           </Badge>
-                          <Badge>{suggestion.import_container.container_type}</Badge>
-                          <span className="text-sm text-gray-600">{suggestion.import_container.shipping_line?.name}</span>
+                          <Badge size="sm">{suggestion.import_container.container_type}</Badge>
+                          <span className="text-sm text-gray-600 hidden sm:inline">{suggestion.import_container.shipping_line?.name}</span>
                         </div>
                         <div className="text-sm text-gray-600 space-y-2">
                           <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-gray-400" />
-                            <span>Giao tại: {suggestion.import_container.drop_off_location}</span>
+                            <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                            <span className="truncate">{suggestion.import_container.drop_off_location}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-gray-400" />
-                            <span>Sẵn sàng: {formatStoredDateTimeVN(suggestion.import_container.available_from_datetime)}</span>
+                            <Clock className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                            <span className="truncate">{formatStoredDateTimeVN(suggestion.import_container.available_from_datetime)}</span>
                           </div>
                         </div>
                       </div>
@@ -202,10 +202,10 @@ export default function MatchSuggestions({ initialSuggestions }: MatchSuggestion
                                     <ScoreCircle score={booking.matching_score.total_score} />
                                   </div>
                                   <div>
-                                    <div className="font-medium">
+                                    <div className="font-medium truncate">
                                       Lệnh: {booking.booking_number}
                                     </div>
-                                    <div className="text-sm text-gray-600">
+                                    <div className="text-sm text-gray-600 truncate">
                                       {booking.scenario_type || 'Street-turn Nội bộ Trên Đường'}
                                     </div>
                                   </div>
@@ -213,12 +213,12 @@ export default function MatchSuggestions({ initialSuggestions }: MatchSuggestion
                                 
                                 <div className="text-sm text-gray-600 space-y-1 mb-2">
                                   <div className="flex items-center gap-2">
-                                    <MapPin className="h-4 w-4 text-gray-400" />
-                                    <span>Lấy tại: {booking.pick_up_location}</span>
+                                    <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                    <span className="truncate">{booking.pick_up_location}</span>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <Clock className="h-4 w-4 text-gray-400" />
-                                    <span>Cần vào: {formatStoredDateTimeVN(booking.needed_by_datetime)}</span>
+                                    <Clock className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                                    <span className="truncate">{formatStoredDateTimeVN(booking.needed_by_datetime)}</span>
                                   </div>
                                   {booking.additional_fees?.map(fee => (
                                     <div key={fee.type} className="text-red-600 flex items-center gap-2">

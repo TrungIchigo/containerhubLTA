@@ -15,9 +15,8 @@ export default async function SuggestionsPage() {
       <div className="container max-w-7xl mx-auto py-6">
           <div className="flex items-center gap-4 mb-6">
           <Link href="/dispatcher" className="shrink-0">
-            <Button variant="ghost" size="sm" className="gap-2">
+            <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4" />
-              Quay lại
             </Button>
           </Link>
             <div>

@@ -24,14 +24,14 @@ export default function Sidebar() {
     activeListings: 0
   })
   
-  const allNavigation: NavigationItem[] = [
-    { name: 'Báo Cáo', href: '/reports', icon: BarChart3, roles: ['DISPATCHER', 'CARRIER_ADMIN'] },
+  const allNavigation: NavigationItem[] = [   
     { name: 'Bảng Điều Phối', href: '/dispatcher', icon: Truck, roles: ['DISPATCHER'], isDropdown: true },
     { name: 'Thị Trường', href: '/marketplace', icon: Store, roles: ['DISPATCHER'] },
     { name: 'Quản lý Yêu Cầu', href: '/dispatcher/requests', icon: FileText, roles: ['DISPATCHER'] },
     { name: 'Thanh Toán', href: '/billing', icon: Receipt, roles: ['DISPATCHER'] },
     { name: 'Cổng Hãng Tàu', href: '/carrier-admin', icon: Ship, roles: ['CARRIER_ADMIN'] },
     { name: 'Quy tắc Tự động', href: '/carrier-admin/rules', icon: Settings, roles: ['CARRIER_ADMIN'] },
+    { name: 'Báo Cáo', href: '/reports', icon: BarChart3, roles: ['DISPATCHER', 'CARRIER_ADMIN'] },
   ]
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { MapPin, Clock, ArrowRight, Truck, Container } from 'lucide-react'
+import { MapPin, Clock, ArrowRight, Truck, Container, ArrowRightLeft } from 'lucide-react'
 import { formatStoredDateTimeVN } from '@/lib/utils'
 import type { ImportContainer, ExportBooking, Organization } from '@/lib/types'
 
@@ -181,7 +181,7 @@ export function ReuseCard({ suggestion }: ReuseCardProps) {
           {/* Header */}
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
-              <ArrowRight className="w-5 h-5 text-white" />
+              <ArrowRightLeft className="w-5 h-5 text-white" />
             </div>
             <div>
               <div className="text-sm text-gray-600 font-medium">Gợi ý ghép nối</div>

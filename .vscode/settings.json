@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "name": "containerhub",
+            "connectString": "postgresql://postgres:postgres@45.122.244.223:54322/postgres"
+        }
+    ]
+}

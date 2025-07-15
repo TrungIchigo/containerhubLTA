@@ -10,8 +10,8 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Plus, Loader2, Package, ImageIcon, FileText } from 'lucide-react'
-import { addImportContainer, checkContainerNumberExists } from '@/lib/actions/dispatcher'
-import { validateContainerNumber, datetimeLocalToUTC, utcToDatetimeLocal } from '@/lib/utils'
+import { addImportContainer } from '@/lib/actions/dispatcher'
+import { validateContainerNumber, datetimeLocalToUTC } from '@/lib/utils'
 import { useCargoTypes } from '@/hooks/useCargoTypes'
 import ImageUploader from '@/components/common/ImageUploader'
 import DocumentUploader from '@/components/common/DocumentUploader'
@@ -19,6 +19,7 @@ import DepotSelector from '@/components/common/DepotSelector'
 import ContainerTypeSelect from '@/components/common/ContainerTypeSelect'
 import { createClient } from '@/lib/supabase/client'
 import type { Organization } from '@/lib/types'
+import { useId } from 'react'
 
 interface AddImportContainerFormProps {
   shippingLines: Organization[]
@@ -51,9 +52,10 @@ export default function AddImportContainerForm({
   const [internalIsOpen, setInternalIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [userId, setUserId] = useState<string>('')
-  const [containerId] = useState<string>(() => `temp_${Date.now()}`) // Temporary ID for uploads
+  const containerId = useId()
   const [isCheckingContainer, setIsCheckingContainer] = useState(false)
   const [containerNumberError, setContainerNumberError] = useState<string>('')
+  const [containerNumberWarning, setContainerNumberWarning] = useState<string>('')
   const { cargoOptions, loading: cargoLoading, error: cargoError } = useCargoTypes()
 
   // Use external control if provided, otherwise use internal state
@@ -73,7 +75,8 @@ export default function AddImportContainerForm({
       condition_images: [],
       attached_documents: [],
       is_listed_on_marketplace: false
-    }
+    },
+    mode: 'all' // Enable validation on change and blur
   })
 
   // Get current user ID for file uploads
@@ -88,45 +91,105 @@ export default function AddImportContainerForm({
     getCurrentUser()
   }, [])
 
-  // Clear container number error when user starts typing
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'container_number' && containerNumberError) {
-        setContainerNumberError('')
-      }
-    })
-    return () => subscription.unsubscribe()
-  }, [form, containerNumberError])
-
-  // Check container number for duplicates
-  const handleContainerNumberBlur = async (containerNumber: string) => {
-    if (!containerNumber || !validateContainerNumber(containerNumber)) {
+  // Check container number format and duplicates
+  const checkContainer = async (containerNumber: string) => {
+    console.log('Checking container:', containerNumber)
+    
+    if (!containerNumber) {
+      setContainerNumberWarning('')
       setContainerNumberError('')
       return
     }
 
+    // First validate format
+    const isValid = validateContainerNumber(containerNumber)
+    console.log('Container format valid:', isValid)
+    
+    if (!isValid) {
+      const warningMsg = 'Số container không đúng định dạng ISO 6346'
+      console.log('Setting warning:', warningMsg)
+      setContainerNumberWarning(warningMsg)
+      form.setError('container_number', {
+        type: 'manual',
+        message: warningMsg
+      })
+      setContainerNumberError('')
+      return
+    }
+
+    setContainerNumberWarning('')
     setIsCheckingContainer(true)
-    setContainerNumberError('')
 
     try {
-      const exists = await checkContainerNumberExists(containerNumber)
-      if (exists) {
-        setContainerNumberError('Số container này đã tồn tại trong hệ thống')
+      // Check for duplicates in Supabase
+      const supabase = createClient()
+      console.log('Checking for duplicates...')
+      
+      const { data: containers, error } = await supabase
+        .from('import_containers')
+        .select('container_number')
+        .eq('container_number', containerNumber)
+        .limit(1)
+
+      console.log('Duplicate check result:', { containers, error })
+
+      if (error) {
+        console.error('Error checking container:', error)
+        const errorMsg = 'Không thể kiểm tra số container. Vui lòng thử lại.'
+        console.log('Setting error:', errorMsg)
+        setContainerNumberError(errorMsg)
+        form.setError('container_number', {
+          type: 'manual',
+          message: errorMsg
+        })
+      } else if (containers && containers.length > 0) {
+        const errorMsg = 'Số container này đã tồn tại trong hệ thống'
+        console.log('Setting error:', errorMsg)
+        setContainerNumberError(errorMsg)
+        form.setError('container_number', {
+          type: 'manual',
+          message: errorMsg
+        })
+      } else {
+        console.log('No duplicates found, clearing errors')
+        setContainerNumberError('')
+        form.clearErrors('container_number')
       }
     } catch (error) {
-      console.error('Error checking container number:', error)
-      setContainerNumberError('Không thể kiểm tra số container. Vui lòng thử lại.')
+      console.error('Error in container check:', error)
+      const errorMsg = 'Không thể kiểm tra số container. Vui lòng thử lại.'
+      console.log('Setting error:', errorMsg)
+      setContainerNumberError(errorMsg)
+      form.setError('container_number', {
+        type: 'manual',
+        message: errorMsg
+      })
     } finally {
       setIsCheckingContainer(false)
     }
   }
 
+  // Watch container number changes
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'container_number' && value.container_number) {
+        console.log('Container number changed:', value.container_number)
+        checkContainer(value.container_number)
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [form])
+
+  // Handle form submission
   const onSubmit = async (data: FormData) => {
-    // Check if there's a container number error before submitting
-    if (containerNumberError) {
+    console.log('Submitting form with data:', data)
+    
+    // Check if there's a container number error or warning before submitting
+    if (containerNumberError || containerNumberWarning) {
+      console.log('Form submission blocked due to container errors')
       form.setError('container_number', { 
         type: 'manual', 
-        message: containerNumberError 
+        message: containerNumberError || containerNumberWarning
       })
       return
     }
@@ -140,22 +203,13 @@ export default function AddImportContainerForm({
         available_from_datetime: datetimeLocalToUTC(data.available_from_datetime)
       }
       
+      console.log('Processed data:', processedData)
       await addImportContainer(processedData)
       
       // Reset form and close dialog
-      form.reset({
-        container_number: '',
-        container_type_id: '',
-        cargo_type_id: '',
-        city_id: '',
-        depot_id: '',
-        available_from_datetime: '',
-        shipping_line_org_id: '',
-        condition_images: [],
-        attached_documents: [],
-        is_listed_on_marketplace: false
-      })
+      form.reset()
       setContainerNumberError('')
+      setContainerNumberWarning('')
       if (externalOnOpenChange) {
         externalOnOpenChange(false)
       } else {
@@ -174,7 +228,6 @@ export default function AddImportContainerForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      {/* Only show trigger button when not controlled externally */}
       {!externalIsOpen && !externalOnOpenChange && (
         <DialogTrigger asChild>
           <Button className="bg-primary hover:bg-primary-dark text-white">
@@ -184,13 +237,15 @@ export default function AddImportContainerForm({
         </DialogTrigger>
       )}
       
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto"
+        aria-label="Form thêm lệnh giao trả container"
+      >
         <DialogHeader>
           <DialogTitle className="text-text-primary">Thêm Lệnh Giao Trả</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-          {/* Container Information Section */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-text-primary border-b pb-2">
               Thông tin Container
@@ -199,31 +254,54 @@ export default function AddImportContainerForm({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* Số Container */}
               <div className="space-y-2">
-                <Label htmlFor="container_number">Số Container <span className="text-red-500">*</span></Label>
+                <Label htmlFor={containerId}>Số Container</Label>
                 <div className="relative">
                   <Input
-                    id="container_number"
-                    type="text"
-                    placeholder="ABCU1234567"
-                    className={`border-border focus:border-primary ${containerNumberError ? 'border-red-500' : ''}`}
-                    {...form.register('container_number')}
-                    onBlur={(e) => handleContainerNumberBlur(e.target.value)}
+                    id={containerId}
+                    {...form.register('container_number', {
+                      onChange: (e) => {
+                        const value = e.target.value.toUpperCase()
+                        e.target.value = value
+                        form.setValue('container_number', value, {
+                          shouldValidate: true
+                        })
+                      },
+                      onBlur: (e) => {
+                        checkContainer(e.target.value)
+                      }
+                    })}
+                    placeholder="ABCD1234567"
+                    className={`${
+                      containerNumberError || containerNumberWarning ? 'border-red-500' : ''
+                    }`}
+                    aria-invalid={!!containerNumberError || !!containerNumberWarning}
+                    aria-describedby={`${containerId}-error`}
                   />
                   {isCheckingContainer && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                    <div className="absolute right-2 top-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
                     </div>
                   )}
                 </div>
-                {form.formState.errors.container_number && (
-                  <p className="text-sm text-red-600">
-                    {form.formState.errors.container_number.message}
-                  </p>
+                {isCheckingContainer && (
+                  <div className="text-sm text-gray-500">
+                    Đang kiểm tra số container...
+                  </div>
+                )}
+                {containerNumberWarning && (
+                  <div id={`${containerId}-error`} className="text-sm text-yellow-600" role="alert">
+                    {containerNumberWarning}
+                  </div>
                 )}
                 {containerNumberError && (
-                  <p className="text-sm text-red-600">
+                  <div id={`${containerId}-error`} className="text-sm text-red-500" role="alert">
                     {containerNumberError}
-                  </p>
+                  </div>
+                )}
+                {form.formState.errors.container_number && !containerNumberError && !containerNumberWarning && (
+                  <div id={`${containerId}-error`} className="text-sm text-red-500" role="alert">
+                    {form.formState.errors.container_number.message}
+                  </div>
                 )}
               </div>
 

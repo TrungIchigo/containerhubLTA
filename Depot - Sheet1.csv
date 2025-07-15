@@ -1,0 +1,13 @@
+code,name,address,city_id,latitude,longitude
+THT,CÔNG TY CỔ PHẦN KHO VẬN TIỀN PHONG THT,"Lô KB2, khu Công Nghiệp Minh Phương, Đình Vũ, Hải Phòng.",6c3a2c47-f897-4fda-8b2f-fe6780947c74,20.8485,106.7792
+ETS1,E-Depots Tiên Sa 1,"98 Phố Yết Kiêu, Phường Thọ Quang, quận Sơn Trà, Đà Nẵng",9e039e8c-cfbf-4cca-aae5-2d165c8bbe3d,16.1215,108.2320
+BSD,BNP Sóng Thần Depot,"ICD Sóng Thần, ĐT743, P. Bình Hòa, TP. Thuận An, Bình Dương",ee5f6580-7f13-4736-a2a7-708f348117e1,10.8953,106.7561
+TBD,Tây Nam Bình Dương Depot (TBD),"231 Xa lộ Hà Nội, Phường Quyết Thắng, TP. Dĩ An, Tỉnh Bình Dương",ee5f6580-7f13-4736-a2a7-708f348117e1,10.8998,106.7624
+EPD,E-Depots PTSC,"SỐ 100 YẾT KIÊU,PHƯỜNG THỌ QUANG,QUẬN SƠN TRÀ,TP ĐÀ NẴNG",9e039e8c-cfbf-4cca-aae5-2d165c8bbe3d,16.1218,108.2315
+ETD,E-Depots Tân Bình,"Số 303 - 306, Đường Mỹ Phước - Tân Vạn, Tân Đông Hiệp, Dĩ An, Bình Dương",ee5f6580-7f13-4736-a2a7-708f348117e1,10.9322,106.7584
+LLC,Linh Xuân Logistics Center (LLC),"166 Đường Suối Nhum, Tổ 12, Khu Phố 3, Phường Linh Xuân, Thành phố Thủ Đức, Thành phố Hồ Chí Minh",ee5f6580-7f13-4736-a2a7-708f348117e1,10.8753,106.7752
+SLD,Suối Tiên Long Thạnh Mỹ,"Đường số 7, Long Thạnh Mỹ, TP. Thủ Đức, TP. HCM",ee5f6580-7f13-4736-a2a7-708f348117e1,10.8475,106.8116
+CPD,Chân Thật Phú Thuận Depot,"319 Đ. Đào Trí, Phú Thuận, Quận 7, TP. HCM",ee5f6580-7f13-4736-a2a7-708f348117e1,10.7225,106.7533
+LTA,CÔNG TY CỔ PHẦN ỨNG DỤNG CÔNG NGHỆ LOGISTICS,"2A Đường số 5, Phường An Phú, TP. Thủ Đức, TP. HCM",ee5f6580-7f13-4736-a2a7-708f348117e1,10.8037,106.7416
+EAD,E-Depots An Đồn,"Lô 36 Khu Công Nghiệp Đà Nẵng (An Đồn), Phường An Hải Bắc, Quận Sơn Trà, Tp. Đà Nẵng",9e039e8c-cfbf-4cca-aae5-2d165c8bbe3d,16.0824,108.2393
+SCD,Smart Cát Lái Depot,"Cụm 2, Khu công nghiệp Cát Lái, Phường Thạnh Mỹ Lợi, TP. Thủ Đức, TP. HCM",ee5f6580-7f13-4736-a2a7-708f348117e1,10.7674,106.7753
