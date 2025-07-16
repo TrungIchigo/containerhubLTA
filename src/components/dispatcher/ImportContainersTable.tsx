@@ -12,7 +12,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import CodRequestDialog from '@/components/features/cod/CodRequestDialog'
 import ContainerDetailDialog from './ContainerDetailDialog'
-import type { ImportContainer, Organization } from '@/lib/types'
+import type { Organization } from '@/lib/types'
+import type { ImportContainer } from '@/lib/types/container'
 import { useState } from 'react'
 import { formatStoredDateTimeVN } from '@/lib/utils'
 

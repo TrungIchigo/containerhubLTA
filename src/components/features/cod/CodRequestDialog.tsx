@@ -15,7 +15,7 @@ import { createCodRequest } from '@/lib/actions/cod'
 import { useToast } from '@/hooks/use-toast'
 import GpgDepotSelector from '@/components/common/GpgDepotSelector'
 import ConfirmCodRequestDialog from './ConfirmCodRequestDialog'
-import type { ImportContainer } from '@/lib/types'
+import type { ImportContainer } from '@/lib/types/container'
 import { getCodFeeClient, formatCodFee, type CodFeeResult } from '@/lib/actions/cod-fee-client'
 
 interface CodRequestDialogProps {
@@ -193,7 +193,7 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
                 <MapPin className="h-4 w-4 text-primary" />
                 <span className="font-medium">Nơi trả theo lệnh gốc:</span>
                 <span className="text-text-secondary truncate">
-                  {container.depot_name}
+                  {container.drop_off_location}
                 </span>
               </div>
             </div>

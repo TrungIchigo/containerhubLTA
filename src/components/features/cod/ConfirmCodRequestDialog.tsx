@@ -9,7 +9,7 @@ import { createCodRequest } from '@/lib/actions/cod'
 import { useToast } from '@/hooks/use-toast'
 import { formatCodFee, type CodFeeResult } from '@/lib/actions/cod-fee-client'
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers'
-import type { ImportContainer } from '@/lib/types'
+import type { ImportContainer } from '@/lib/types/container'
 
 interface ConfirmCodRequestDialogProps {
   isOpen: boolean
