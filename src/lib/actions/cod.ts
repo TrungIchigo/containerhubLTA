@@ -10,7 +10,6 @@ import { getCodFee } from './cod-fee'
 // Types for COD requests
 interface CreateCodRequestData {
   dropoff_order_id: string
-  city_id: string
   depot_id: string
   reason_for_request: string
 }
@@ -27,10 +26,9 @@ export async function createCodRequest(data: CreateCodRequestData): Promise<CodR
     console.log('createCodRequest called with data:', data)
     
     // Validate input data
-    if (!data.dropoff_order_id || !data.city_id || !data.depot_id) {
+    if (!data.dropoff_order_id || !data.depot_id) {
       console.error('Invalid input data:', {
         hasDropoffOrderId: !!data.dropoff_order_id,
-        hasCityId: !!data.city_id,
         hasDepotId: !!data.depot_id
       })
       return {
@@ -117,30 +115,51 @@ export async function createCodRequest(data: CreateCodRequestData): Promise<CodR
       }
     }
 
-    // BƯỚC 2: Lấy thông tin depot mới
-    const { data: newDepot, error: depotError } = await supabase
-      .from('depots')
-      .select('id, name, address, city_id')
-      .eq('id', data.depot_id)
-      .single()
+    // BƯỚC 2: Lấy thông tin depot mới từ bảng gpg_depots và kiểm tra trong bảng depots
+    const [{ data: newDepot, error: depotError }, { data: depotInDepotsTable }] = await Promise.all([
+      supabase
+        .from('gpg_depots')
+        .select('id, name, address, city_id')
+        .eq('id', data.depot_id)
+        .single(),
+      supabase
+        .from('depots')
+        .select('id')
+        .eq('id', data.depot_id)
+        .maybeSingle()
+    ])
 
-    if (depotError || !newDepot) {
-      console.error('Depot lookup failed:', { depotError, hasDepot: !!newDepot, depotId: data.depot_id })
+    if (depotError) {
+      console.error('GPG Depot lookup failed:', { 
+        error: depotError,
+        depotId: data.depot_id,
+        errorMessage: depotError.message,
+        errorDetails: depotError.details
+      })
       return {
         success: false,
-        message: 'Depot mới không hợp lệ hoặc không tồn tại'
+        message: 'Không tìm thấy depot trong hệ thống GPG'
+      }
+    }
+
+    if (!newDepot) {
+      console.error('GPG Depot not found:', { depotId: data.depot_id })
+      return {
+        success: false,
+        message: 'Depot không tồn tại trong hệ thống GPG'
+      }
+    }
+
+    // Kiểm tra xem depot có trong bảng depots không
+    if (!depotInDepotsTable) {
+      console.error('Depot not found in depots table:', { depotId: data.depot_id })
+      return {
+        success: false,
+        message: 'Depot chưa được đồng bộ vào hệ thống. Vui lòng liên hệ admin.'
       }
     }
     
-    console.log('Found new depot:', newDepot)
-
-    // Kiểm tra city_id khớp với depot
-    if (newDepot.city_id !== data.city_id) {
-      return {
-        success: false,
-        message: 'Depot không thuộc thành phố đã chọn'
-      }
-    }
+    console.log('Found new GPG depot:', newDepot)
 
     // Kiểm tra không trùng với depot hiện tại
     if (container.depot_id === data.depot_id) {
@@ -174,7 +193,8 @@ export async function createCodRequest(data: CreateCodRequestData): Promise<CodR
       }
     }
 
-    // BƯỚC 3: Tính toán phí COD tự động
+    // BƯỚC 3: Tính toán phí COD tự động từ bảng gpg_cod_fee_matrix
+    // Container từ bất kỳ depot nào có thể COD đến depot GPG
     let calculatedCodFee = 0
     console.log('=== COD FEE CALCULATION START ===')
     console.log('Container depot_id:', container.depot_id)
@@ -182,15 +202,36 @@ export async function createCodRequest(data: CreateCodRequestData): Promise<CodR
     
     try {
       if (container.depot_id && data.depot_id) {
-        console.log('Both depot IDs available, calling getCodFee...')
-        const feeResult = await getCodFee(container.depot_id, data.depot_id)
-        console.log('getCodFee result:', JSON.stringify(feeResult, null, 2))
+        console.log('Both depot IDs available, querying gpg_cod_fee_matrix directly...')
         
-        if (feeResult.success && typeof feeResult.fee === 'number') {
-          calculatedCodFee = feeResult.fee
+        // Query trực tiếp bảng gpg_cod_fee_matrix (bảng này đã có phí từ tất cả depot → depot GPG)
+        const { data: feeData, error: feeError } = await supabase
+          .from('gpg_cod_fee_matrix')
+          .select('fee, distance_km, road_distance_km')
+          .eq('origin_depot_id', container.depot_id)
+          .eq('destination_depot_id', data.depot_id)
+          .maybeSingle()
+
+        console.log('🔍 Fee query result:', { feeData, feeError })
+
+        if (!feeError && feeData) {
+          calculatedCodFee = feeData.fee
           console.log('✅ COD fee successfully calculated:', calculatedCodFee, 'VNĐ')
         } else {
-          console.log('❌ COD fee calculation failed:', feeResult.message || 'Unknown error')
+          // Thử tìm ngược lại
+          const { data: reverseFeeData, error: reverseFeeError } = await supabase
+            .from('gpg_cod_fee_matrix')
+            .select('fee, distance_km, road_distance_km')
+            .eq('origin_depot_id', data.depot_id)
+            .eq('destination_depot_id', container.depot_id)
+            .maybeSingle()
+
+          if (!reverseFeeError && reverseFeeData) {
+            calculatedCodFee = reverseFeeData.fee
+            console.log('✅ COD fee found in reverse lookup:', calculatedCodFee, 'VNĐ')
+          } else {
+            console.log('❌ No COD fee found in gpg_cod_fee_matrix for this route')
+          }
         }
       } else {
         console.log('❌ Missing depot IDs:', { 
@@ -218,7 +259,7 @@ export async function createCodRequest(data: CreateCodRequestData): Promise<CodR
       original_depot_address: container.drop_off_location,
       requested_depot_id: data.depot_id,
       reason_for_request: data.reason_for_request,
-      cod_fee: calculatedCodFee, // Lưu phí COD tự động tính
+      cod_fee: calculatedCodFee,
       status: 'PENDING'
     }
     

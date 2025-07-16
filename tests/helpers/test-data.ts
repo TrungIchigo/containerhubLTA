@@ -12,6 +12,14 @@ export interface TestContainer {
   targetDepot: string;
 }
 
+export interface TestDepot {
+  id: string;
+  name: string;
+  address: string;
+  isGpg: boolean;
+  city: string;
+}
+
 export const TEST_USERS: Record<string, TestUser> = {
   dispatcher: {
     email: 'dispatcher@test.com',
@@ -26,6 +34,30 @@ export const TEST_USERS: Record<string, TestUser> = {
     organization: 'Hãng tàu Maersk'
   }
 };
+
+export const TEST_DEPOTS: TestDepot[] = [
+  {
+    id: 'gpg-depot-1',
+    name: 'Cảng Cát Lái',
+    address: '1295B Nguyễn Thị Định, Phường Cát Lái, TP Thủ Đức, TP.HCM',
+    isGpg: true,
+    city: 'Thành phố Hồ Chí Minh'
+  },
+  {
+    id: 'gpg-depot-2',
+    name: 'ICD Tân Cảng Sóng Thần',
+    address: 'Khu phố Bình Đường 2, Phường An Bình, Thành phố Dĩ An, Bình Dương',
+    isGpg: true,
+    city: 'Bình Dương'
+  },
+  {
+    id: 'non-gpg-depot-1',
+    name: 'ICD Tân Cảng Long Bình',
+    address: 'Long Bình, Biên Hòa, Đồng Nai',
+    isGpg: false,
+    city: 'Đồng Nai'
+  }
+];
 
 export const TEST_CONTAINERS: TestContainer[] = [
   {
@@ -50,7 +82,8 @@ export const TEST_MESSAGES = {
   },
   error: {
     containerNotAvailable: 'Thao tác không thể thực hiện. Container này không ở trạng thái sẵn sàng',
-    requestAlreadyProcessed: 'Thao tác không thể thực hiện. Yêu cầu này đã được xử lý'
+    requestAlreadyProcessed: 'Thao tác không thể thực hiện. Yêu cầu này đã được xử lý',
+    nonGpgDepot: 'Depot đích phải là depot thuộc GPG'
   }
 };
 
@@ -87,5 +120,9 @@ export const SELECTORS = {
   
   // Toast messages
   toast: '[data-testid="toast"]',
-  toastMessage: '[data-testid="toast-message"]'
+  toastMessage: '[data-testid="toast-message"]',
+
+  // GPG Depot specific
+  gpgDepotInfo: '[data-testid="gpg-depot-info"]',
+  codFeeDisplay: '[data-testid="cod-fee"]'
 }; 

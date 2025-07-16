@@ -151,3 +151,108 @@ export function useDepotDetails(depotId: string | null) {
 
   return { depot, loading, error }
 } 
+
+export function useGpgDepots(originDepotId?: string | null) {
+  const [depots, setDepots] = useState<DepotOption[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchDepots = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const supabase = createClient()
+        
+        console.log('🔍 fetchDepots called with originDepotId:', originDepotId)
+        
+        let data: any[] = []
+
+        // Nếu có originDepotId, lấy các depot có trong ma trận phí COD
+        if (originDepotId) {
+          console.log('📍 Fetching destination depots for origin:', originDepotId)
+          
+          // Lấy danh sách destination depot IDs
+          const feeMatrixResult = await supabase
+            .from('gpg_cod_fee_matrix')
+            .select('destination_depot_id')
+            .eq('origin_depot_id', originDepotId)
+
+          console.log('📊 Fee matrix result:', feeMatrixResult)
+
+          if (feeMatrixResult.error) {
+            console.warn('⚠️ Error fetching fee matrix, will fallback to all GPG depots:', feeMatrixResult.error)
+          } else {
+            const destinationDepotIds = feeMatrixResult.data?.map(row => row.destination_depot_id) || []
+            console.log('🎯 Destination depot IDs:', destinationDepotIds)
+
+            if (destinationDepotIds.length > 0) {
+              // Lấy thông tin chi tiết của các depots
+              const depotsResult = await supabase
+                .from('gpg_depots')
+                .select('id, name, address, latitude, longitude')
+                .in('id', destinationDepotIds)
+                .order('name', { ascending: true })
+
+              console.log('🏢 Depots result:', depotsResult)
+
+              if (!depotsResult.error && depotsResult.data) {
+                data = depotsResult.data
+              }
+            }
+          }
+        }
+
+        // Nếu không có data (không có originDepotId hoặc không tìm thấy từ fee matrix), 
+        // fallback sang tất cả GPG depots
+        if (data.length === 0) {
+          console.log('📍 Fetching all GPG depots as fallback')
+          
+          const result = await supabase
+            .from('gpg_depots')
+            .select('id, name, address, latitude, longitude')
+            .order('name', { ascending: true })
+
+          console.log('🏢 All GPG depots result:', result)
+
+          if (result.error) {
+            throw result.error
+          }
+
+          data = result.data || []
+        }
+
+        console.log('✅ Final depot data:', data)
+
+        // Chuyển đổi dữ liệu từ bảng gpg_depots (cho cả hai trường hợp)
+        const depotOptions = data.map(depot => ({
+          value: depot.id,
+          label: depot.name,
+          address: depot.address || undefined,
+          latitude: depot.latitude || undefined,
+          longitude: depot.longitude || undefined
+        }))
+
+        console.log('🔄 Converted depot options:', depotOptions)
+
+        setDepots(depotOptions)
+        setError(null)
+      } catch (err: any) {
+        console.error('❌ Error fetching GPG depots:', err)
+        console.error('Error details:', {
+          message: err.message,
+          details: err.details,
+          hint: err.hint,
+          code: err.code
+        })
+        setError(err.message || 'Có lỗi xảy ra khi tải danh sách depot GPG')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDepots()
+  }, [originDepotId])
+
+  return { depots, loading, error }
+} 

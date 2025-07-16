@@ -2,17 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft, Plus } from 'lucide-react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
 import ImportContainersTable from '@/components/dispatcher/ImportContainersTable'
 import ContainerFilters from '@/components/dispatcher/ContainerFilters'
-import { DispatcherDashboardWrapper } from '@/components/features/dispatcher/DispatcherDashboardWrapper'
-import { createClient } from '@/lib/supabase/client'
-import Pagination from '@/components/common/Pagination'
 import CreateContainerDialog from '@/components/features/dispatcher/CreateContainerDialog'
+import { DispatcherDashboardWrapper } from '@/components/features/dispatcher/DispatcherDashboardWrapper'
 import { Loading } from '@/components/ui/loader'
+import Pagination from '@/components/common/Pagination'
+import type { ImportContainerWithOrgs, Organization } from '@/lib/types'
 
 export default function DropoffOrdersPage() {
   const router = useRouter()
@@ -105,8 +105,7 @@ export default function DropoffOrdersPage() {
         .select(`
           *,
           shipping_line:organizations!import_containers_shipping_line_org_id_fkey(*),
-          trucking_company:organizations!import_containers_trucking_company_org_id_fkey(*),
-          container_type:container_types(*)
+          trucking_company:organizations!import_containers_trucking_company_org_id_fkey(*)
         `)
         .eq('trucking_company_org_id', data.importContainers[0]?.trucking_company_org_id)
 
@@ -260,8 +259,12 @@ export default function DropoffOrdersPage() {
 
           {/* Content */}
           <ImportContainersTable
-            containers={filteredContainers}
-            shippingLines={data?.shippingLines || []}
+            containers={(filteredContainers || []).filter((container): container is ImportContainerWithOrgs => {
+              return container !== null && typeof container === 'object';
+            })}
+            shippingLines={(data?.shippingLines || []).filter((line: any): line is Organization => {
+              return line !== null && typeof line === 'object';
+            })}
           />
           
           {/* Pagination */}

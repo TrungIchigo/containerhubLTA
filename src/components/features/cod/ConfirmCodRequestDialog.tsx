@@ -17,13 +17,11 @@ interface ConfirmCodRequestDialogProps {
   onSuccess: () => void
   container: ImportContainer
   formData: {
-    city_id: string
     depot_id: string
     reason_for_request?: string
   }
   codFee: CodFeeResult | null
   selectedDepotName?: string
-  selectedCityName?: string
 }
 
 export default function ConfirmCodRequestDialog({ 
@@ -33,8 +31,7 @@ export default function ConfirmCodRequestDialog({
   container, 
   formData, 
   codFee,
-  selectedDepotName,
-  selectedCityName
+  selectedDepotName
 }: ConfirmCodRequestDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
@@ -43,21 +40,21 @@ export default function ConfirmCodRequestDialog({
     setIsLoading(true)
 
     try {
-      console.log('Creating COD request with data:', {
+      const requestData = {
         dropoff_order_id: container.id,
-        city_id: formData.city_id,
         depot_id: formData.depot_id,
         reason_for_request: formData.reason_for_request || ''
-      })
+      }
 
-      const result = await createCodRequest({
-        dropoff_order_id: container.id,
-        city_id: formData.city_id,
-        depot_id: formData.depot_id,
-        reason_for_request: formData.reason_for_request || ''
-      })
+      console.log('Creating COD request with data:', requestData)
 
-      console.log('COD request result:', result)
+      const result = await createCodRequest(requestData)
+
+      console.log('COD request result:', {
+        success: result.success,
+        message: result.message,
+        data: result.data
+      })
 
       if (result.success) {
         const feeMessage = result.data?.codFee 
@@ -72,12 +69,11 @@ export default function ConfirmCodRequestDialog({
         onSuccess()
         onClose()
       } else {
-        console.error('COD request failed:', result)
-        throw new Error(result.message || 'Có lỗi xảy ra')
+        throw new Error(result.message || 'Có lỗi xảy ra khi tạo yêu cầu COD')
       }
     } catch (error: any) {
-      console.error('Error creating COD request:', error)
-      console.error('Error details:', {
+      console.error('Error in handleConfirm:', {
+        name: error.name,
         message: error.message,
         stack: error.stack,
         cause: error.cause
@@ -85,98 +81,65 @@ export default function ConfirmCodRequestDialog({
       
       showErrorToast(
         "Lỗi",
-        error.message || 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại.'
+        error.message || 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.'
       )
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleClose = () => {
-    if (!isLoading) {
-      onClose()
-    }
-  }
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-text-primary flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-orange-500" />
-            Xác Nhận Gửi Yêu Cầu COD
+            <AlertTriangle className="h-5 w-5 text-yellow-600" />
+            Xác Nhận Yêu Cầu COD
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Cảnh báo */}
-          <div className="bg-orange-50 border border-orange-200 p-4 rounded-lg">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
-              <div>
-                <h4 className="font-medium text-orange-800">Xác nhận thông tin</h4>
-                <p className="text-sm text-orange-700 mt-1">
-                  Vui lòng kiểm tra kỹ thông tin trước khi gửi yêu cầu. 
-                  Sau khi gửi, bạn sẽ cần chờ hãng tàu phê duyệt.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Thông tin Container */}
-          <div className="space-y-3">
+          {/* Thông tin yêu cầu */}
+          <div className="space-y-4">
             <h3 className="text-base font-semibold text-text-primary border-b pb-2">
-              Thông Tin Container
+              Thông tin Container
             </h3>
             
-            <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+            <div className="bg-gray-50 p-4 rounded-lg space-y-3">
               <div className="flex items-center gap-2">
                 <Package className="h-4 w-4 text-primary" />
-                <span className="font-medium">Số Container:</span>
+                <span className="font-medium">Container:</span>
                 <Badge variant="outline" className="font-mono">
                   {container.container_number}
                 </Badge>
+                <Badge variant="secondary">
+                  {container.container_type}
+                </Badge>
               </div>
               
               <div className="flex items-center gap-2">
-                <span className="font-medium">Loại Container:</span>
-                <Badge variant="secondary">
-                  {typeof container.container_type === 'object' && container.container_type && 'code' in container.container_type
-                    ? (container.container_type as any).code 
-                    : container.container_type}
-                </Badge>
+                <MapPin className="h-4 w-4 text-primary" />
+                <span className="font-medium">Nơi trả theo lệnh gốc:</span>
+                <span className="text-text-secondary">
+                  {container.drop_off_location}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Thông tin thay đổi */}
+          {/* Địa điểm mới */}
           <div className="space-y-3">
             <h3 className="text-base font-semibold text-text-primary border-b pb-2">
-              Chi Tiết Thay Đổi
+              Địa Điểm Mới
             </h3>
             
-            <div className="space-y-3">
-              {/* Từ */}
-              <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <span className="font-medium text-red-700">Từ (hiện tại):</span>
-                  <div className="text-sm text-text-secondary break-words mt-1">
-                    {container.drop_off_location}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Đến */}
-              <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <span className="font-medium text-green-700">Đến (mong muốn):</span>
-                  <div className="text-sm text-text-secondary mt-1">
-                    <div className="font-medium">{selectedDepotName || 'Depot được chọn'}</div>
-                    <div className="text-xs">{selectedCityName}</div>
-                  </div>
-                </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-primary" />
+                <span className="font-medium">Depot GPG mới:</span>
+                <span className="text-text-secondary">
+                  {selectedDepotName}
+                </span>
               </div>
             </div>
           </div>
@@ -247,7 +210,7 @@ export default function ConfirmCodRequestDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={handleClose}
+              onClick={onClose}
               disabled={isLoading}
             >
               Hủy

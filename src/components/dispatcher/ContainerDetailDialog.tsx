@@ -38,7 +38,6 @@ interface ContainerDetailDialogProps {
   container: ImportContainer & {
     shipping_line?: Organization
     trucking_company?: Organization
-    container_type?: any
   }
   onUpdate?: () => void
 }
@@ -208,19 +207,13 @@ export default function ContainerDetailDialog({
                 <div className="mt-1">
                   {isEditing ? (
                     <Input
-                      value={typeof container.container_type === 'object' 
-                        ? container.container_type?.code || container.container_type?.name || ''
-                        : container.container_type || ''
-                      }
+                      value={container.container_type || ''}
                       className="mt-1"
                       disabled
                     />
                   ) : (
                     <Badge variant="outline" className="text-sm">
-                      {typeof container.container_type === 'object' 
-                        ? container.container_type?.code || container.container_type?.name || 'N/A'
-                        : container.container_type || 'N/A'
-                      }
+                      {container.container_type || 'N/A'}
                     </Badge>
                   )}
                 </div>

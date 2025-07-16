@@ -77,7 +77,7 @@ export default function ExportBookingsTable({ bookings }: ExportBookingsTablePro
                         </td>
                         <td className="p-3">
                           <Badge variant="outline">
-                            {booking.container_type?.code || booking.required_container_type || 'N/A'}
+                            {booking.required_container_type || 'N/A'}
                           </Badge>
                         </td>
                         <td className="p-3 text-text-secondary">

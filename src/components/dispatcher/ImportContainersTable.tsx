@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { MoreHorizontal, MapPin, Eye } from 'lucide-react'
@@ -19,7 +19,6 @@ import { formatStoredDateTimeVN } from '@/lib/utils'
 interface ImportContainersTableProps {
   containers: (ImportContainer & {
     shipping_line?: Organization
-    container_type?: any // Can be string or object from joined data
   })[]
   shippingLines: Organization[]
 }
@@ -91,10 +90,7 @@ export default function ImportContainersTable({
                       </td>
                       <td className="p-3">
                         <Badge variant="outline">
-                          {typeof container.container_type === 'object' 
-                            ? container.container_type?.code || container.container_type?.name || 'N/A'
-                            : container.container_type || 'N/A'
-                          }
+                          {container.container_type || 'N/A'}
                         </Badge>
                       </td>
                       <td className="p-3 text-text-secondary">

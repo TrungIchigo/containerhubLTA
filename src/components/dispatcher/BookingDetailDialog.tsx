@@ -225,7 +225,7 @@ export default function BookingDetailDialog({
                 ) : (
                   <div className="mt-1">
                     <Badge variant="outline" className="text-sm">
-                      {booking.container_type?.code || booking.required_container_type || 'N/A'}
+                      {booking.required_container_type || 'N/A'}
                     </Badge>
                   </div>
                 )}
