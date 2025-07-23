@@ -59,15 +59,41 @@ export default function ContainerDetailDialog({
   })
 
   // Status mapping cho container
-  const statusMap = {
-    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const, color: 'text-green-600' },
-    'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const, color: 'text-yellow-600' },
-    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending' as const, color: 'text-orange-600' },
-    'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const, color: 'text-blue-600' },
-  }
+  const IMPORT_CONTAINER_STATUS = [
+    'AVAILABLE',
+    'AWAITING_REUSE_APPROVAL',
+    'COD_REJECTED',
+    'AWAITING_COD_APPROVAL',
+    'AWAITING_COD_PAYMENT',
+    'AWAITING_REUSE_PAYMENT',
+    'ON_GOING_COD',
+    'ON_GOING_REUSE',
+    'DEPOT_PROCESSING',
+    'COMPLETED',
+    'REUSE_REJECTED',
+    'EXPIRED',
+    'PAYMENT_CANCELLED'
+  ] as const;
+  type ImportContainerStatus = typeof IMPORT_CONTAINER_STATUS[number];
+
+  const statusMap: Record<ImportContainerStatus, { text: string; variant: string; color: string }> = {
+    AVAILABLE: { text: 'Sẵn sàng', variant: 'approved', color: 'text-green-600' },
+    AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt tái sử dụng', variant: 'pending', color: 'text-yellow-600' },
+    COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive', color: 'text-red-600' },
+    AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending', color: 'text-orange-600' },
+    AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'warning', color: 'text-orange-600' },
+    AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí tái sử dụng', variant: 'warning', color: 'text-orange-600' },
+    ON_GOING_COD: { text: 'Đã thanh toán - Đang thực hiện COD', variant: 'info', color: 'text-blue-600' },
+    ON_GOING_REUSE: { text: 'Đã thanh toán - Đang thực hiện Tái sử dụng', variant: 'info', color: 'text-blue-600' },
+    DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'secondary', color: 'text-purple-600' },
+    COMPLETED: { text: 'Hoàn tất', variant: 'approved', color: 'text-green-600' },
+    REUSE_REJECTED: { text: 'Bị từ chối tái sử dụng', variant: 'destructive', color: 'text-red-600' },
+    EXPIRED: { text: 'Hết hạn', variant: 'outline', color: 'text-gray-600' },
+    PAYMENT_CANCELLED: { text: 'Đã hủy thanh toán', variant: 'outline', color: 'text-gray-600' },
+  };
 
   const getStatusInfo = (status: string) => {
-    return statusMap[status as keyof typeof statusMap] || { text: status, variant: 'outline' as const, color: 'text-gray-600' }
+    return statusMap[status as ImportContainerStatus] || { text: status, variant: 'outline', color: 'text-gray-600' };
   }
 
   const handleEdit = () => {

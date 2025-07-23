@@ -18,7 +18,7 @@ export async function GET() {
       )
     }
 
-    if (user.profile?.role !== 'CARRIER_ADMIN') {
+    if (user.profile?.role !== 'CARRIER_ADMIN' && user.profile?.role !== 'PLATFORM_ADMIN') {
       console.log('❌ [API] Invalid role:', user.profile?.role)
       return NextResponse.json(
         { success: false, error: 'Access denied' },

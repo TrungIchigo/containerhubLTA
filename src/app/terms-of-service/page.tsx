@@ -140,7 +140,7 @@ export default function TermsOfServicePage() {
                 bởi luật sư để đảm bảo tính chính xác và tuân thủ pháp luật hiện hành.
               </p>
               <p className="text-sm text-gray-500 mt-2">
-                Điều khoản này có hiệu lực từ ngày: {new Date().toLocaleDateString('vi-VN')}
+                Điều khoản này có hiệu lực từ ngày: <span suppressHydrationWarning>{new Date().toLocaleDateString('vi-VN')}</span>
               </p>
             </section>
           </div>

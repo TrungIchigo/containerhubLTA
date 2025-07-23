@@ -1,0 +1,22 @@
+column_name,data_type,is_nullable,column_default
+id,uuid,NO,uuid_generate_v4()
+dropoff_order_id,uuid,NO,null
+requesting_org_id,uuid,NO,null
+approving_org_id,uuid,NO,null
+original_depot_address,text,NO,null
+requested_depot_id,uuid,NO,null
+status,USER-DEFINED,NO,'PENDING'::cod_request_status
+cod_fee,numeric,YES,null
+reason_for_request,text,YES,null
+reason_for_decision,text,YES,null
+carrier_comment,text,YES,null
+additional_info,text,YES,null
+created_at,timestamp with time zone,NO,now()
+updated_at,timestamp with time zone,YES,now()
+expires_at,timestamp with time zone,YES,(now() + '24:00:00'::interval)
+delivery_confirmed_at,timestamp with time zone,YES,null
+payment_confirmed_at,timestamp with time zone,YES,null
+depot_processing_started_at,timestamp with time zone,YES,null
+completed_at,timestamp with time zone,YES,null
+approved_at,timestamp with time zone,YES,null
+declined_at,timestamp with time zone,YES,null

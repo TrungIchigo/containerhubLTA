@@ -408,7 +408,7 @@ export async function getCodRequests() {
           container_type,
           drop_off_location
         ),
-        requested_depot:depots!requested_depot_id(
+        requested_depot:gpg_depots!requested_depot_id(
           name,
           address
         ),
@@ -450,7 +450,7 @@ export async function getCarrierCodRequests() {
 
     const supabase = await createClient()
     
-    // Platform Admin có thể xem tất cả yêu cầu, Carrier Admin chỉ xem của tổ chức mình
+    // Both Platform Admin and Carrier Admin can view all requests
     let query = supabase
       .from('cod_requests')
       .select(`
@@ -461,7 +461,7 @@ export async function getCarrierCodRequests() {
           container_type,
           drop_off_location
         ),
-        requested_depot:depots!cod_requests_requested_depot_id_fkey(
+        requested_depot:gpg_depots!cod_requests_requested_depot_id_fkey(
           id,
           name,
           address,
@@ -474,10 +474,7 @@ export async function getCarrierCodRequests() {
       `)
       .order('created_at', { ascending: false })
 
-    // Chỉ lọc theo organization nếu không phải Platform Admin
-    if (user.profile?.role !== 'PLATFORM_ADMIN' && user.profile?.organization_id) {
-      query = query.eq('approving_org_id', user.profile.organization_id)
-    }
+    // CARRIER_ADMIN now has global access - no filtering by organization
 
     const { data: requests, error } = await query
 
@@ -542,7 +539,7 @@ export async function handleCodDecision(
           container_number,
           status
         ),
-        requested_depot:depots!requested_depot_id(
+        requested_depot:gpg_depots!requested_depot_id(
           name,
           address,
           latitude,
@@ -559,8 +556,8 @@ export async function handleCodDecision(
       }
     }
 
-    // Kiểm tra quyền xử lý
-    if (codRequest.approving_org_id !== user.profile.organization_id) {
+    // Kiểm tra quyền xử lý - CARRIER_ADMIN có quyền xử lý tất cả COD requests
+    if (user.profile.role !== 'CARRIER_ADMIN' && codRequest.approving_org_id !== user.profile.organization_id) {
       return {
         success: false,
         message: 'Bạn không có quyền xử lý yêu cầu này'
@@ -599,7 +596,7 @@ export async function handleCodDecision(
       // Rollback trạng thái container về AVAILABLE
       const { error: rollbackError } = await supabase
         .from('import_containers')
-        .update({ status: 'AVAILABLE' })
+        .update({ status: 'COD_REJECTED' })
         .eq('id', codRequest.dropoff_order_id)
 
       if (rollbackError) {
@@ -666,9 +663,8 @@ export async function handleCodDecision(
           drop_off_location: `${depot.name}, ${depot.address}`,
           latitude: depot.latitude,
           longitude: depot.longitude,
-          // Keep status as AWAITING_COD_APPROVAL until delivery is confirmed
-          // This prevents the container from being used in other transactions
-          status: 'AWAITING_COD_APPROVAL'
+          // Update status to AWAITING_COD_PAYMENT after approval
+          status: 'AWAITING_COD_PAYMENT'
         })
         .eq('id', codRequest.dropoff_order_id)
 
@@ -772,10 +768,24 @@ export async function requestMoreInfo(requestId: string, carrierComment: string)
   try {
     const user = await getCurrentUser()
     
-    if (!user?.profile?.organization_id || user.profile.role !== 'CARRIER_ADMIN') {
+    if (!user?.id) {
       return {
         success: false,
-        message: 'Unauthorized'
+        message: 'Người dùng chưa đăng nhập.'
+      }
+    }
+
+    const userWithProfile: UserWithProfile = { 
+      id: user.id, 
+      email: user.email, 
+      profile: user.profile 
+    }
+    
+    // Chỉ admin hoặc carrier admin mới có thể request more info
+    if (!can(userWithProfile, Permission.APPROVE_ANY_REQUEST)) {
+      return {
+        success: false,
+        message: 'Bạn không có quyền yêu cầu bổ sung thông tin.'
       }
     }
 
@@ -795,8 +805,8 @@ export async function requestMoreInfo(requestId: string, carrierComment: string)
       }
     }
 
-    // Kiểm tra quyền
-    if (codRequest.approving_org_id !== user.profile.organization_id) {
+    // Kiểm tra quyền - CARRIER_ADMIN có quyền xử lý tất cả COD requests
+    if (user.profile.role !== 'CARRIER_ADMIN' && codRequest.approving_org_id !== user.profile.organization_id) {
       return {
         success: false,
         message: 'Bạn không có quyền xử lý yêu cầu này'
@@ -1136,11 +1146,11 @@ export async function confirmCodDelivery(requestId: string): Promise<CodRequestR
       }
     }
 
-    // STAGE 5: Update status to PENDING_PAYMENT
+    // STAGE 5: Update status to AWAITING_COD_PAYMENT
     const { error: updateError } = await supabase
       .from('cod_requests')
       .update({
-        status: 'PENDING_PAYMENT',
+        status: 'AWAITING_COD_PAYMENT',
         delivery_confirmed_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
@@ -1154,10 +1164,10 @@ export async function confirmCodDelivery(requestId: string): Promise<CodRequestR
       }
     }
 
-    // Update container status to CONFIRMED (delivered to new location)
+    // Update container status to COMPLETED (delivered to new location)
     const { error: containerError } = await supabase
       .from('import_containers')
-      .update({ status: 'CONFIRMED' })
+      .update({ status: 'COMPLETED' })
       .eq('id', codRequest.dropoff_order_id)
 
     if (containerError) {
@@ -1239,6 +1249,7 @@ export async function confirmCodPayment(requestId: string): Promise<CodRequestRe
         status, 
         cod_fee,
         requesting_org_id,
+        dropoff_order_id,
         import_container:import_containers!dropoff_order_id(
           container_number
         )
@@ -1253,8 +1264,8 @@ export async function confirmCodPayment(requestId: string): Promise<CodRequestRe
       }
     }
 
-    // Kiểm tra trạng thái - chỉ cho phép confirm từ PENDING_PAYMENT
-    if (codRequest.status !== 'PENDING_PAYMENT') {
+    // Kiểm tra trạng thái - chỉ cho phép confirm từ AWAITING_COD_PAYMENT
+    if (codRequest.status !== 'AWAITING_COD_PAYMENT') {
       return {
         success: false,
         message: 'Chỉ có thể xác nhận thanh toán cho yêu cầu đang chờ thanh toán'
@@ -1302,6 +1313,20 @@ export async function confirmCodPayment(requestId: string): Promise<CodRequestRe
         .eq('status', 'UNPAID')
     }
 
+    // Cập nhật container status thành ON_GOING_COD sau khi thanh toán
+    const { error: containerUpdateError } = await supabase
+      .from('import_containers')
+      .update({ status: 'ON_GOING_COD' })
+      .eq('id', codRequest.dropoff_order_id)
+
+    if (containerUpdateError) {
+      console.error('Error updating container status to ON_GOING_COD:', containerUpdateError)
+      return {
+        success: false,
+        message: 'Thanh toán thành công nhưng không thể cập nhật trạng thái container. Vui lòng liên hệ admin.'
+      }
+    }
+
     // Ghi audit log
     const { data: orgData } = await supabase
       .from('organizations')
@@ -1337,6 +1362,145 @@ export async function confirmCodPayment(requestId: string): Promise<CodRequestRe
 
   } catch (error: any) {
     console.error('Error in confirmCodPayment:', error)
+    return {
+      success: false,
+      message: 'Có lỗi hệ thống xảy ra. Vui lòng thử lại sau.'
+    }
+  }
+}
+
+// Stage 5: User confirms COD completion - SERVER ACTION  
+export async function confirmCodCompletion(requestId: string): Promise<CodRequestResult> {
+  try {
+    const user = await getCurrentUser()
+    
+    if (!user?.id) {
+      return {
+        success: false,
+        message: 'Người dùng chưa đăng nhập.'
+      }
+    }
+
+    if (!user?.profile?.organization_id || user.profile.role !== 'DISPATCHER') {
+      return {
+        success: false,
+        message: 'Chỉ Dispatcher mới có thể xác nhận hoàn tất COD.'
+      }
+    }
+
+    const supabase = await createClient()
+
+    // Lấy thông tin yêu cầu COD
+    const { data: codRequest, error: fetchError } = await supabase
+      .from('cod_requests')
+      .select(`
+        id, 
+        status,
+        requesting_org_id,
+        dropoff_order_id,
+        import_container:import_containers!dropoff_order_id(
+          container_number,
+          status
+        )
+      `)
+      .eq('id', requestId)
+      .single()
+
+    if (fetchError || !codRequest) {
+      return {
+        success: false,
+        message: 'Không tìm thấy yêu cầu COD'
+      }
+    }
+
+    // Kiểm tra quyền - chỉ dispatcher của org tạo request mới được confirm
+    if (codRequest.requesting_org_id !== user.profile.organization_id) {
+      return {
+        success: false,
+        message: 'Bạn không có quyền xác nhận yêu cầu này'
+      }
+    }
+
+    // Kiểm tra trạng thái - chỉ cho phép từ PAID
+    if (codRequest.status !== 'PAID') {
+      return {
+        success: false,
+        message: 'Chỉ có thể xác nhận hoàn tất COD khi đã thanh toán'
+      }
+    }
+
+    // Kiểm tra trạng thái container
+    const container = Array.isArray(codRequest.import_container) ? codRequest.import_container[0] : codRequest.import_container
+    if (container?.status !== 'ON_GOING_COD') {
+      return {
+        success: false,
+        message: 'Container không ở trạng thái đang thực hiện COD'
+      }
+    }
+
+    // Cập nhật COD request và container status
+    const [codUpdateResult, containerUpdateResult] = await Promise.all([
+      supabase
+        .from('cod_requests')
+        .update({
+          status: 'PROCESSING_AT_DEPOT',
+          depot_processing_started_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', requestId),
+      
+      supabase
+        .from('import_containers')
+        .update({ status: 'PROCESSING' })
+        .eq('id', codRequest.dropoff_order_id)
+    ])
+
+    if (codUpdateResult.error) {
+      console.error('Error updating COD request:', codUpdateResult.error)
+      return {
+        success: false,
+        message: 'Không thể cập nhật trạng thái yêu cầu COD. Vui lòng thử lại.'
+      }
+    }
+
+    if (containerUpdateResult.error) {
+      console.error('Error updating container status:', containerUpdateResult.error)
+      return {
+        success: false,
+        message: 'Không thể cập nhật trạng thái container. Vui lòng thử lại.'
+      }
+    }
+
+    // Ghi audit log
+    const { data: orgData } = await supabase
+      .from('organizations')
+      .select('name')
+      .eq('id', user.profile.organization_id)
+      .single()
+
+    await supabase
+      .from('cod_audit_logs')
+      .insert({
+        request_id: requestId,
+        actor_user_id: user.id,
+        actor_org_name: orgData?.name || 'Unknown Organization',
+        action: 'COD_COMPLETED',
+        details: {
+          container_number: container?.container_number,
+          confirmed_at: new Date().toISOString()
+        }
+      })
+
+    revalidatePath('/dispatcher')
+    revalidatePath('/dispatcher/requests')
+
+    return {
+      success: true,
+      message: `Đã xác nhận hoàn tất COD cho container ${container?.container_number}. Container đang được xử lý tại depot.`
+    }
+
+  } catch (error: any) {
+    console.error('Error in confirmCodCompletion:', error)
     return {
       success: false,
       message: 'Có lỗi hệ thống xảy ra. Vui lòng thử lại sau.'
@@ -1531,10 +1695,10 @@ export async function completeCodProcess(requestId: string): Promise<CodRequestR
       }
     }
 
-    // Update container status to AVAILABLE (ready for next use)
+    // Update container status to COMPLETED (COD process finished)
     const { error: containerError } = await supabase
       .from('import_containers')
-      .update({ status: 'AVAILABLE' })
+      .update({ status: 'COMPLETED' })
       .eq('id', codRequest.dropoff_order_id)
 
     if (containerError) {

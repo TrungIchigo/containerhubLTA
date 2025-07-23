@@ -249,11 +249,11 @@ export async function createMarketplaceRequest(formData: CreateMarketplaceReques
     throw requestError
   }
 
-  // Update container and booking status to AWAITING_APPROVAL
+  // Update container and booking status to AWAITING_REUSE_APPROVAL
   const [containerUpdateResult, bookingUpdateResult] = await Promise.all([
     supabase
       .from('import_containers')
-      .update({ status: 'AWAITING_APPROVAL' })
+      .update({ status: 'AWAITING_REUSE_APPROVAL' })
       .eq('id', formData.dropoff_container_id),
     
     supabase

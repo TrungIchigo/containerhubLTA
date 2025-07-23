@@ -123,8 +123,16 @@ export const USER_ROLES = [
 export const STATUS_OPTIONS = {
   IMPORT_CONTAINER: [
     { value: 'AVAILABLE', label: 'Sẵn sàng', color: 'green' },
-    { value: 'MATCHED', label: 'Đã ghép nối', color: 'blue' },
-    { value: 'DELIVERED', label: 'Đã giao', color: 'gray' }
+    { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt tái sử dụng', color: 'yellow' },
+    { value: 'AWAITING_COD_APPROVAL', label: 'Chờ duyệt COD', color: 'yellow' },
+    { value: 'AWAITING_COD_PAYMENT', label: 'Chờ thanh toán phí COD', color: 'orange' },
+    { value: 'AWAITING_REUSE_PAYMENT', label: 'Chờ thanh toán phí tái sử dụng', color: 'orange' },
+    { value: 'ON_GOING_COD', label: 'Đã thanh toán - Đang thực hiện COD', color: 'blue' },
+    { value: 'ON_GOING_REUSE', label: 'Đã thanh toán - Đang thực hiện Tái sử dụng', color: 'blue' },
+    { value: 'PROCESSING', label: 'Đang xử lý tại Depot', color: 'purple' },
+    { value: 'COMPLETED', label: 'Hoàn tất', color: 'green' },
+    { value: 'COD_REJECTED', label: 'Bị từ chối COD', color: 'red' },
+    { value: 'REUSE_REJECTED', label: 'Bị từ chối tái sử dụng', color: 'red' }
   ],
   EXPORT_BOOKING: [
     { value: 'PENDING', label: 'Đang chờ', color: 'yellow' },

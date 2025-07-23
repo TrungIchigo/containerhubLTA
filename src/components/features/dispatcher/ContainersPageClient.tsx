@@ -57,16 +57,42 @@ export default function ContainersPageClient({
   }, [containers, filters])
 
   // Status mapping cho container
-  const statusMap = {
-    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const },
-    'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const },
-    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending' as const },
-    'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const },
-  }
+  const IMPORT_CONTAINER_STATUS = [
+    'AVAILABLE',
+    'AWAITING_REUSE_APPROVAL',
+    'COD_REJECTED',
+    'AWAITING_COD_APPROVAL',
+    'AWAITING_COD_PAYMENT',
+    'AWAITING_REUSE_PAYMENT',
+    'ON_GOING_COD',
+    'ON_GOING_REUSE',
+    'DEPOT_PROCESSING',
+    'COMPLETED',
+    'REUSE_REJECTED',
+    'EXPIRED',
+    'PAYMENT_CANCELLED'
+  ] as const;
+  type ImportContainerStatus = typeof IMPORT_CONTAINER_STATUS[number];
+
+  const statusMap: Record<ImportContainerStatus, { text: string; variant: string }> = {
+    AVAILABLE: { text: 'Sẵn sàng', variant: 'approved' },
+    AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt tái sử dụng', variant: 'pending' },
+    COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive' },
+    AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending' },
+    AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'warning' },
+    AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí tái sử dụng', variant: 'warning' },
+    ON_GOING_COD: { text: 'Đã thanh toán - Đang thực hiện COD', variant: 'info' },
+    ON_GOING_REUSE: { text: 'Đã thanh toán - Đang thực hiện Tái sử dụng', variant: 'info' },
+    DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'secondary' },
+    COMPLETED: { text: 'Hoàn tất', variant: 'approved' },
+    REUSE_REJECTED: { text: 'Bị từ chối tái sử dụng', variant: 'destructive' },
+    EXPIRED: { text: 'Hết hạn', variant: 'outline' },
+    PAYMENT_CANCELLED: { text: 'Đã hủy thanh toán', variant: 'outline' },
+  };
 
   const getStatusBadge = (status: string) => {
-    const currentStatus = statusMap[status as keyof typeof statusMap] || { text: status, variant: 'outline' as const }
-    return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
+    const currentStatus = statusMap[status as ImportContainerStatus] || { text: status, variant: 'outline' };
+    return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>;
   }
 
   // Get container type display text

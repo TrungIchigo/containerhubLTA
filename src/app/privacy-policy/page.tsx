@@ -209,7 +209,7 @@ export default function PrivacyPolicyPage() {
                 cá nhân của Việt Nam và các tiêu chuẩn quốc tế về bảo mật thông tin.
               </p>
               <p className="text-sm text-gray-500 mt-2">
-                Chính sách này có hiệu lực từ ngày: {new Date().toLocaleDateString('vi-VN')}
+                Chính sách này có hiệu lực từ ngày: <span suppressHydrationWarning>{new Date().toLocaleDateString('vi-VN')}</span>
               </p>
             </section>
           </div>

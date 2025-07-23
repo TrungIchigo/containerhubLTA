@@ -9,12 +9,17 @@ import AddExportBookingForm from '@/components/dispatcher/AddExportBookingForm'
 import FloatingActionMenu from '@/components/dispatcher/FloatingActionMenu'
 
 interface DispatcherDashboardWrapperProps {
-  userOrgId: string
+  userOrgId?: string
   children: React.ReactNode
   shippingLines?: any[]
+  kpis?: {
+    availableContainers: number
+    availableBookings: number
+    approvedStreetTurns: number
+  }
 }
 
-export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines = [] }: DispatcherDashboardWrapperProps) {
+export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines = [], kpis }: DispatcherDashboardWrapperProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [showImportDialog, setShowImportDialog] = useState(false)
@@ -51,10 +56,21 @@ export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines 
     }
   }
 
+  const updateUrlParams = (action: string | null) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (action) {
+      params.set('action', action)
+    } else {
+      params.delete('action')
+    }
+    const newUrl = params.toString() ? `/dispatcher?${params.toString()}` : '/dispatcher'
+    router.replace(newUrl)
+  }
+
   return (
     <>
       {/* Real-time updates listener */}
-      <DispatcherRealtimeUpdater userOrgId={userOrgId} />
+      {userOrgId && <DispatcherRealtimeUpdater userOrgId={userOrgId} />}
       
       {/* Main content */}
       {children}
@@ -69,16 +85,21 @@ export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines 
       <AddImportContainerForm 
         shippingLines={shippingLines}
         isOpen={showImportDialog}
-        onOpenChange={handleImportDialogChange}
+        onOpenChange={(open) => {
+          setShowImportDialog(open)
+          updateUrlParams(open ? 'add-import' : null)
+        }}
       />
       
       <AddExportBookingForm 
         shippingLines={shippingLines}
         isOpen={showExportDialog}
-        onOpenChange={handleExportDialogChange}
+        onOpenChange={(open) => {
+          setShowExportDialog(open)
+          updateUrlParams(open ? 'add-export' : null)
+        }}
       />
-      
-      {/* Toast notifications */}
+
       <Toaster />
     </>
   )

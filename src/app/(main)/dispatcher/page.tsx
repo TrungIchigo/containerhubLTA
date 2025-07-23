@@ -3,12 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { DispatcherDashboardWrapper } from '@/components/features/dispatcher/DispatcherDashboardWrapper'
-import { DropoffOrderCard, PickupOrderCard, ReuseCard } from '@/components/dispatcher/DashboardCard'
-import KPICardsInline from '@/components/dispatcher/KPICardsInline'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Container, Truck, RefreshCw, ArrowRight } from 'lucide-react'
-import Link from 'next/link'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SuggestionLeaderboard } from '@/components/features/dispatcher/dashboard/SuggestionLeaderboard'
+import { FullDropOffOrdersTable } from '@/components/features/dispatcher/dashboard/FullDropOffOrdersTable'
+import { FullPickupOrdersTable } from '@/components/features/dispatcher/dashboard/FullPickupOrdersTable'
+import { ContextualSidebar } from '@/components/features/dispatcher/dashboard/ContextualSidebar'
 import { createClient } from '@/lib/supabase/client'
 import { Loading } from '@/components/ui/loader'
 
@@ -36,6 +35,7 @@ export default function DispatcherPage() {
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<DashboardData | null>(null)
   const [matchSuggestions, setMatchSuggestions] = useState<MatchSuggestion[]>([])
+  const [userOrgId, setUserOrgId] = useState<string>("")
 
   useEffect(() => {
     loadDashboardData()
@@ -44,11 +44,11 @@ export default function DispatcherPage() {
   const loadDashboardData = async () => {
     try {
       setLoading(true)
+      setError(null)
       const supabase = createClient()
       
       // Check authentication
       const { data: { user } } = await supabase.auth.getUser()
-      
       if (!user) {
         router.push('/login')
         return
@@ -57,357 +57,294 @@ export default function DispatcherPage() {
       // Get user profile
       const { data: profile } = await supabase
         .from('profiles')
-        .select('*, organization:organizations(*)')
+        .select('organization_id, role')
         .eq('id', user.id)
         .single()
 
-      if (!profile || profile.role !== 'DISPATCHER') {
-        if (profile?.role === 'CARRIER_ADMIN') {
-          router.push('/carrier-admin')
-        } else {
-          router.push('/dashboard')
-        }
+      if (!profile?.organization_id) {
+        setError('Không tìm thấy thông tin tổ chức')
         return
       }
 
-      // Load dashboard data
-      const orgId = profile.organization_id
-
-      // Get import containers
-      const { data: importContainers, error: containersError } = await supabase
-        .from('import_containers')
-        .select(`
-          *,
-          shipping_line:organizations!import_containers_shipping_line_org_id_fkey(*),
-          trucking_company:organizations!import_containers_trucking_company_org_id_fkey(*)
-        `)
-        .eq('trucking_company_org_id', orgId)
-        .order('created_at', { ascending: false })
-
-      if (containersError) throw containersError
-
-      // Get export bookings
-      const { data: exportBookingsRaw, error: bookingsError } = await supabase
-        .from('export_bookings')
-        .select('*')
-        .eq('trucking_company_org_id', orgId)
-        .order('created_at', { ascending: false })
-
-      if (bookingsError) throw bookingsError
-
-      // Get shipping lines for bookings
-      const shippingLineIds = exportBookingsRaw
-        ?.filter(booking => booking.shipping_line_org_id)
-        .map(booking => booking.shipping_line_org_id) || []
-
-      let shippingLinesForBookings: any[] = []
-      if (shippingLineIds.length > 0) {
-        const { data: shippingLinesData } = await supabase
-          .from('organizations')
-          .select('*')
-          .in('id', shippingLineIds)
-        
-        shippingLinesForBookings = shippingLinesData || []
+      if (profile.role !== 'DISPATCHER') {
+        if (profile.role === 'CARRIER_ADMIN') {
+          router.push('/carrier-admin')
+          return
+        } else if (profile.role === 'LTA_ADMIN') {
+          router.push('/admin/dashboard')
+          return
+        } else {
+          setError('Bạn không có quyền truy cập trang này')
+          return
+        }
       }
 
-      const exportBookings = exportBookingsRaw?.map(booking => ({
-        ...booking,
-        shipping_line: shippingLinesForBookings.find(sl => sl.id === booking.shipping_line_org_id) || null
-      })) || []
+      setUserOrgId(profile.organization_id)
 
-      // Get all shipping lines
-      const { data: shippingLines } = await supabase
-        .from('organizations')
-        .select('*')
-        .eq('type', 'SHIPPING_LINE')
-        .order('name')
+      // Load data in parallel
+      const [
+        importContainersResult,
+        exportBookingsResult,
+        shippingLinesResult,
+        streetTurnsResult
+      ] = await Promise.all([
+        // Import containers - sử dụng trucking_company_org_id
+        supabase
+          .from('import_containers')
+          .select(`
+            id,
+            container_number,
+            container_type,
+            status,
+            drop_off_location,
+            available_from_datetime,
+            created_at,
+            trucking_company_org_id,
+            shipping_line_org_id,
+            trucking_company:organizations!trucking_company_org_id (
+              id,
+              name
+            ),
+            shipping_line:organizations!shipping_line_org_id (
+              id,
+              name
+            )
+          `)
+          .eq('trucking_company_org_id', profile.organization_id)
+          .order('created_at', { ascending: false }),
+
+        // Export bookings - sử dụng trucking_company_org_id
+        supabase
+          .from('export_bookings')
+          .select(`
+            id,
+            booking_number,
+            required_container_type,
+            status,
+            pick_up_location,
+            needed_by_datetime,
+            created_at,
+            trucking_company_org_id,
+            trucking_company:organizations!trucking_company_org_id (
+              id,
+              name
+            )
+          `)
+          .eq('trucking_company_org_id', profile.organization_id)
+          .order('created_at', { ascending: false }),
+
+        // Shipping lines
+        supabase
+          .from('organizations')
+          .select('id, name, type')
+          .eq('type', 'SHIPPING_LINE')
+          .order('name'),
+
+        // Street turns for KPIs
+        supabase
+          .from('street_turn_requests')
+          .select('id, status')
+          .eq('dropoff_trucking_org_id', profile.organization_id)
+          .eq('status', 'APPROVED')
+      ])
+
+      if (importContainersResult.error) {
+        console.error('Error loading import containers:', importContainersResult.error)
+        throw new Error('Lỗi tải dữ liệu container')
+      }
+
+      if (exportBookingsResult.error) {
+        console.error('Error loading export bookings:', exportBookingsResult.error)
+        throw new Error('Lỗi tải dữ liệu booking')
+      }
+
+      if (shippingLinesResult.error) {
+        console.error('Error loading shipping lines:', shippingLinesResult.error)
+        throw new Error('Lỗi tải dữ liệu hãng tàu')
+      }
+
+      const importContainers = importContainersResult.data || []
+      const exportBookings = exportBookingsResult.data || []
+      const shippingLines = shippingLinesResult.data || []
+      const approvedStreetTurns = streetTurnsResult.data?.length || 0
+
+      // Transform data to include shipping_line reference
+      const transformedImportContainers = importContainers.map(container => ({
+        ...container,
+        shipping_line: container.shipping_line?.[0] || container.trucking_company?.[0]
+      }))
+
+      const transformedExportBookings = exportBookings.map(booking => ({
+        ...booking,
+        shipping_line: booking.trucking_company?.[0]
+      }))
 
       // Calculate KPIs
-      const availableContainers = importContainers?.filter(c => c.status === 'AVAILABLE').length || 0
-      const availableBookings = exportBookings?.filter(b => b.status === 'AVAILABLE').length || 0
-      
-      const { data: approvedRequests } = await supabase
-        .from('street_turn_requests')
-        .select('*')
-        .eq('dropoff_trucking_org_id', orgId)
-        .eq('status', 'APPROVED')
+      const availableContainers = importContainers.filter(c => c.status === 'AVAILABLE').length
+      const availableBookings = exportBookings.filter(b => b.status === 'AVAILABLE').length
 
-      const approvedStreetTurns = approvedRequests?.length || 0
-
-      // Generate match suggestions (simplified)
-      const suggestions = generateMatchingSuggestions(importContainers || [], exportBookings || [])
-
-      setData({
-        importContainers: importContainers || [],
-        exportBookings: exportBookings || [],
-        shippingLines: shippingLines || [],
+      const dashboardData: DashboardData = {
+        importContainers: transformedImportContainers,
+        exportBookings: transformedExportBookings,
+        shippingLines,
         kpis: {
           availableContainers,
           availableBookings,
           approvedStreetTurns
         }
-      })
+      }
+
+      setData(dashboardData)
+
+      // Generate match suggestions using client-side algorithm
+      const suggestions = generateMatchSuggestions(transformedImportContainers, transformedExportBookings)
       setMatchSuggestions(suggestions)
 
-    } catch (err: any) {
-      console.error('Error loading dashboard:', err)
-      setError(err.message || 'Unknown error')
+    } catch (error) {
+      console.error('Error loading dashboard data:', error)
+      setError(error instanceof Error ? error.message : 'Có lỗi xảy ra khi tải dữ liệu')
     } finally {
       setLoading(false)
     }
   }
 
-  // Simple matching logic
-  const generateMatchingSuggestions = (containers: any[], bookings: any[]): MatchSuggestion[] => {
+  const generateMatchSuggestions = (importContainers: any[], exportBookings: any[]): MatchSuggestion[] => {
     const suggestions: MatchSuggestion[] = []
-    
-    containers.forEach(container => {
-      if (container.status !== 'AVAILABLE') return
-      
-      bookings.forEach(booking => {
-        if (booking.status !== 'AVAILABLE') return
-        if (container.container_type !== booking.required_container_type) return
-        if (container.shipping_line?.id !== booking.shipping_line_org_id) return
-        
-        // Basic cost/co2 calculation
-        const estimated_cost_saving = Math.floor(Math.random() * 500) + 100
-        const estimated_co2_saving_kg = Math.floor(Math.random() * 200) + 50
-        
-        suggestions.push({
-          import_container: container,
-          export_booking: booking,
-          estimated_cost_saving,
-          estimated_co2_saving_kg
-        })
-      })
-    })
-    
+
+    const availableContainers = importContainers.filter(c => c.status === 'AVAILABLE')
+    const availableBookings = exportBookings.filter(b => b.status === 'AVAILABLE')
+
+    for (const container of availableContainers) {
+      for (const booking of availableBookings) {
+        // Basic matching criteria
+        const containerTypeMatch = container.container_type === booking.required_container_type
+        const sameOrganization = container.trucking_company_org_id === booking.trucking_company_org_id
+
+        if (containerTypeMatch && sameOrganization) {
+          // Calculate estimated savings (simplified algorithm)
+          const baseSaving = 500000 // 500k VND base saving
+          const typeFactor = container.container_type.includes('40') ? 1.5 : 1.0
+          const timeFactor = Math.random() * 0.5 + 0.8 // 0.8 to 1.3
+          
+          const estimatedCostSaving = Math.round(baseSaving * typeFactor * timeFactor)
+          const estimatedCo2Saving = Math.round(estimatedCostSaving / 10000) // Simplified CO2 calculation
+
+          suggestions.push({
+            import_container: container,
+            export_booking: booking,
+            estimated_cost_saving: estimatedCostSaving,
+            estimated_co2_saving_kg: estimatedCo2Saving
+          })
+        }
+      }
+    }
+
+    // Sort by cost saving (highest first) and limit to top 10
     return suggestions
+      .sort((a, b) => b.estimated_cost_saving - a.estimated_cost_saving)
+      .slice(0, 10)
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loading text="Đang tải dashboard..." />
-      </div>
+      <DispatcherDashboardWrapper 
+        kpis={{
+          availableContainers: 0,
+          availableBookings: 0,
+          approvedStreetTurns: 0
+        }}
+      >
+        <div className="flex items-center justify-center h-96">
+          <Loading size="lg" text="Đang tải dữ liệu..." />
+        </div>
+      </DispatcherDashboardWrapper>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-text-primary mb-4">
-            Có lỗi xảy ra
-          </h1>
-          <p className="text-text-secondary mb-6">
-            Không thể tải dữ liệu dashboard. Vui lòng thử lại sau.
-          </p>
-          <p className="text-sm text-text-secondary">
-            Chi tiết lỗi: {error}
-          </p>
+      <DispatcherDashboardWrapper 
+        kpis={{
+          availableContainers: 0,
+          availableBookings: 0,
+          approvedStreetTurns: 0
+        }}
+      >
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="text-red-600 text-lg font-semibold mb-2">Lỗi tải dữ liệu</div>
+            <div className="text-gray-600 mb-4">{error}</div>
+            <button 
+              onClick={loadDashboardData}
+              className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark"
+            >
+              Thử lại
+            </button>
+          </div>
         </div>
-      </div>
+      </DispatcherDashboardWrapper>
     )
   }
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-text-primary mb-4">
-            Không có dữ liệu
-          </h1>
+      <DispatcherDashboardWrapper 
+        kpis={{
+          availableContainers: 0,
+          availableBookings: 0,
+          approvedStreetTurns: 0
+        }}
+      >
+        <div className="flex items-center justify-center h-96">
+          <div className="text-gray-500">Không có dữ liệu</div>
         </div>
-      </div>
+      </DispatcherDashboardWrapper>
     )
   }
 
-  // Lọc dữ liệu cho dashboard (chỉ lấy những item quan trọng nhất)
-  const upcomingDropoffs = data.importContainers
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 3) // Chỉ hiển thị 3 item mới nhất
-
-  const upcomingPickups = data.exportBookings
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 3) // Chỉ hiển thị 3 item mới nhất
-
-  const topSuggestions = matchSuggestions
-    .sort((a, b) => b.estimated_cost_saving - a.estimated_cost_saving)
-    .slice(0, 3) // Chỉ hiển thị 3 gợi ý tốt nhất
-
   return (
-    <DispatcherDashboardWrapper 
-      userOrgId={data ? (data.importContainers[0]?.trucking_company_org_id || '') : ''}
-      shippingLines={data.shippingLines}
-    >
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        {/* Header với KPI Cards */}
-        <div className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-text-primary">
-                  Bảng Điều Phối
-                </h1>
-                <p className="text-text-secondary mt-1">
-                  Dashboard tổng quan
-                </p>
-              </div>
-              <KPICardsInline
-                availableContainers={data.kpis.availableContainers}
-                availableBookings={data.kpis.availableBookings}
-                approvedStreetTurns={data.kpis.approvedStreetTurns}
+    <DispatcherDashboardWrapper kpis={data.kpis}>
+      <div className="min-h-screen grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main Content - 3 columns */}
+        <div className="lg:col-span-3">
+          <Tabs defaultValue="suggestions" className="h-full">
+            <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsTrigger value="suggestions" className="flex items-center gap-2">
+                🔄 Gợi ý Tái sử dụng
+              </TabsTrigger>
+              <TabsTrigger value="dropoff" className="flex items-center gap-2">
+                📦 Lệnh Giao Trả
+              </TabsTrigger>
+              <TabsTrigger value="pickup" className="flex items-center gap-2">
+                🚛 Lệnh Lấy Rỗng
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="suggestions" className="h-[calc(100vh-200px)]">
+              <SuggestionLeaderboard 
+                suggestions={matchSuggestions}
+                importContainers={data.importContainers}
+                exportBookings={data.exportBookings}
               />
-            </div>
-          </div>
+            </TabsContent>
+
+            <TabsContent value="dropoff" className="h-[calc(100vh-200px)]">
+              <FullDropOffOrdersTable importContainers={data.importContainers} />
+            </TabsContent>
+
+            <TabsContent value="pickup" className="h-[calc(100vh-200px)]">
+              <FullPickupOrdersTable exportBookings={data.exportBookings} />
+            </TabsContent>
+          </Tabs>
         </div>
 
-        {/* Main Content - 3 Columns Layout */}
-        <div className="container mx-auto px-4 py-6 h-[calc(100vh-140px)]">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-            
-            {/* Cột 1: Lệnh Giao Trả Container */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-text-primary">
-                  Lệnh Giao Trả Mới Nhất
-                </h2>
-                <Button variant="outline" size="sm" asChild className="border-primary text-primary hover:bg-primary hover:text-white">
-                  <Link href="/dispatcher/dropoff-orders" className="flex items-center gap-2">
-                    Xem tất cả
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </Button>
-              </div>
-              
-              <div className="overflow-y-auto h-[calc(100vh-220px)] pr-2">
-                {upcomingDropoffs.length > 0 ? (
-                  <div className="space-y-3">
-                    {upcomingDropoffs.map((container) => (
-                      <DropoffOrderCard 
-                        key={container.id} 
-                        container={container} 
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <Card>
-                    <CardContent className="py-12">
-                      <div className="text-center">
-                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                          <Container className="h-6 w-6 text-primary" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-text-primary mb-2">
-                          Chưa có Lệnh Giao Trả
-                        </h3>
-                        <p className="text-text-secondary text-sm">
-                          Chưa có lệnh giao trả nào sẵn sàng
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </div>
-
-            {/* Cột 2: Lệnh Lấy Container Rỗng */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-text-primary">
-                  Lệnh Lấy Rỗng Mới Nhất
-                </h2>
-                <Button variant="outline" size="sm" asChild className="border-primary text-primary hover:bg-primary hover:text-white">
-                  <Link href="/dispatcher/pickup-orders" className="flex items-center gap-2">
-                    Xem tất cả
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </Button>
-              </div>
-              
-              <div className="overflow-y-auto h-[calc(100vh-220px)] pr-2">
-                {upcomingPickups.length > 0 ? (
-                  <div className="space-y-3">
-                    {upcomingPickups.map((booking) => (
-                      <PickupOrderCard 
-                        key={booking.id} 
-                        booking={booking} 
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <Card>
-                    <CardContent className="py-12">
-                      <div className="text-center">
-                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-warning/10">
-                          <Truck className="h-6 w-6 text-warning" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-text-primary mb-2">
-                          Chưa có Lệnh Lấy Rỗng
-                        </h3>
-                        <p className="text-text-secondary text-sm">
-                          Chưa có lệnh lấy rỗng nào cần ưu tiên
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </div>
-
-            {/* Cột 3: Gợi Ý Tái Sử Dụng */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-text-primary">
-                  Gợi Ý Tái Sử Dụng Tốt Nhất
-                </h2>
-                <Button variant="outline" size="sm" asChild className="border-primary text-primary hover:bg-primary hover:text-white">
-                  <Link href="/dispatcher/suggestions" className="flex items-center gap-2">
-                    Xem tất cả
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </Button>
-              </div>
-              
-              <div className="overflow-y-auto h-[calc(100vh-220px)] pr-2">
-                {topSuggestions.length > 0 ? (
-                  <div className="space-y-3">
-                    {topSuggestions.map((suggestion) => (
-                      <ReuseCard 
-                        key={`${suggestion.import_container.id}-${suggestion.export_booking.id}`}
-                        suggestion={suggestion}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <Card>
-                    <CardContent className="py-12">
-                      <div className="text-center">
-                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-info/10">
-                          <RefreshCw className="h-6 w-6 text-info" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-text-primary mb-2">
-                          Chưa có Gợi Ý Ghép nối
-                        </h3>
-                        <p className="text-text-secondary text-sm mb-4">
-                          Thêm lệnh giao trả và lấy rỗng để có gợi ý tái sử dụng
-                        </p>
-                        <div className="text-xs text-text-secondary space-y-1">
-                          <p className="font-medium">Điều kiện ghép nối:</p>
-                          <ul className="text-left space-y-1">
-                            <li>• Cùng công ty vận tải</li>
-                            <li>• Cùng hãng tàu</li>
-                            <li>• Cùng thành phố</li>
-                            <li>• Cùng loại container</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </div>
-          </div>
+        {/* Contextual Sidebar - 1 column */}
+        <div className="lg:col-span-1 h-[calc(100vh-200px)]">
+          <ContextualSidebar
+            importContainers={data.importContainers}
+            exportBookings={data.exportBookings}
+            matchSuggestions={matchSuggestions}
+          />
         </div>
       </div>
     </DispatcherDashboardWrapper>

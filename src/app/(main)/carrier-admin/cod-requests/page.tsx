@@ -169,7 +169,7 @@ export default function CodRequestsPage() {
             container_type,
             drop_off_location
           ),
-          requested_depot:depots!cod_requests_requested_depot_id_fkey(
+          requested_depot:gpg_depots!cod_requests_requested_depot_id_fkey(
             id,
             name,
             address
@@ -179,7 +179,6 @@ export default function CodRequestsPage() {
             name
           )
         `)
-        .eq('approving_org_id', profile.organization_id)
         .order('created_at', { ascending: false })
 
       if (codError) {

@@ -14,7 +14,7 @@ export default function DynamicGreeting({
   userRole = 'DISPATCHER',
   className = '' 
 }: DynamicGreetingProps) {
-  const [greeting, setGreeting] = useState('')
+  const [greeting, setGreeting] = useState('Xin chào') // fallback for SSR
 
   useEffect(() => {
     const hour = new Date().getHours()
@@ -36,7 +36,7 @@ export default function DynamicGreeting({
       <div>
         {/* Greeting Section */}
         <div>
-          <h2 className="text-h2 font-semibold text-text-primary mb-1">
+          <h2 className="text-h2 font-semibold text-text-primary mb-1" suppressHydrationWarning>
             {greeting}, {userName}!
           </h2>
           <p className="text-body text-text-secondary">

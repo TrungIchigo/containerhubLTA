@@ -422,7 +422,7 @@ export async function createStreetTurnRequest(
     // Update container and booking status
     const { error: containerError } = await supabase
       .from('import_containers')
-      .update({ status: 'AWAITING_APPROVAL' })
+      .update({ status: 'AWAITING_REUSE_APPROVAL' })
       .eq('id', importContainerId)
 
     const { error: bookingError } = await supabase

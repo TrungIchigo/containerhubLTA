@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { MoreHorizontal, MapPin, Eye } from 'lucide-react'
+import { MoreHorizontal, MapPin, Eye, CreditCard, CheckCircle } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,8 +14,26 @@ import CodRequestDialog from '@/components/features/cod/CodRequestDialog'
 import ContainerDetailDialog from './ContainerDetailDialog'
 import type { Organization } from '@/lib/types'
 import type { ImportContainer } from '@/lib/types/container'
+// Định nghĩa enum asset_status đúng chuẩn Supabase
+export type AssetStatus =
+  | 'AVAILABLE'
+  | 'AWAITING_REUSE_APPROVAL'
+  | 'COD_REJECTED'
+  | 'AWAITING_COD_APPROVAL'
+  | 'AWAITING_COD_PAYMENT'
+  | 'AWAITING_REUSE_PAYMENT'
+  | 'ON_GOING_COD'
+  | 'ON_GOING_REUSE'
+  | 'DEPOT_PROCESSING'
+  | 'COMPLETED'
+  | 'REUSE_REJECTED'
+  | 'PAYMENT_CANCELLED';
 import { useState } from 'react'
 import { formatStoredDateTimeVN } from '@/lib/utils'
+import { useToast } from '@/hooks/use-toast'
+import { confirmCodCompletion } from '@/lib/actions/cod'
+import { useRouter } from 'next/navigation'
+import { CodPaymentDialog } from '@/components/features/cod/CodPaymentDialog'
 
 interface ImportContainersTableProps {
   containers: (ImportContainer & {
@@ -31,18 +49,32 @@ export default function ImportContainersTable({
   const [selectedContainer, setSelectedContainer] = useState<ImportContainer | null>(null)
   const [isCodDialogOpen, setIsCodDialogOpen] = useState(false)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
+  const router = useRouter()
+  const [codPaymentDialogOpen, setCodPaymentDialogOpen] = useState(false)
+  const [codPaymentData, setCodPaymentData] = useState<import('@/lib/types/billing').PendingCodPayment | null>(null)
+  const [codPaymentLoading, setCodPaymentLoading] = useState(false)
 
-  // Status mapping cho container
-  const statusMap = {
-    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const },
-    'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const },
-    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending' as const },
-    'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const },
-  }
+  // Sử dụng type AssetStatus chuẩn
+  const statusMap: Record<AssetStatus, { text: string; variant: Parameters<typeof Badge>[0]["variant"] }> = {
+    AVAILABLE: { text: 'Sẵn sàng', variant: 'approved' },
+    AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt tái sử dụng', variant: 'pending' },
+    COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive' },
+    AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending' },
+    AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'warning' },
+    AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí tái sử dụng', variant: 'warning' },
+    ON_GOING_COD: { text: 'Đã thanh toán - Đang thực hiện COD', variant: 'info' },
+    ON_GOING_REUSE: { text: 'Đã thanh toán - Đang thực hiện Tái sử dụng', variant: 'info' },
+    DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'secondary' },
+    COMPLETED: { text: 'Hoàn tất', variant: 'approved' },
+    REUSE_REJECTED: { text: 'Bị từ chối tái sử dụng', variant: 'destructive' },
+    PAYMENT_CANCELLED: { text: 'Đã hủy thanh toán', variant: 'outline' },
+  };
 
-  const getStatusBadge = (status: string) => {
-    const currentStatus = statusMap[status as keyof typeof statusMap] || { text: status, variant: 'outline' as const }
-    return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
+  const getStatusBadge = (status: AssetStatus) => {
+    const currentStatus = statusMap[status] || { text: status, variant: 'outline' as const };
+    return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>;
   }
 
   const handleCodRequest = (container: ImportContainer) => {
@@ -53,6 +85,106 @@ export default function ImportContainersTable({
   const handleViewDetails = (container: ImportContainer) => {
     setSelectedContainer(container)
     setIsDetailDialogOpen(true)
+  }
+
+  const handlePayCodFee = async (container: ImportContainer) => {
+    setCodPaymentLoading(true)
+    try {
+      const response = await fetch('/api/cod/container-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ containerId: container.id })
+      })
+      const result = await response.json()
+      // Nếu container.status là 'AWAITING_COD_PAYMENT', lấy COD request mới nhất có cod_fee > 0
+      let codRequest = null;
+      if (container.status === 'AWAITING_COD_PAYMENT') {
+        codRequest = (result.data || []).find((r: any) => r.cod_fee > 0)
+      } else {
+        codRequest = (result.data || []).find((r: any) => r.status === 'AWAITING_COD_PAYMENT' && r.cod_fee > 0)
+      }
+      if (!codRequest) {
+        console.error('Tất cả COD requests trả về cho container:', result.data)
+        if ((result.data || []).length > 0) {
+          toast({ title: "Không tìm thấy phí COD cần thanh toán phù hợp. Vui lòng liên hệ admin để kiểm tra lại trạng thái trên hệ thống.", variant: "destructive" })
+        } else {
+          toast({ title: "Không tìm thấy yêu cầu COD nào cho container này.", variant: "destructive" })
+        }
+        return
+      }
+      setCodPaymentData({
+        id: codRequest.id,
+        status: codRequest.status,
+        cod_fee: codRequest.cod_fee,
+        delivery_confirmed_at: codRequest.delivery_confirmed_at || codRequest.created_at,
+        container_number: codRequest.import_container?.container_number || container.container_number,
+        requesting_org_name: '', // Có thể lấy từ context nếu cần
+        original_depot_address: codRequest.original_depot_address || 'N/A',
+        requested_depot_name: codRequest.requested_depot_name || 'N/A',
+        created_at: codRequest.created_at
+      })
+      setCodPaymentDialogOpen(true)
+    } catch (error) {
+      toast({ title: "Lỗi khi lấy thông tin COD", description: String(error), variant: "destructive" })
+    } finally {
+      setCodPaymentLoading(false)
+    }
+  }
+
+  const handleConfirmCodCompletion = async (container: ImportContainer) => {
+    if (isLoading) return
+    
+    try {
+      setIsLoading(true)
+      
+      // Find COD request for this container
+      const response = await fetch('/api/cod/container-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          containerId: container.id
+        })
+      })
+      
+      if (!response.ok) {
+        throw new Error('Không thể tìm thấy yêu cầu COD cho container này')
+      }
+      
+      const result = await response.json()
+      const codRequest = result.data?.[0]
+      
+      if (!codRequest) {
+        throw new Error('Không tìm thấy yêu cầu COD liên quan')
+      }
+      
+      // Confirm COD completion
+      const confirmResult = await confirmCodCompletion(codRequest.id)
+      
+      if (confirmResult.success) {
+        toast({
+          title: "✅ Thành công",
+          description: confirmResult.message,
+          variant: "success"
+        })
+        
+        // Refresh page to update container status
+        window.location.reload()
+      } else {
+        throw new Error(confirmResult.message)
+      }
+      
+    } catch (error: any) {
+      console.error('Error confirming COD completion:', error)
+      toast({
+        title: "❌ Lỗi",
+        description: error.message || 'Có lỗi xảy ra khi xác nhận hoàn tất COD',
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -105,7 +237,7 @@ export default function ImportContainersTable({
                       </td>
                       <td className="p-3 text-center w-32">
                         <div className="whitespace-nowrap">
-                          {getStatusBadge(container.status)}
+                          {getStatusBadge(container.status as AssetStatus)}
                         </div>
                       </td>
                       <td className="p-3 text-center w-24">
@@ -131,6 +263,24 @@ export default function ImportContainersTable({
                               >
                                 <MapPin className="mr-2 h-4 w-4" />
                                 Yêu cầu Đổi Nơi Trả
+                              </DropdownMenuItem>
+                            )}
+                            {container.status === 'AWAITING_COD_PAYMENT' && (
+                              <DropdownMenuItem
+                                onClick={codPaymentLoading ? undefined : () => handlePayCodFee(container)}
+                                className={`cursor-pointer text-orange-600 ${codPaymentLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              >
+                                <CreditCard className="mr-2 h-4 w-4" />
+                                Thanh toán phí COD
+                              </DropdownMenuItem>
+                            )}
+                            {container.status === 'ON_GOING_COD' && (
+                              <DropdownMenuItem
+                                onClick={isLoading ? undefined : () => handleConfirmCodCompletion(container)}
+                                className={`cursor-pointer text-blue-600 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              >
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                {isLoading ? 'Đang xử lý...' : 'Xác nhận hoàn tất COD'}
                               </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
@@ -174,6 +324,19 @@ export default function ImportContainersTable({
           }}
         />
       )}
+      <CodPaymentDialog
+        open={codPaymentDialogOpen}
+        onOpenChange={(open) => {
+          setCodPaymentDialogOpen(open)
+          if (!open) setCodPaymentData(null)
+        }}
+        payment={codPaymentData}
+        onPaymentSuccess={() => {
+          setCodPaymentDialogOpen(false)
+          setCodPaymentData(null)
+          router.refresh?.()
+        }}
+      />
     </>
   )
 } 

@@ -12,9 +12,16 @@ interface DropoffOrderCardProps {
 export function DropoffOrderCard({ container }: DropoffOrderCardProps) {
   const statusMap = {
     'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
+    'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt tái sử dụng', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
     'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí tái sử dụng', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'ON_GOING_COD': { text: 'Đã thanh toán - Đang thực hiện COD', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'ON_GOING_REUSE': { text: 'Đã thanh toán - Đang thực hiện Tái sử dụng', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'secondary' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
+    'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'COD_REJECTED': { text: 'Bị từ chối COD', variant: 'destructive' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'REUSE_REJECTED': { text: 'Bị từ chối tái sử dụng', variant: 'destructive' as const, bg: 'bg-red-50', border: 'border-red-200' },
   }
 
   const getStatusInfo = (status: string) => {

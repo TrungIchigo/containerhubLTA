@@ -46,7 +46,7 @@ export default function AddExportBookingForm({
   const [internalIsOpen, setInternalIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [userId, setUserId] = useState<string>('')
-  const [bookingId] = useState<string>(() => `temp_${Date.now()}`) // Temporary ID for uploads
+  const [bookingId] = useState<string>(() => `temp_${Math.random().toString(36).substr(2, 9)}`) // Temporary ID for uploads
   const { cargoOptions, loading: cargoLoading, error: cargoError } = useCargoTypes()
 
   // Use external control if provided, otherwise use internal state

@@ -86,7 +86,7 @@ export default function ApprovedCodRequestsPage() {
             container_type,
             drop_off_location
           ),
-          requested_depot:depots!cod_requests_requested_depot_id_fkey(
+          requested_depot:gpg_depots!cod_requests_requested_depot_id_fkey(
             id,
             name,
             address
@@ -96,7 +96,6 @@ export default function ApprovedCodRequestsPage() {
             name
           )
         `)
-        .eq('approving_org_id', profile.organization_id)
         .in('status', ['APPROVED', 'PENDING_PAYMENT', 'PAID'])
         .order('created_at', { ascending: false })
 

@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
           name
         )
       `)
-      .eq('status', 'PENDING_PAYMENT')
+      .eq('status', 'AWAITING_COD_PAYMENT')
       .not('cod_fee', 'is', null)
       .gt('cod_fee', 0)
       .order('delivery_confirmed_at', { ascending: true })

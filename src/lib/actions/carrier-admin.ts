@@ -54,7 +54,7 @@ export async function getCarrierAdminDashboardData() {
           container_type,
           drop_off_location
         ),
-        requested_depot:depots!cod_requests_requested_depot_id_fkey(
+        requested_depot:gpg_depots!cod_requests_requested_depot_id_fkey(
           id,
           name,
           address
@@ -64,7 +64,6 @@ export async function getCarrierAdminDashboardData() {
           name
         )
       `)
-      .eq('approving_org_id', orgId)
       .order('created_at', { ascending: false })
 
     if (codError) {
@@ -103,7 +102,6 @@ export async function getCarrierAdminDashboardData() {
           name
         )
       `)
-      .eq('approving_org_id', orgId)
       .eq('status', 'PENDING')
       .order('created_at', { ascending: false })
 
@@ -135,7 +133,6 @@ export async function getCarrierAdminDashboardData() {
       const { data: approvedData, error: approvedError } = await supabase
         .from('street_turn_requests')
         .select('id')
-        .eq('approving_org_id', orgId)
         .eq('status', 'APPROVED')
         .gte('created_at', thisMonth.toISOString())
 
@@ -153,7 +150,6 @@ export async function getCarrierAdminDashboardData() {
       const { data: totalData, error: totalError } = await supabase
         .from('street_turn_requests')
         .select('id')
-        .eq('approving_org_id', orgId)
         .eq('status', 'APPROVED')
 
       if (totalError) {
@@ -214,7 +210,6 @@ export async function approveRequest(requestId: string) {
     .from('street_turn_requests')
     .select('*')
     .eq('id', requestId)
-    .eq('approving_org_id', user.profile.organization_id) // Ensure this user can approve this request
     .eq('status', 'PENDING') // Only pending requests can be approved
     .single()
 
@@ -237,10 +232,10 @@ export async function approveRequest(requestId: string) {
     throw updateError
   }
 
-  // Update container and booking status to CONFIRMED
+  // Update container and booking status to PROCESSING
   const { error: containerError } = await supabase
     .from('import_containers')
-    .update({ status: 'CONFIRMED' })
+    .update({ status: 'PROCESSING' })
     .eq('id', request.import_container_id)
 
   const { error: bookingError } = await supabase
@@ -287,7 +282,6 @@ export async function declineRequest(requestId: string, reason: string) {
     .from('street_turn_requests')
     .select('*')
     .eq('id', requestId)
-    .eq('approving_org_id', user.profile.organization_id) // Ensure this user can decline this request
     .eq('status', 'PENDING') // Only pending requests can be declined
     .single()
 

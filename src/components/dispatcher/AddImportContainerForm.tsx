@@ -423,7 +423,7 @@ export default function AddImportContainerForm({
             <div className="space-y-3">
               <Label className="flex items-center text-base font-medium">
                 <ImageIcon className="w-5 h-5 mr-2 text-primary" />
-                Hình ảnh tình trạng container <span className="text-red-500">*</span>
+                Hình ảnh tình trạng container
               </Label>
                               <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50 shadow-sm">
                   <ImageUploader

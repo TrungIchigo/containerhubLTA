@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { MoreHorizontal, MessageSquare, MapPin, Clock, CheckCircle, XCircle, AlertCircle, FileText } from 'lucide-react'
+import { MoreHorizontal, MessageSquare, MapPin, Clock, CheckCircle, XCircle, AlertCircle, FileText, CreditCard, DollarSign } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,10 +12,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import SubmitInfoDialog from './SubmitInfoDialog'
+import { CodPaymentDialog } from './CodPaymentDialog'
 import { cancelCodRequest } from '@/lib/actions/cod'
 import { useToast } from '@/hooks/use-toast'
 import { formatDateTimeVN } from '@/lib/utils'
 import type { CodRequestWithDetails } from '@/lib/types'
+import type { PendingCodPayment } from '@/lib/types/billing'
 
 interface CodRequestsTableProps {
   requests: CodRequestWithDetails[]
@@ -24,6 +26,8 @@ interface CodRequestsTableProps {
 export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
   const [selectedRequest, setSelectedRequest] = useState<CodRequestWithDetails | null>(null)
   const [showSubmitInfoDialog, setShowSubmitInfoDialog] = useState(false)
+  const [selectedPayment, setSelectedPayment] = useState<PendingCodPayment | null>(null)
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
@@ -37,6 +41,10 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
       'AWAITING_INFO': { text: 'Chờ bổ sung', variant: 'warning' as const, icon: AlertCircle },
       'EXPIRED': { text: 'Hết hạn', variant: 'declined' as const, icon: Clock },
       'REVERSED': { text: 'Đã hủy', variant: 'declined' as const, icon: XCircle },
+      'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán', variant: 'warning' as const, icon: DollarSign },
+      'PAID': { text: 'Đã thanh toán', variant: 'approved' as const, icon: CheckCircle },
+      'PROCESSING_AT_DEPOT': { text: 'Đang xử lý', variant: 'pending' as const, icon: Clock },
+      'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const, icon: CheckCircle },
     }
     
     const currentStatus = statusMap[status as keyof typeof statusMap] || { 
@@ -113,6 +121,29 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
   const handleDialogClose = () => {
     setSelectedRequest(null)
     setShowSubmitInfoDialog(false)
+    // Reload page to refresh data
+    window.location.reload()
+  }
+
+  const handlePayment = (request: CodRequestWithDetails) => {
+    // Convert COD request to payment format
+    const payment: PendingCodPayment = {
+      id: request.id,
+      status: request.status,
+      cod_fee: request.cod_fee || 0,
+      delivery_confirmed_at: request.delivery_confirmed_at || new Date().toISOString(),
+      container_number: request.import_container?.container_number || 'N/A',
+      requesting_org_name: request.requesting_org?.name || 'N/A',
+      original_depot_address: request.original_depot_address,
+      requested_depot_name: request.requested_depot?.name || 'N/A',
+      created_at: request.created_at
+    }
+    
+    setSelectedPayment(payment)
+    setPaymentDialogOpen(true)
+  }
+
+  const handlePaymentSuccess = () => {
     // Reload page to refresh data
     window.location.reload()
   }
@@ -211,7 +242,17 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
                         </div>
                       </td>
                       <td className="table-cell text-center w-24">
-                        {request.status === 'PENDING' || request.status === 'AWAITING_INFO' ? (
+                        {request.status === 'AWAITING_COD_PAYMENT' && request.cod_fee && request.cod_fee > 0 ? (
+                          // Payment button for pending payments
+                          <Button
+                            size="sm"
+                            onClick={() => handlePayment(request)}
+                            className="bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 text-white"
+                          >
+                            <CreditCard className="mr-1 h-3 w-3" />
+                            Thanh toán
+                          </Button>
+                        ) : request.status === 'PENDING' || request.status === 'AWAITING_INFO' ? (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" className="h-8 w-8 p-0" disabled={isLoading}>
@@ -259,6 +300,14 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
           request={selectedRequest}
         />
       )}
+
+      {/* COD Payment Dialog */}
+      <CodPaymentDialog
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+        payment={selectedPayment}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </>
   )
 } 

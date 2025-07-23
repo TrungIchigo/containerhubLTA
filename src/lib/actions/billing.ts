@@ -132,7 +132,7 @@ export async function getUnpaidTransactions(organizationId?: string) {
         payer_organization:organizations!payer_org_id(
           id,
           name,
-          organization_type
+          type
         )
       `)
       .eq('status', 'UNPAID')
@@ -230,7 +230,7 @@ export async function getInvoices(organizationId?: string) {
         organization:organizations!organization_id(
           id,
           name,
-          organization_type
+          type
         ),
         transactions(
           id,
@@ -399,6 +399,81 @@ export async function getOrganizationBillingSummary(): Promise<{
     return { success: true, data: Array.from(orgMap.values()) };
   } catch (error) {
     console.error('Unexpected error fetching organization billing summary:', error);
+    return { success: false, error: 'Unexpected error occurred' };
+  }
+} 
+
+/**
+ * Lấy danh sách COD requests đang chờ thanh toán
+ */
+export async function getPendingCodPayments(organizationId?: string) {
+  try {
+    const supabase = await createClient();
+
+    let query = supabase
+      .from('cod_requests')
+      .select(`
+        id,
+        status,
+        cod_fee,
+        delivery_confirmed_at,
+        original_depot_address,
+        created_at,
+        requested_depot_id,
+        import_container:import_containers!dropoff_order_id(
+          container_number
+        ),
+        requesting_org:organizations!requesting_org_id(
+          name
+        )
+      `)
+      .eq('status', 'AWAITING_COD_PAYMENT')
+      .not('cod_fee', 'is', null)
+      .gt('cod_fee', 0)
+      .order('delivery_confirmed_at', { ascending: true });
+
+    if (organizationId) {
+      query = query.eq('requesting_org_id', organizationId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching pending COD payments:', error);
+      return { success: false, error: error.message };
+    }
+
+    // Get depot names separately to avoid relationship issues
+    const depotIds = data?.map(item => item.requested_depot_id).filter(Boolean) || [];
+    
+    let depotMap: Record<string, string> = {};
+    if (depotIds.length > 0) {
+      const { data: depots } = await supabase
+        .from('gpg_depots')
+        .select('id, name')
+        .in('id', depotIds);
+      
+      if (depots) {
+        depotMap = Object.fromEntries(depots.map(depot => [depot.id, depot.name]));
+      }
+    }
+
+    // Transform data to match expected format
+    const pendingPayments = data?.map(item => ({
+      id: item.id,
+      status: item.status,
+      cod_fee: item.cod_fee,
+      delivery_confirmed_at: item.delivery_confirmed_at,
+      container_number: (item.import_container as any)?.container_number || 'N/A',
+      requesting_org_name: (item.requesting_org as any)?.name || 'N/A',
+      original_depot_address: item.original_depot_address,
+      requested_depot_name: depotMap[item.requested_depot_id] || 'N/A',
+      created_at: item.created_at
+    })) || [];
+
+    return { success: true, data: pendingPayments };
+  } catch (error) {
+    console.error('Unexpected error fetching pending COD payments:', error);
     return { success: false, error: 'Unexpected error occurred' };
   }
 } 

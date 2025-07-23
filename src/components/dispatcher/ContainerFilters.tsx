@@ -273,9 +273,16 @@ export default function ContainerFilters({
               <SelectContent>
                 <SelectItem value="all">Tất cả trạng thái</SelectItem>
                 <SelectItem value="AVAILABLE">Sẵn sàng</SelectItem>
-                <SelectItem value="AWAITING_APPROVAL">Chờ duyệt</SelectItem>
+                <SelectItem value="AWAITING_REUSE_APPROVAL">Chờ duyệt tái sử dụng</SelectItem>
                 <SelectItem value="AWAITING_COD_APPROVAL">Chờ duyệt COD</SelectItem>
-                <SelectItem value="CONFIRMED">Đã ghép</SelectItem>
+                <SelectItem value="AWAITING_COD_PAYMENT">Chờ thanh toán phí COD</SelectItem>
+                <SelectItem value="AWAITING_REUSE_PAYMENT">Chờ thanh toán phí tái sử dụng</SelectItem>
+                <SelectItem value="ON_GOING_COD">Đã thanh toán - Đang thực hiện COD</SelectItem>
+                <SelectItem value="ON_GOING_REUSE">Đã thanh toán - Đang thực hiện Tái sử dụng</SelectItem>
+                <SelectItem value="PROCESSING">Đang xử lý tại Depot</SelectItem>
+                <SelectItem value="COMPLETED">Hoàn tất</SelectItem>
+                <SelectItem value="COD_REJECTED">Bị từ chối COD</SelectItem>
+                <SelectItem value="REUSE_REJECTED">Bị từ chối tái sử dụng</SelectItem>
               </SelectContent>
             </Select>
           </div>

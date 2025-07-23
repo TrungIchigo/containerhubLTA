@@ -27,7 +27,8 @@ import {
   AlertTriangle,
   Eye,
   Download,
-  Loader2
+  Loader2,
+  ArrowRight
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
@@ -35,17 +36,22 @@ import { useToast } from '@/hooks/use-toast'
 import { useUser } from '@/hooks/use-user'
 import {
   getInvoices,
-  getUnpaidTransactions
+  getUnpaidTransactions,
+  getPendingCodPayments
 } from '@/lib/actions/billing'
-import type { Invoice, Transaction } from '@/lib/types/billing'
+import type { Invoice, Transaction, PendingCodPayment } from '@/lib/types/billing'
+import { CodPaymentDialog } from '@/components/features/cod/CodPaymentDialog'
 import { Loading } from '@/components/ui/loader'
 
 export function BillingDashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [pendingCodPayments, setPendingCodPayments] = useState<PendingCodPayment[]>([])
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
   const [invoiceDetailOpen, setInvoiceDetailOpen] = useState(false)
+  const [selectedCodPayment, setSelectedCodPayment] = useState<PendingCodPayment | null>(null)
+  const [codPaymentDialogOpen, setCodPaymentDialogOpen] = useState(false)
   
   const { user } = useUser()
   const { toast } = useToast()
@@ -65,9 +71,10 @@ export function BillingDashboard() {
     console.log('Loading billing data for organization:', user.profile.organization_id);
     setIsLoading(true)
     try {
-      const [invoicesResult, transactionsResult] = await Promise.all([
+      const [invoicesResult, transactionsResult, codPaymentsResult] = await Promise.all([
         getInvoices(user.profile.organization_id),
-        getUnpaidTransactions(user.profile.organization_id)
+        getUnpaidTransactions(user.profile.organization_id),
+        getPendingCodPayments(user.profile.organization_id)
       ])
 
       console.log('Invoices result:', invoicesResult);
@@ -85,6 +92,13 @@ export function BillingDashboard() {
         console.log('Set transactions:', transactionsResult.data);
       } else {
         console.error('Failed to load transactions:', transactionsResult.error);
+      }
+
+      if (codPaymentsResult.success) {
+        setPendingCodPayments(codPaymentsResult.data!)
+        console.log('Set COD payments:', codPaymentsResult.data);
+      } else {
+        console.error('Failed to load COD payments:', codPaymentsResult.error);
       }
     } catch (error) {
       console.error('Error loading billing data:', error)
@@ -136,6 +150,16 @@ export function BillingDashboard() {
     return new Date(dueDate) < new Date()
   }
 
+  const handleCodPayment = (payment: PendingCodPayment) => {
+    setSelectedCodPayment(payment)
+    setCodPaymentDialogOpen(true)
+  }
+
+  const handlePaymentSuccess = () => {
+    // Reload data after successful payment
+    loadData()
+  }
+
   // Calculate summary stats
   const totalAmount = invoices.reduce((sum, invoice) => sum + invoice.total_amount, 0)
   const unpaidAmount = invoices
@@ -145,6 +169,7 @@ export function BillingDashboard() {
     .filter(invoice => invoice.status === 'PENDING' && isOverdue(invoice.due_date))
     .reduce((sum, invoice) => sum + invoice.total_amount, 0)
   const pendingTransactionAmount = transactions.reduce((sum, transaction) => sum + transaction.amount, 0)
+  const pendingCodAmount = pendingCodPayments.reduce((sum, payment) => sum + payment.cod_fee, 0)
 
   if (isLoading) {
     return (
@@ -159,7 +184,7 @@ export function BillingDashboard() {
   return (
     <div className="space-y-8">
       {/* Summary Cards with Enhanced Design */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
         <Card className="relative overflow-hidden p-3 border-0 bg-gradient-to-br from-blue-50 to-blue-100 shadow-md hover:shadow-lg transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-blue-800">Tổng Hóa Đơn</CardTitle>
@@ -227,6 +252,23 @@ export function BillingDashboard() {
             </p>
           </CardContent>
         </Card>
+
+        <Card className="relative overflow-hidden p-3 border-0 bg-gradient-to-br from-purple-50 to-purple-100 shadow-md hover:shadow-lg transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-purple-800">Phí COD</CardTitle>
+            <div className="p-2 rounded-full bg-purple-500/10">
+              <CheckCircle className="h-4 w-4 text-purple-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent">
+              {formatCurrency(pendingCodAmount)}
+            </div>
+            <p className="text-xs text-purple-600/80 font-medium">
+              {pendingCodPayments.length} thanh toán chờ
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Pending Transactions Alert with Enhanced Design */}
@@ -235,14 +277,14 @@ export function BillingDashboard() {
           <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-indigo-500/10"></div>
           <CardHeader className="relative">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg">
+              <div className="p-2 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg ml-3">
                 <Clock className="h-5 w-5 text-white" />
               </div>
               <div>
-                <CardTitle className="bg-gradient-to-r from-purple-700 to-indigo-700 bg-clip-text text-transparent font-bold">
+                <CardTitle className="bg-gradient-to-r from-purple-700 to-indigo-700 bg-clip-text text-transparent font-bold py-3">
                   Giao Dịch Chờ Xuất Hóa Đơn
                 </CardTitle>
-                <CardDescription className="text-gray-600 font-medium">
+                <CardDescription className="text-gray-600 font-medium mb-3">
                   Các giao dịch này sẽ được đưa vào hóa đơn tiếp theo
                 </CardDescription>
               </div>
@@ -264,6 +306,69 @@ export function BillingDashboard() {
               {transactions.length > 3 && (
                 <div className="text-sm text-center py-2 text-gray-600 font-medium">
                   ... và {transactions.length - 3} giao dịch khác
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Pending COD Payments Section */}
+      {pendingCodPayments.length > 0 && (
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 shadow-lg">
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-pink-500/10"></div>
+          <CardHeader className="relative">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-gradient-to-br from-orange-500 to-pink-600 shadow-lg">
+                <AlertTriangle className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="bg-gradient-to-r from-orange-700 to-pink-700 bg-clip-text text-transparent font-bold">
+                  Phí COD Chờ Thanh Toán
+                </CardTitle>
+                <CardDescription className="text-gray-600 font-medium">
+                  Các khoản phí COD cần được thanh toán sau khi giao trả thành công
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="relative">
+            <div className="space-y-3">
+              {pendingCodPayments.slice(0, 3).map((payment) => (
+                <div key={payment.id} className="flex justify-between items-center p-4 bg-white/80 backdrop-blur-sm rounded-lg border border-white/50 shadow-sm hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline" className="border-blue-300 text-blue-600">
+                      Container {payment.container_number}
+                    </Badge>
+                    <div className="text-sm">
+                      <div className="font-medium text-gray-700">{payment.original_depot_address}</div>
+                      <ArrowRight className="w-4 h-4 inline mx-1 text-gray-400" />
+                      <div className="font-medium text-blue-600 inline">{payment.requested_depot_name}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <div className="text-sm font-mono bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent font-bold">
+                        {formatCurrency(payment.cod_fee)}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {formatDate(payment.delivery_confirmed_at)}
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleCodPayment(payment)}
+                      className="bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-1" />
+                      Thanh toán ngay
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {pendingCodPayments.length > 3 && (
+                <div className="text-sm text-center py-2 text-gray-600 font-medium">
+                  ... và {pendingCodPayments.length - 3} thanh toán khác
                 </div>
               )}
             </div>
@@ -474,6 +579,14 @@ export function BillingDashboard() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* COD Payment Dialog */}
+      <CodPaymentDialog
+        open={codPaymentDialogOpen}
+        onOpenChange={setCodPaymentDialogOpen}
+        payment={selectedCodPayment}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </div>
   )
 } 

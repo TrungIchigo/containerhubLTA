@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ChevronDown, ChevronUp, Truck, Box, ArrowDownUp } from 'lucide-react'
@@ -19,6 +19,18 @@ interface MenuItem {
 export default function DispatcherDropdown({ isActive }: DispatcherDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+
+  // Tự động mở dropdown khi có menu item được chọn
+  useEffect(() => {
+    const menuItems = [
+      '/dispatcher/dropoff-orders',
+      '/dispatcher/pickup-orders',
+      '/dispatcher/suggestions'
+    ]
+    if (menuItems.some(path => pathname.startsWith(path))) {
+      setIsOpen(true)
+    }
+  }, [pathname])
 
   const menuItems: MenuItem[] = [
     {
@@ -77,7 +89,7 @@ export default function DispatcherDropdown({ isActive }: DispatcherDropdownProps
             <div className="py-1 space-y-1">
               {menuItems.map((item) => {
                 const IconComponent = item.icon
-                const isItemActive = pathname === item.href
+                const isItemActive = pathname.startsWith(item.href)
                 
                 return (
                   <Link
@@ -85,7 +97,7 @@ export default function DispatcherDropdown({ isActive }: DispatcherDropdownProps
                     href={item.href}
                     className={`flex items-start space-x-3 px-6 py-2 text-sm transition-all duration-200
                       ${isItemActive 
-                        ? 'bg-primary/10 text-primary' 
+                        ? 'bg-primary/10 text-primary font-medium' 
                         : 'text-secondary-light hover:bg-secondary-light/5 hover:text-secondary-foreground'
                       }`}
                   >
@@ -93,7 +105,7 @@ export default function DispatcherDropdown({ isActive }: DispatcherDropdownProps
                       isItemActive ? 'text-primary' : 'text-secondary-light'
                     }`} />
                     <div>
-                      <div className="font-medium">{item.name}</div>
+                      <div className={isItemActive ? 'font-medium' : ''}>{item.name}</div>
                     </div>
                   </Link>
                 )
