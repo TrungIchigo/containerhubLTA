@@ -74,7 +74,7 @@ export default function ContainersPageClient({
   ] as const;
   type ImportContainerStatus = typeof IMPORT_CONTAINER_STATUS[number];
 
-  const statusMap: Record<ImportContainerStatus, { text: string; variant: string }> = {
+  const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed" }> = {
     AVAILABLE: { text: 'Sẵn sàng', variant: 'approved' },
     AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt tái sử dụng', variant: 'pending' },
     COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive' },
@@ -91,8 +91,9 @@ export default function ContainersPageClient({
   };
 
   const getStatusBadge = (status: string) => {
-    const currentStatus = statusMap[status as ImportContainerStatus] || { text: status, variant: 'outline' };
-    return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>;
+    const currentStatus = statusMap[status as ImportContainerStatus] || { text: status, variant: 'outline' as const };
+    const variant = currentStatus.variant as "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed";
+    return <Badge variant={variant}>{currentStatus.text}</Badge>;
   }
 
   // Get container type display text

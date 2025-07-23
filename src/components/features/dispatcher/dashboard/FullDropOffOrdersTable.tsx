@@ -28,7 +28,7 @@ const IMPORT_CONTAINER_STATUS = [
 ] as const;
 type ImportContainerStatus = typeof IMPORT_CONTAINER_STATUS[number];
 
-const statusMap: Record<ImportContainerStatus, { text: string; variant: string; bg: string; border: string }> = {
+const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed"; bg: string; border: string }> = {
   AVAILABLE: { text: 'Sẵn sàng', variant: 'approved', bg: 'bg-green-50', border: 'border-green-200' },
   AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt tái sử dụng', variant: 'pending', bg: 'bg-yellow-50', border: 'border-yellow-200' },
   COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive', bg: 'bg-red-50', border: 'border-red-200' },
@@ -45,7 +45,7 @@ const statusMap: Record<ImportContainerStatus, { text: string; variant: string; 
 };
 
 const getStatusInfo = (status: string) => {
-  return statusMap[status as ImportContainerStatus] || { text: status, variant: 'outline', bg: 'bg-gray-50', border: 'border-gray-200' };
+  return statusMap[status as ImportContainerStatus] || { text: status, variant: 'outline' as const, bg: 'bg-gray-50', border: 'border-gray-200' };
 }
 
 export function FullDropOffOrdersTable({ importContainers }: FullDropOffOrdersTableProps) {

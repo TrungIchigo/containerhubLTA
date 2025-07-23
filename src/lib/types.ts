@@ -222,7 +222,7 @@ export interface MarketplaceFilters {
 }
 
 // COD (Change of Destination) types
-export type CodRequestStatus = 'PENDING' | 'APPROVED' | 'DECLINED' | 'AWAITING_INFO' | 'EXPIRED' | 'REVERSED' | 'PENDING_PAYMENT' | 'PAID' | 'PROCESSING_AT_DEPOT' | 'COMPLETED'
+export type CodRequestStatus = 'PENDING' | 'APPROVED' | 'DECLINED' | 'AWAITING_INFO' | 'EXPIRED' | 'REVERSED' | 'PENDING_PAYMENT' | 'AWAITING_COD_PAYMENT' | 'PAID' | 'PROCESSING_AT_DEPOT' | 'COMPLETED'
 export type AuditLogAction = 'CREATED' | 'APPROVED' | 'DECLINED' | 'INFO_REQUESTED' | 'INFO_SUBMITTED' | 'EXPIRED' | 'REVERSED' | 'CANCELLED' | 'DELIVERY_CONFIRMED' | 'PAYMENT_CONFIRMED' | 'DEPOT_PROCESSING_STARTED' | 'COMPLETED'
 
 export interface CodRequest {

@@ -339,7 +339,6 @@ export function TopUpDialog({
                 <QRCodeDisplay
                   value={qrCodeInfo.qr_data || ''}
                   size={200}
-                  title="Mã QR Nạp Tiền"
                   description="Quét mã để nạp tiền nhanh qua ứng dụng ngân hàng"
                   bankInfo={{
                     bankName: "Liên Việt Post Bank (LPB)",
@@ -348,7 +347,6 @@ export function TopUpDialog({
                     amount: qrCodeInfo.amount,
                     transferContent: qrCodeInfo.transfer_content
                   }}
-                  expiresAt={qrCodeInfo.expires_at}
                   className="border-0 shadow-none"
                 />
               </div>

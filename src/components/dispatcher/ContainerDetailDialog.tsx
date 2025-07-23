@@ -76,7 +76,7 @@ export default function ContainerDetailDialog({
   ] as const;
   type ImportContainerStatus = typeof IMPORT_CONTAINER_STATUS[number];
 
-  const statusMap: Record<ImportContainerStatus, { text: string; variant: string; color: string }> = {
+  const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed"; color: string }> = {
     AVAILABLE: { text: 'Sẵn sàng', variant: 'approved', color: 'text-green-600' },
     AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt tái sử dụng', variant: 'pending', color: 'text-yellow-600' },
     COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive', color: 'text-red-600' },
@@ -93,7 +93,7 @@ export default function ContainerDetailDialog({
   };
 
   const getStatusInfo = (status: string) => {
-    return statusMap[status as ImportContainerStatus] || { text: status, variant: 'outline', color: 'text-gray-600' };
+    return statusMap[status as ImportContainerStatus] || { text: status, variant: 'outline' as const, color: 'text-gray-600' };
   }
 
   const handleEdit = () => {
