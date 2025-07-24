@@ -75,20 +75,6 @@ export function DefaultSidebarState() {
         </CardHeader>
 
         <CardContent className="space-y-6 overflow-y-auto h-[calc(100%-100px)]">
-          {/* Welcome Message */}
-          <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-blue-100">
-            <div className="mb-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="font-semibold text-text-primary">
-                Chào mừng đến Bảng Điều Phối
-              </h3>
-            </div>
-            <p className="text-sm text-text-secondary">
-              Khám phá cơ hội tái sử dụng container và tối ưu hóa vận hành của bạn
-            </p>
-          </div>
 
           {/* Quick Stats */}
           <div className="space-y-3">

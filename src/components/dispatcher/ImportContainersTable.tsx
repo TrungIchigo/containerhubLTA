@@ -34,6 +34,7 @@ import { useToast } from '@/hooks/use-toast'
 import { confirmCodCompletion } from '@/lib/actions/cod'
 import { useRouter } from 'next/navigation'
 import { CodPaymentDialog } from '@/components/features/cod/CodPaymentDialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 interface ImportContainersTableProps {
   containers: (ImportContainer & {
@@ -55,6 +56,12 @@ export default function ImportContainersTable({
   const [codPaymentDialogOpen, setCodPaymentDialogOpen] = useState(false)
   const [codPaymentData, setCodPaymentData] = useState<import('@/lib/types/billing').PendingCodPayment | null>(null)
   const [codPaymentLoading, setCodPaymentLoading] = useState(false)
+  const [codCompleteDialogOpen, setCodCompleteDialogOpen] = useState(false);
+  const [codCompleteLoading, setCodCompleteLoading] = useState(false);
+  const [codCompleteContainer, setCodCompleteContainer] = useState<ImportContainer | null>(null);
+  const [depotCompleteDialogOpen, setDepotCompleteDialogOpen] = useState(false);
+  const [depotCompleteLoading, setDepotCompleteLoading] = useState(false);
+  const [depotCompleteContainer, setDepotCompleteContainer] = useState<ImportContainer | null>(null);
 
   // Sử dụng type AssetStatus chuẩn
   const statusMap: Record<AssetStatus, { text: string; variant: Parameters<typeof Badge>[0]["variant"] }> = {
@@ -276,11 +283,26 @@ export default function ImportContainersTable({
                             )}
                             {container.status === 'ON_GOING_COD' && (
                               <DropdownMenuItem
-                                onClick={isLoading ? undefined : () => handleConfirmCodCompletion(container)}
-                                className={`cursor-pointer text-blue-600 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                onClick={() => {
+                                  setCodCompleteContainer(container);
+                                  setCodCompleteDialogOpen(true);
+                                }}
+                                className={`cursor-pointer text-blue-600`}
                               >
                                 <CheckCircle className="mr-2 h-4 w-4" />
-                                {isLoading ? 'Đang xử lý...' : 'Xác nhận hoàn tất COD'}
+                                Xác nhận hoàn tất COD
+                              </DropdownMenuItem>
+                            )}
+                            {container.status === 'DEPOT_PROCESSING' && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setDepotCompleteContainer(container);
+                                  setDepotCompleteDialogOpen(true);
+                                }}
+                                className={`cursor-pointer text-green-600`}
+                              >
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Xác nhận hoàn tất xử lý tại depot
                               </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
@@ -337,6 +359,94 @@ export default function ImportContainersTable({
           router.refresh?.()
         }}
       />
+      {/* Dialog xác nhận hoàn tất COD */}
+      {codCompleteContainer && (
+        <Dialog open={codCompleteDialogOpen} onOpenChange={setCodCompleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Xác nhận hoàn tất COD</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 text-center">
+              Bạn có chắc chắn muốn xác nhận hoàn tất COD cho container <b>{codCompleteContainer.container_number}</b> không?
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setCodCompleteDialogOpen(false)}>Hủy</Button>
+              <Button
+                onClick={async () => {
+                  setCodCompleteLoading(true);
+                  try {
+                    const res = await fetch('/api/cod/carrier-requests', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ action: 'confirm_cod_complete', containerId: codCompleteContainer.id })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                      toast({ title: 'Thành công', description: 'Đã xác nhận hoàn tất COD!', variant: 'success' });
+                      setCodCompleteDialogOpen(false);
+                      setCodCompleteContainer(null);
+                      router.refresh?.();
+                    } else {
+                      toast({ title: 'Lỗi', description: result.message || 'Không thể xác nhận hoàn tất COD', variant: 'destructive' });
+                    }
+                  } catch (err) {
+                    toast({ title: 'Lỗi', description: String(err), variant: 'destructive' });
+                  } finally {
+                    setCodCompleteLoading(false);
+                  }
+                }}
+                disabled={codCompleteLoading}
+              >
+                {codCompleteLoading ? 'Đang xác nhận...' : 'Xác nhận'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+      {/* Dialog xác nhận hoàn tất xử lý tại depot */}
+      {depotCompleteContainer && (
+        <Dialog open={depotCompleteDialogOpen} onOpenChange={setDepotCompleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Xác nhận hoàn tất xử lý tại depot</DialogTitle>
+            </DialogHeader>
+            <div className="py-4 text-center">
+              Bạn có chắc chắn muốn xác nhận hoàn tất xử lý tại depot cho container <b>{depotCompleteContainer.container_number}</b> không?
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setDepotCompleteDialogOpen(false)}>Hủy</Button>
+              <Button
+                onClick={async () => {
+                  setDepotCompleteLoading(true);
+                  try {
+                    const res = await fetch('/api/cod/carrier-requests', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ action: 'complete_cod_process', containerId: depotCompleteContainer.id })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                      toast({ title: 'Thành công', description: 'Đã xác nhận hoàn tất xử lý tại depot!', variant: 'success' });
+                      setDepotCompleteDialogOpen(false);
+                      setDepotCompleteContainer(null);
+                      router.refresh?.();
+                    } else {
+                      toast({ title: 'Lỗi', description: result.message || 'Không thể xác nhận hoàn tất depot', variant: 'destructive' });
+                    }
+                  } catch (err) {
+                    toast({ title: 'Lỗi', description: String(err), variant: 'destructive' });
+                  } finally {
+                    setDepotCompleteLoading(false);
+                  }
+                }}
+                disabled={depotCompleteLoading}
+              >
+                {depotCompleteLoading ? 'Đang xác nhận...' : 'Xác nhận'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 } 

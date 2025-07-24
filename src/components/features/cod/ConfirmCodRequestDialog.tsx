@@ -43,7 +43,8 @@ export default function ConfirmCodRequestDialog({
       const requestData = {
         dropoff_order_id: container.id,
         depot_id: formData.depot_id,
-        reason_for_request: formData.reason_for_request || ''
+        reason_for_request: formData.reason_for_request || '',
+        container_number: container.container_number
       }
 
       console.log('Creating COD request with data:', requestData)

@@ -65,12 +65,16 @@ export function CodPaymentDialog({
   
   const { toast } = useToast()
 
-  // Load prepaid fund info when dialog opens
+  // Load prepaid fund info và QR code khi dialog mở
   useEffect(() => {
     if (open) {
       loadPrepaidFund()
+      if (payment) {
+        generateQRCode()
+      }
     }
-  }, [open])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, payment])
 
   // Debug payment data when it changes
   useEffect(() => {
@@ -303,52 +307,66 @@ export function CodPaymentDialog({
                   {/* VietQR Payment Tab */}
                   <TabsContent value="qr_code" className="mt-6 space-y-4">
                     <div className="text-center space-y-4">
-                      {!qrCodeInfo ? (
-                        <div className="space-y-4">
-                          <div className="w-48 h-48 mx-auto bg-slate-100 rounded-lg flex items-center justify-center">
-                            <QrCode className="w-16 h-16 text-slate-400" />
-                          </div>
-                          <Button
-                            onClick={generateQRCode}
-                            disabled={isGeneratingQR}
-                            className="w-full"
-                          >
-                            {isGeneratingQR ? (
-                              <>
-                                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                                Đang tạo mã QR...
-                              </>
-                            ) : (
-                              <>
-                                <QrCode className="w-4 h-4 mr-2" />
-                                Tạo mã QR thanh toán
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          {/* QR Code Display */}
-                          <div className="flex justify-center">
-                            <QRCodeDisplay
-                              value={qrCodeInfo.qr_data || ''}
-                              size={200}
-                              description="Quét mã để thanh toán nhanh qua ứng dụng ngân hàng"
-                              bankInfo={{
-                                bankName: "Vietinbank",
-                                accountNumber: qrCodeInfo.account_number,
-                                accountName: qrCodeInfo.account_name,
-                                amount: payment.cod_fee,
-                                transferContent: `PAY COD ${payment.container_number} GIAO TRA`
-                              }}
-                              className="border-0 shadow-none"
-                            />
-                          </div>
-                                                    
-                          <Button variant="default" className="w-full">
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Tôi đã chuyển khoản
-                          </Button>
+                      {activeTab === 'qr_code' && (
+                        <div className="flex flex-col items-center gap-4">
+                          {!qrCodeInfo ? (
+                            <div className="flex flex-col items-center gap-2 w-full">
+                              <div className="w-full flex justify-center items-center min-h-[220px]">
+                                <QrCode className="w-16 h-16 text-slate-300 animate-pulse" />
+                              </div>
+                              <div className="text-sm text-slate-500">Đang tạo mã QR thanh toán...</div>
+                            </div>
+                          ) : (
+                            <div className="space-y-4">
+                              {/* QR Code Display */}
+                              <div className="flex justify-center">
+                                <QRCodeDisplay
+                                  value={qrCodeInfo.qr_data || ''}
+                                  size={200}
+                                  description="Quét mã để thanh toán nhanh qua ứng dụng ngân hàng"
+                                  bankInfo={{
+                                    bankName: "Vietinbank",
+                                    accountNumber: qrCodeInfo.account_number,
+                                    accountName: qrCodeInfo.account_name,
+                                    amount: payment.cod_fee,
+                                    transferContent: `PAY COD ${payment.container_number} GIAO TRA`
+                                  }}
+                                  className="border-0 shadow-none"
+                                />
+                              </div>
+                              <Button
+                                variant="default"
+                                className="w-full"
+                                onClick={async () => {
+                                  if (!payment) return;
+                                  setIsProcessingPayment(true);
+                                  try {
+                                    const res = await fetch('/api/cod/carrier-requests', {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ action: 'confirm_payment', requestId: payment.id })
+                                    });
+                                    const result = await res.json();
+                                    if (result.success) {
+                                      toast({ title: 'Thành công', description: 'Đã xác nhận thanh toán phí COD!', variant: 'success' });
+                                      onOpenChange(false);
+                                      onPaymentSuccess?.();
+                                    } else {
+                                      toast({ title: 'Lỗi', description: result.message || 'Không thể xác nhận thanh toán', variant: 'destructive' });
+                                    }
+                                  } catch (err) {
+                                    toast({ title: 'Lỗi', description: String(err), variant: 'destructive' });
+                                  } finally {
+                                    setIsProcessingPayment(false);
+                                  }
+                                }}
+                                disabled={isProcessingPayment}
+                              >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                {isProcessingPayment ? 'Đang xác nhận...' : 'Tôi đã chuyển khoản'}
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -368,11 +386,7 @@ export function CodPaymentDialog({
                           <CardHeader className="pb-3">
                             <div className="flex items-center gap-3">
                               <OneStopLogo size="md" />
-                              <div>
-                                <CardDescription className="text-green-600">
-                                  Thanh toán bằng Quỹ i-Prepaid
-                                </CardDescription>
-                              </div>
+ 
                             </div>
                           </CardHeader>
                           <CardContent>
