@@ -66,7 +66,7 @@ export default function GlobalSearchCommand({ userRole = 'DISPATCHER' }: GlobalS
         },
         {
           label: 'Xem Gợi Ý Ghép Nối',
-          description: 'Tìm cơ hội tái sử dụng container',
+          description: 'Tìm cơ hội Re-use container',
           icon: RefreshCw,
           action: () => router.push('/dispatcher#suggestions'),
           keywords: ['gợi', 'ý', 'ghép', 'nối', 'suggestions', 'match']
@@ -290,4 +290,4 @@ export default function GlobalSearchCommand({ userRole = 'DISPATCHER' }: GlobalS
       </CommandDialog>
     </>
   )
-} 
+}

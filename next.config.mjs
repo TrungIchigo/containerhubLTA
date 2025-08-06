@@ -1,3 +1,5 @@
+// @ts-check
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
@@ -20,18 +22,81 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   // Move to top-level as recommended
-  serverExternalPackages: ['@supabase/supabase-js'],
+  serverExternalPackages: ['@supabase/supabase-js', '@supabase/ssr', '@supabase/node-fetch', 'isows', 'ws', 'bufferutil', 'utf-8-validate'],
+  
+  // Performance optimizations
+  experimental: {
+    // Enable faster refresh
+    optimizePackageImports: ['@radix-ui/react-dialog', '@radix-ui/react-popover', 'lucide-react'],
+    // Reduce memory usage
+    memoryBasedWorkersCount: true,
+  },
+  
+  // Compiler optimizations
+  compiler: {
+    // Remove console.log in production
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  
   // Webpack configuration for better module resolution
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Add polling for better development stability
+    // Fix global and self issues for Supabase in server-side rendering
+    if (isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        'fs': false,
+        'net': false,
+        'tls': false,
+        'crypto': false,
+      }
+    }
+    
+    // Fix self is not defined error
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        'typeof self': '"undefined"',
+      })
+    )
+    // Development optimizations
     if (dev) {
+      // Faster file watching
       config.watchOptions = {
         poll: 1000,
         aggregateTimeout: 300,
+        ignored: /node_modules/,
       }
+      
+      // Enable caching for faster rebuilds
+      config.cache = {
+        type: 'filesystem',
+        buildDependencies: {
+          config: [__filename],
+        },
+      }
+      
+      // Optimize module resolution
+      config.resolve.symlinks = false
+      config.resolve.cacheWithContext = false
     }
+    
+    // General optimizations
+    config.optimization = {
+      ...config.optimization,
+      moduleIds: 'deterministic',
+      splitChunks: {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+        },
+      },
+    }
+    
     return config
   },
 }
 
-export default nextConfig 
+export default nextConfig

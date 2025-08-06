@@ -78,7 +78,7 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="street-turn" className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
-            Yêu cầu Tái Sử Dụng
+            Yêu cầu Re-use
             {streetTurnError && (
               <span className="ml-1 w-2 h-2 bg-red-500 rounded-full" title="Có lỗi khi tải dữ liệu" />
             )}
@@ -94,7 +94,7 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
 
         <TabsContent value="street-turn" className="space-y-6">
           {streetTurnError ? (
-            <ErrorSection title="Không thể tải danh sách yêu cầu tái sử dụng" error={streetTurnError} />
+            <ErrorSection title="Không thể tải danh sách yêu cầu Re-use" error={streetTurnError} />
           ) : (
             <>
               {/* Filters Section */}
@@ -106,7 +106,7 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-h3 font-semibold text-text-primary">
-                    Lịch sử Yêu Cầu Tái Sử Dụng
+                    Lịch sử Yêu Cầu Re-use
                   </h2>
                   <span className="text-body-small text-text-secondary">
                     {streetTurnRequests.length} yêu cầu{search || status ? ' (đã lọc)' : ''}
@@ -177,10 +177,10 @@ export default async function RequestsPage(props: RequestsPageProps) {
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-h1 font-bold text-text-primary mb-2">
-            Quản lý Yêu Cầu Tái Sử Dụng
+            Quản lý Yêu Cầu Re-use
           </h1>
           <p className="text-body text-text-secondary">
-            Xem lại và theo dõi tất cả các yêu cầu tái sử dụng container đã gửi của công ty bạn
+            Xem lại và theo dõi tất cả các yêu cầu Re-use container đã gửi của công ty bạn
           </p>
         </div>
 
@@ -193,4 +193,4 @@ export default async function RequestsPage(props: RequestsPageProps) {
   )
 }
 
-export const dynamic = 'force-dynamic' 
+export const dynamic = 'force-dynamic'

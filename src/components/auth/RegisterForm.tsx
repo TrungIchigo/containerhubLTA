@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Eye, EyeOff, Loader2, CheckCircle, AlertTriangle, Container, Truck, Shield, Sparkles } from 'lucide-react'
+import { Eye, EyeOff, CheckCircle, AlertTriangle, Container, Truck, Shield, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/client'
 import NewOrganizationForm from './NewOrganizationForm'
 import { Organization } from '@/lib/types'
 import { gsap } from 'gsap'
+import { LtaLoadingCompact } from '@/components/ui/ltaloading'
 
 export default function RegisterForm() {
   console.log('RegisterForm component rendering...')
@@ -637,7 +638,9 @@ export default function RegisterForm() {
               />
               {isChecking && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                  <div className="w-4 h-4">
+                  <LtaLoadingCompact />
+                </div>
                 </div>
               )}
               {!isChecking && formData.companyName.trim().length >= 3 && (
@@ -811,7 +814,9 @@ export default function RegisterForm() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <div className="mr-2 w-5 h-5">
+                      <LtaLoadingCompact />
+                    </div>
                     Đang xử lý...
                   </>
                 ) : (

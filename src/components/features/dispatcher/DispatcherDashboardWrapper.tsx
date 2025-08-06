@@ -26,7 +26,7 @@ export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines 
   const [showExportDialog, setShowExportDialog] = useState(false)
 
   useEffect(() => {
-    const action = searchParams.get('action')
+    const action = searchParams?.get('action')
     if (action === 'add-import') {
       setShowImportDialog(true)
     } else if (action === 'add-export') {
@@ -38,7 +38,7 @@ export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines 
     setShowImportDialog(open)
     if (!open) {
       // Clear the action parameter from URL
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(searchParams?.toString() || '')
       params.delete('action')
       const newUrl = params.toString() ? `/dispatcher?${params.toString()}` : '/dispatcher'
       router.replace(newUrl)
@@ -49,7 +49,7 @@ export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines 
     setShowExportDialog(open)
     if (!open) {
       // Clear the action parameter from URL
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(searchParams?.toString() || '')
       params.delete('action')
       const newUrl = params.toString() ? `/dispatcher?${params.toString()}` : '/dispatcher'
       router.replace(newUrl)
@@ -57,7 +57,7 @@ export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines 
   }
 
   const updateUrlParams = (action: string | null) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString() || '')
     if (action) {
       params.set('action', action)
     } else {
@@ -76,10 +76,10 @@ export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines 
       {children}
       
       {/* Floating Action Menu */}
-      <FloatingActionMenu
+      {/* <FloatingActionMenu
         onAddImport={() => setShowImportDialog(true)}
         onAddExport={() => setShowExportDialog(true)}
-      />
+      /> */}
       
       {/* Action Dialogs */}
       <AddImportContainerForm 
@@ -103,4 +103,4 @@ export function DispatcherDashboardWrapper({ userOrgId, children, shippingLines 
       <Toaster />
     </>
   )
-} 
+}

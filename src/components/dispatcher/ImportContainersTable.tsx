@@ -17,6 +17,8 @@ import type { ImportContainer } from '@/lib/types/container'
 // Định nghĩa enum asset_status đúng chuẩn Supabase
 export type AssetStatus =
   | 'AVAILABLE'
+  | 'AWAITING_APPROVAL'
+  | 'CONFIRMED'
   | 'AWAITING_REUSE_APPROVAL'
   | 'COD_REJECTED'
   | 'AWAITING_COD_APPROVAL'
@@ -66,16 +68,18 @@ export default function ImportContainersTable({
   // Sử dụng type AssetStatus chuẩn
   const statusMap: Record<AssetStatus, { text: string; variant: Parameters<typeof Badge>[0]["variant"] }> = {
     AVAILABLE: { text: 'Sẵn sàng', variant: 'approved' },
-    AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt tái sử dụng', variant: 'pending' },
+    AWAITING_APPROVAL: { text: 'Chờ duyệt', variant: 'pending' },
+    CONFIRMED: { text: 'Đã xác nhận', variant: 'approved' },
+    AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt Re-use', variant: 'pending' },
     COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive' },
     AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending' },
     AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'warning' },
-    AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí tái sử dụng', variant: 'warning' },
-    ON_GOING_COD: { text: 'Đã thanh toán - Đang thực hiện COD', variant: 'info' },
-    ON_GOING_REUSE: { text: 'Đã thanh toán - Đang thực hiện Tái sử dụng', variant: 'info' },
+    AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí Re-use', variant: 'warning' },
+    ON_GOING_COD: { text: 'Đang thực hiện COD', variant: 'info' },
+    ON_GOING_REUSE: { text: 'Đang thực hiện Re-use', variant: 'info' },
     DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'secondary' },
     COMPLETED: { text: 'Hoàn tất', variant: 'approved' },
-    REUSE_REJECTED: { text: 'Bị từ chối tái sử dụng', variant: 'destructive' },
+    REUSE_REJECTED: { text: 'Bị từ chối Re-use', variant: 'destructive' },
     PAYMENT_CANCELLED: { text: 'Đã hủy thanh toán', variant: 'outline' },
   };
 
@@ -104,7 +108,7 @@ export default function ImportContainersTable({
       })
       const result = await response.json()
       // Nếu container.status là 'AWAITING_COD_PAYMENT', lấy COD request mới nhất có cod_fee > 0
-      let codRequest = null;
+      let codRequest: any = null;
       if (container.status === 'AWAITING_COD_PAYMENT') {
         codRequest = (result.data || []).find((r: any) => r.cod_fee > 0)
       } else {
@@ -332,15 +336,11 @@ export default function ImportContainersTable({
       {/* Container Detail Dialog */}
       {selectedContainer && (
         <ContainerDetailDialog
+          container={selectedContainer}
           isOpen={isDetailDialogOpen}
           onClose={() => {
             setIsDetailDialogOpen(false)
             setSelectedContainer(null)
-          }}
-          container={selectedContainer}
-          onUpdate={() => {
-            // Callback to refresh data after edit/delete
-            setIsDetailDialogOpen(false)
             setSelectedContainer(null)
             // The parent component would need to handle refresh
           }}
@@ -449,4 +449,4 @@ export default function ImportContainersTable({
       )}
     </>
   )
-} 
+}

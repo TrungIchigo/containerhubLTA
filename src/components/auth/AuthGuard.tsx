@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
-import { Loading } from '@/components/ui/loader'
+import { LtaLoadingFullscreen } from '@/components/ui/ltaloading'
 
 interface AuthGuardProps {
   children: React.ReactNode
@@ -75,11 +75,7 @@ export default function AuthGuard({
   }, [router, requireAuth, redirectTo])
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loading text="Đang xác thực..." />
-      </div>
-    )
+    return <LtaLoadingFullscreen text="Đang xác thực..." />
   }
 
   if (requireAuth && !user) {

@@ -26,8 +26,8 @@ export default function Pagination({
   if (totalCount === 0) return null
 
   return (
-    <div className="bg-white border-t p-4">
-      <div className="flex items-center justify-between">
+    <div className="bg-white border-t p-4 w-full">
+      <div className="flex items-center justify-between w-full">
         <div className="flex items-center gap-4">
           <span className="text-sm text-text-secondary">
             Hiển thị {startItem}-{endItem} trong tổng số {totalCount} kết quả

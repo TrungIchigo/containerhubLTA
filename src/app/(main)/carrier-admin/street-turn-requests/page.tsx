@@ -237,7 +237,7 @@ export default function StreetTurnRequestsPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-text-primary mb-4">Có lỗi xảy ra</h1>
-          <p className="text-text-secondary mb-6">Không thể tải dữ liệu yêu cầu tái sử dụng.</p>
+          <p className="text-text-secondary mb-6">Không thể tải dữ liệu yêu cầu Re-use.</p>
           <p className="text-sm text-text-secondary">Chi tiết lỗi: {error}</p>
         </div>
       </div>
@@ -257,9 +257,9 @@ export default function StreetTurnRequestsPage() {
               </Link>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-text-primary">Yêu cầu Tái Sử Dụng</h1>
+              <h1 className="text-3xl font-bold text-text-primary">Yêu cầu Re-use</h1>
               <p className="text-text-secondary">
-                Danh sách chi tiết tất cả yêu cầu tái sử dụng container ({totalCount} kết quả)
+                Danh sách chi tiết tất cả yêu cầu Re-use container ({totalCount} kết quả)
               </p>
             </div>
           </div>
@@ -429,8 +429,8 @@ export default function StreetTurnRequestsPage() {
             {filteredRequests.length === 0 && (
               <div className="text-center py-12">
                 <div className="mx-auto h-12 w-12 text-gray-400 mb-4">♻️</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Không có yêu cầu tái sử dụng</h3>
-                <p className="text-gray-600">Chưa có yêu cầu tái sử dụng nào phù hợp với bộ lọc của bạn.</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Không có yêu cầu Re-use</h3>
+                <p className="text-gray-600">Chưa có yêu cầu Re-use nào phù hợp với bộ lọc của bạn.</p>
               </div>
             )}
           </CardContent>
@@ -451,4 +451,4 @@ export default function StreetTurnRequestsPage() {
       </div>
     </div>
   )
-} 
+}

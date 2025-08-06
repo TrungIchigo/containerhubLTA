@@ -3,19 +3,74 @@
 import { useDashboardStore } from '@/stores/dashboard-store'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Truck, MapPin, Calendar, Clock, Package } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Truck, MapPin, Calendar, Clock, Package, Eye, ArrowRightLeft } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { vi } from 'date-fns/locale'
+import { useState } from 'react'
 
 interface FullPickupOrdersTableProps {
   exportBookings: any[]
+  onViewDetails?: (booking: any) => void
+  onRequestReuse?: (booking: any) => void
 }
 
-export function FullPickupOrdersTable({ exportBookings }: FullPickupOrdersTableProps) {
+export function FullPickupOrdersTable({ 
+  exportBookings,
+  onViewDetails,
+  onRequestReuse
+}: FullPickupOrdersTableProps) {
   const { selectedPickupOrderId, setSelectedPickupOrder } = useDashboardStore()
+  const [loadingBookingId, setLoadingBookingId] = useState<string | null>(null)
 
   const handleOrderClick = (booking: any) => {
     setSelectedPickupOrder(booking.id)
+  }
+
+  // Xác định các action có thể thực hiện dựa trên status
+  const getAvailableActions = (booking: any) => {
+    const actions: any[] = []
+
+    // Luôn có nút xem chi tiết
+    if (onViewDetails) {
+      actions.push({
+        id: 'view-details',
+        label: 'Xem chi tiết',
+        variant: 'outline' as const,
+        icon: Eye,
+        onClick: () => onViewDetails(booking),
+        priority: 'low'
+      })
+    }
+
+    // Các action theo status
+    switch (booking.status) {
+      case 'AVAILABLE':
+        if (onRequestReuse) {
+          actions.push({
+            id: 'request-reuse',
+            label: 'Tìm Re-use',
+            variant: 'default' as const,
+            icon: ArrowRightLeft,
+            onClick: () => onRequestReuse(booking),
+            priority: 'high'
+          })
+        }
+        break
+
+      case 'IN_PROGRESS':
+        // Đang thực hiện, có thể xem chi tiết
+        break
+
+      case 'COMPLETED':
+        // Hoàn thành, có thể xem chi tiết
+        break
+
+      default:
+        break
+    }
+
+    return actions
   }
 
   const getStatusInfo = (status: string) => {
@@ -145,6 +200,8 @@ export function FullPickupOrdersTable({ exportBookings }: FullPickupOrdersTableP
         {exportBookings.map((booking) => {
           const statusInfo = getStatusInfo(booking.status)
           const nearDeadline = booking.needed_by_datetime && isNearDeadline(booking.needed_by_datetime)
+          const availableActions = getAvailableActions(booking)
+          const isLoading = loadingBookingId === booking.id
           
           return (
             <Card 
@@ -236,6 +293,35 @@ export function FullPickupOrdersTable({ exportBookings }: FullPickupOrdersTableP
                     </div>
                   </div>
 
+                  {/* Action Buttons */}
+                  {availableActions.length > 0 && (
+                    <div className="pt-3 border-t border-gray-200">
+                      <div className="flex flex-wrap gap-2">
+                        {availableActions
+                          .sort((a, b) => {
+                            const priorityOrder = { high: 3, medium: 2, low: 1 }
+                            return priorityOrder[b.priority] - priorityOrder[a.priority]
+                          })
+                          .map((action) => (
+                            <Button
+                              key={action.id}
+                              variant={action.variant}
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation() // Ngăn không cho card bị click
+                                action.onClick()
+                              }}
+                              disabled={isLoading}
+                              className="text-xs"
+                            >
+                              <action.icon className="w-3 h-3 mr-1" />
+                              {action.label}
+                            </Button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Action Indicator */}
                   <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                     <div className="flex items-center gap-2 text-xs text-text-secondary">
@@ -255,3 +341,35 @@ export function FullPickupOrdersTable({ exportBookings }: FullPickupOrdersTableP
     </div>
   )
 } 
+
+/**
+ * Skeleton UI cho bảng lệnh lấy rỗng, dùng cho Suspense fallback
+ */
+export function FullPickupOrdersTableSkeleton() {
+  return (
+    <div className="h-full flex flex-col p-2 animate-pulse">
+      <div className="mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-orange-200 to-orange-300 rounded-lg" />
+          <div className="h-6 w-40 bg-gray-200 rounded" />
+        </div>
+      </div>
+      <div className="space-y-4 flex-1 pr-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="rounded-lg border border-gray-200 bg-gray-50 p-4 flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-orange-100 rounded-xl" />
+              <div className="flex flex-col gap-2">
+                <div className="h-4 w-32 bg-gray-200 rounded" />
+                <div className="h-3 w-16 bg-gray-100 rounded" />
+              </div>
+            </div>
+            <div className="h-3 w-48 bg-gray-100 rounded" />
+            <div className="h-3 w-32 bg-gray-100 rounded" />
+            <div className="h-3 w-24 bg-gray-100 rounded" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

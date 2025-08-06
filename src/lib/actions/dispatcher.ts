@@ -177,7 +177,7 @@ export async function addImportContainer(data: CreateImportContainerForm) {
     }
 
     // Get depot info
-    let depot = null
+    let depot: any = null
     if (data.depot_id) {
       const { data: depotData, error: depotError } = await supabase
         .from('depots')
@@ -277,7 +277,7 @@ export async function addExportBooking(data: CreateExportBookingForm) {
     }
 
     // Get depot info
-    let depot = null
+    let depot: any = null
     if (data.depot_id) {
       const { data: depotData, error: depotError } = await supabase
         .from('depots')
@@ -444,7 +444,7 @@ export async function createStreetTurnRequest(
     
     return {
       success: true,
-      message: 'Yêu cầu tái sử dụng container đã được tạo thành công!'
+      message: 'Yêu cầu Re-use container đã được tạo thành công!'
     }
 
   } catch (error: any) {
@@ -604,4 +604,4 @@ function generateMatchingSuggestions(containers: any[], bookings: any[]) {
     const maxScoreB = Math.max(...b.export_bookings.map((booking: ScoredExportBooking) => booking.matching_score.total_score))
     return maxScoreB - maxScoreA
   })
-} 
+}

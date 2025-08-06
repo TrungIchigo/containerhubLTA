@@ -64,12 +64,12 @@ export default function TimeFilter({ className }: TimeFilterProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   
-  const currentRange = searchParams.get('range') || 'month'
-  const customStart = searchParams.get('start_date') || ''
-  const customEnd = searchParams.get('end_date') || ''
+  const currentRange = searchParams?.get('range') || 'month'
+  const customStart = searchParams?.get('start_date') || ''
+  const customEnd = searchParams?.get('end_date') || ''
 
   const handleRangeChange = (newRange: string) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString() || '')
     
     if (newRange === 'custom') {
       params.set('range', newRange)
@@ -89,7 +89,7 @@ export default function TimeFilter({ className }: TimeFilterProps) {
   }
 
   const handleCustomDateChange = (type: 'start' | 'end', value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString() || '')
     
     params.set('range', 'custom')
     params.set(`${type}_date`, value)
@@ -136,4 +136,4 @@ export default function TimeFilter({ className }: TimeFilterProps) {
       )}
     </div>
   )
-} 
+}

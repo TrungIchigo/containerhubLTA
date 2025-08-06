@@ -188,7 +188,7 @@ export default function ReportsPage(props: ReportsPageProps) {
           Báo cáo hiệu quả hoạt động
         </h1>
         <p className="text-body text-text-secondary">
-          Tổng quan về hiệu suất và giá trị mà Hệ Thống Tái Sử Dụng Container i-ContainerHub@LTA mang lại
+          Tổng quan về hiệu suất và giá trị mà Hệ Thống Re-use Container i-ContainerHub@LTA mang lại
         </p>
       </div>
 
@@ -198,4 +198,4 @@ export default function ReportsPage(props: ReportsPageProps) {
       </Suspense>
     </div>
   )
-} 
+}

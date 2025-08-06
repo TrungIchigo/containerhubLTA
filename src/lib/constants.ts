@@ -11,7 +11,7 @@ export const LOGO_URL = 'https://uelfhngfhiirnxinvtbg.supabase.co/storage/v1/obj
 export const APP_CONFIG = {
   name: 'i-ContainerHub@LTA',
   version: '1.0.0',
-  description: 'Hệ thống tối ưu hóa tái sử dụng container'
+  description: 'Hệ thống tối ưu hóa Re-use container'
 } as const
 
 /**
@@ -123,16 +123,16 @@ export const USER_ROLES = [
 export const STATUS_OPTIONS = {
   IMPORT_CONTAINER: [
     { value: 'AVAILABLE', label: 'Sẵn sàng', color: 'green' },
-    { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt tái sử dụng', color: 'yellow' },
+    { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt Re-use', color: 'yellow' },
     { value: 'AWAITING_COD_APPROVAL', label: 'Chờ duyệt COD', color: 'yellow' },
     { value: 'AWAITING_COD_PAYMENT', label: 'Chờ thanh toán phí COD', color: 'orange' },
-    { value: 'AWAITING_REUSE_PAYMENT', label: 'Chờ thanh toán phí tái sử dụng', color: 'orange' },
-    { value: 'ON_GOING_COD', label: 'Đã thanh toán - Đang thực hiện COD', color: 'blue' },
-    { value: 'ON_GOING_REUSE', label: 'Đã thanh toán - Đang thực hiện Tái sử dụng', color: 'blue' },
-    { value: 'PROCESSING', label: 'Đang xử lý tại Depot', color: 'purple' },
+    { value: 'AWAITING_REUSE_PAYMENT', label: 'Chờ thanh toán phí Re-use', color: 'orange' },
+    { value: 'ON_GOING_COD', label: 'Đang thực hiện COD', color: 'blue' },
+  { value: 'ON_GOING_REUSE', label: 'Đang thực hiện Re-use', color: 'blue' },
+    { value: 'DEPOT_PROCESSING', label: 'Đang xử lý tại Depot', color: 'purple' },
     { value: 'COMPLETED', label: 'Hoàn tất', color: 'green' },
     { value: 'COD_REJECTED', label: 'Bị từ chối COD', color: 'red' },
-    { value: 'REUSE_REJECTED', label: 'Bị từ chối tái sử dụng', color: 'red' }
+    { value: 'REUSE_REJECTED', label: 'Bị từ chối Re-use', color: 'red' }
   ],
   EXPORT_BOOKING: [
     { value: 'PENDING', label: 'Đang chờ', color: 'yellow' },
@@ -185,4 +185,4 @@ export const DEPOT_LOCATIONS = [
     address: 'Quận Sơn Trà, Đà Nẵng',
     coordinates: { lat: 16.1063, lng: 108.2633 }
   }
-] 
+]

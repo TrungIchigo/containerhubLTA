@@ -75,15 +75,16 @@ export default function CodRequestMoreInfoDialog({ isOpen, onClose, request }: C
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-text-primary flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-orange-600" />
             Yêu Cầu Bổ Sung Thông Tin
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(handleRequestInfo)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleRequestInfo)} className="flex flex-col flex-1 overflow-hidden">
+          <div className="space-y-6 overflow-y-auto flex-1 pr-2">
           {/* Thông tin yêu cầu */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-text-primary border-b pb-2">
@@ -191,8 +192,10 @@ export default function CodRequestMoreInfoDialog({ isOpen, onClose, request }: C
             </div>
           )}
 
-          {/* Action buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          </div>
+
+          {/* Action buttons - Fixed at bottom */}
+          <div className="flex justify-end gap-3 pt-4 border-t flex-shrink-0 mt-4">
             <Button
               type="button"
               variant="outline"
@@ -223,4 +226,4 @@ export default function CodRequestMoreInfoDialog({ isOpen, onClose, request }: C
       </DialogContent>
     </Dialog>
   )
-} 
+}

@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { AlertTriangle, Package, Building2, MapPin, DollarSign, FileText, Loader2, Send } from 'lucide-react'
+import { AlertTriangle, Package, Building2, MapPin, DollarSign, FileText, Send } from 'lucide-react'
 import { createCodRequest } from '@/lib/actions/cod'
 import { useToast } from '@/hooks/use-toast'
 import { formatCodFee, type CodFeeResult } from '@/lib/actions/cod-fee-client'
 import { showSuccessToast, showErrorToast } from '@/lib/utils/toast-helpers'
 import type { ImportContainer } from '@/lib/types/container'
+import { LtaLoadingCompact } from '@/components/ui/ltaloading'
 
 interface ConfirmCodRequestDialogProps {
   isOpen: boolean
@@ -91,15 +92,15 @@ export default function ConfirmCodRequestDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-text-primary flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-600" />
             Xác Nhận Yêu Cầu COD
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto flex-1 pr-2">
           {/* Thông tin yêu cầu */}
           <div className="space-y-4">
             <h3 className="text-base font-semibold text-text-primary border-b pb-2">
@@ -206,36 +207,39 @@ export default function ConfirmCodRequestDialog({
             </div>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isLoading}
-            >
-              Hủy
-            </Button>
-            <Button
-              onClick={handleConfirm}
-              disabled={isLoading}
-              className="bg-primary hover:bg-primary/90 text-white"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Đang gửi...
-                </>
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  Gửi Yêu Cầu
-                </>
-              )}
-            </Button>
-          </div>
+        </div>
+
+        {/* Action buttons - Fixed at bottom */}
+        <div className="flex justify-end gap-3 pt-4 border-t flex-shrink-0 mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            disabled={isLoading}
+            className="bg-primary hover:bg-primary/90 text-white"
+          >
+            {isLoading ? (
+              <>
+                <div className="mr-2 w-4 h-4">
+                  <LtaLoadingCompact />
+                </div>
+                Đang gửi...
+              </>
+            ) : (
+              <>
+                <Send className="mr-2 h-4 w-4" />
+                Gửi Yêu Cầu
+              </>
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
   )
-} 
+}

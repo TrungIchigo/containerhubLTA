@@ -41,12 +41,12 @@ export default function DynamicGreeting({
           </h2>
           <p className="text-body text-text-secondary">
             {userRole === 'DISPATCHER' 
-              ? 'Hãy bắt đầu ngày làm việc hiệu quả với hệ thống tái sử dụng container'
-              : 'Quản lý và phê duyệt các yêu cầu tái sử dụng một cách thông minh'
+              ? 'Hãy bắt đầu ngày làm việc hiệu quả với hệ thống Re-use container'
+        : 'Quản lý và phê duyệt các yêu cầu Re-use một cách thông minh'
             }
           </p>
         </div>
       </div>
     </Card>
   )
-} 
+}

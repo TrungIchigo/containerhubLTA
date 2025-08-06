@@ -411,7 +411,7 @@ export async function approveOrganization(organizationId: string) {
     }
 
     // Find user with matching pending_organization_id
-    const associatedUser = users.users.find(user => 
+    const associatedUser = users.users.find((user: any) => 
       user.user_metadata?.pending_organization_id === organizationId
     )
 
@@ -488,7 +488,7 @@ export async function rejectOrganization(organizationId: string, reason: string)
       }
     }
 
-    const associatedUser = users.users.find(user => 
+    const associatedUser = users.users.find((user: any) => 
       user.user_metadata?.pending_organization_id === organizationId
     )
 

@@ -427,7 +427,7 @@ export async function getPendingCodPayments(organizationId?: string) {
           name
         )
       `)
-      .eq('status', 'AWAITING_COD_PAYMENT')
+      .eq('status', 'PENDING_PAYMENT')
       .not('cod_fee', 'is', null)
       .gt('cod_fee', 0)
       .order('delivery_confirmed_at', { ascending: true });
@@ -476,4 +476,4 @@ export async function getPendingCodPayments(organizationId?: string) {
     console.error('Unexpected error fetching pending COD payments:', error);
     return { success: false, error: 'Unexpected error occurred' };
   }
-} 
+}

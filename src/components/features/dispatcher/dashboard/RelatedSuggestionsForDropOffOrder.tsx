@@ -34,7 +34,7 @@ export function RelatedSuggestionsForDropOffOrder({
 
   return (
     <div className="h-full overflow-hidden">
-      <Card className="h-full">
+      <Card className="h-full p-4">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">

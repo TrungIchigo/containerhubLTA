@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
+import { LtaLogo } from './ltalogo'
 
 interface LoaderProps {
   className?: string
@@ -8,27 +9,15 @@ interface LoaderProps {
 
 export function Loader({ className, size = 'md' }: LoaderProps) {
   const sizes = {
-    sm: 'w-16 h-6',
-    md: 'w-20 h-8', 
-    lg: 'w-24 h-10'
+    sm: 'w-16 h-16',
+    md: 'w-24 h-24', 
+    lg: 'w-32 h-32'
   }
 
   return (
-    <div 
-      className={cn(
-        "loader",
-        sizes[size],
-        className
-      )}
-      style={{
-        '--g1': 'conic-gradient(from 90deg at left 3px top 3px, #0000 90deg, #4CAF50 0)',
-        '--g2': 'conic-gradient(from -90deg at bottom 3px right 3px, #0000 90deg, #4CAF50 0)',
-        background: 'var(--g1), var(--g1), var(--g1), var(--g2), var(--g2), var(--g2)',
-        backgroundPosition: 'left, center, right',
-        backgroundRepeat: 'no-repeat',
-        animation: 'wave-loader 1s infinite'
-      } as React.CSSProperties}
-    />
+    <div className={cn(sizes[size], className)}>
+      <LtaLogo size={size === 'sm' ? 'sm' : size === 'lg' ? 'lg' : 'md'} />
+    </div>
   )
 }
 

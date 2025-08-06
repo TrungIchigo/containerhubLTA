@@ -101,11 +101,11 @@ export default function ErrorBoundary({
       </div>
 
       <div className="bg-white rounded-lg p-6 border border-gray-200">
-        <h4 className="text-lg font-medium text-gray-900 mb-4">Yêu cầu tái sử dụng</h4>
+        <h4 className="text-lg font-medium text-gray-900 mb-4">Yêu cầu Re-use</h4>
         <p className="text-gray-500 text-center py-8">
           Không thể tải danh sách yêu cầu. Vui lòng thử lại sau.
         </p>
       </div>
     </div>
   )
-} 
+}

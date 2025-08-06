@@ -1,27 +1,48 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { MapPin, Clock, ArrowRight, Truck, Container, ArrowRightLeft } from 'lucide-react'
+import { MapPin, Clock, ArrowRight, Truck, Container, ArrowRightLeft, Eye, MapPin as MapPinIcon, CreditCard, CheckCircle, XCircle } from 'lucide-react'
 import { formatStoredDateTimeVN } from '@/lib/utils'
 import type { ImportContainer, ExportBooking, Organization } from '@/lib/types'
+import { useState } from 'react'
+import { ConfirmCodCompletionDialog } from '@/components/features/cod/ConfirmCodCompletionDialog'
+import { OrderDetailModal } from '@/components/features/dispatcher/dashboard/OrderDetailModal'
 
 interface DropoffOrderCardProps {
   container: ImportContainer & { shipping_line?: Organization }
+  onViewDetails?: (container: ImportContainer) => void
+  onRequestCod?: (container: ImportContainer) => void
+  onPayCodFee?: (container: ImportContainer) => void
+  onConfirmCodDelivery?: (container: ImportContainer) => void
+  onConfirmDepotCompletion?: (container: ImportContainer) => void
+  onRequestReuse?: (container: ImportContainer) => void
 }
 
-export function DropoffOrderCard({ container }: DropoffOrderCardProps) {
+export function DropoffOrderCard({ 
+  container, 
+  onViewDetails,
+  onRequestCod,
+  onPayCodFee,
+  onConfirmCodDelivery,
+  onConfirmDepotCompletion,
+  onRequestReuse
+}: DropoffOrderCardProps) {
+  const [isLoading, setIsLoading] = useState(false)
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
+
   const statusMap = {
     'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt tái sử dụng', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
+    'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
     'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
     'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí tái sử dụng', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'ON_GOING_COD': { text: 'Đã thanh toán - Đang thực hiện COD', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
-    'ON_GOING_REUSE': { text: 'Đã thanh toán - Đang thực hiện Tái sử dụng', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
-    'PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'secondary' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
+    'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'ON_GOING_COD': { text: 'Đang thực hiện COD', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+  'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'secondary' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
     'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
     'COD_REJECTED': { text: 'Bị từ chối COD', variant: 'destructive' as const, bg: 'bg-red-50', border: 'border-red-200' },
-    'REUSE_REJECTED': { text: 'Bị từ chối tái sử dụng', variant: 'destructive' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'REUSE_REJECTED': { text: 'Bị từ chối Re-use', variant: 'destructive' as const, bg: 'bg-red-50', border: 'border-red-200' },
   }
 
   const getStatusInfo = (status: string) => {
@@ -35,59 +56,474 @@ export function DropoffOrderCard({ container }: DropoffOrderCardProps) {
 
   const statusInfo = getStatusInfo(container.status)
 
+  // Xác định các action có thể thực hiện dựa trên status
+  const getAvailableActions = () => {
+    const actions: any[] = []
+
+    // Không thêm nút xem chi tiết vào actions array vì đã có button riêng biệt
+
+    // Các action theo status
+    switch (container.status) {
+      case 'AVAILABLE':
+        if (onRequestCod) {
+          actions.push({
+            id: 'request-cod',
+            label: 'Yêu cầu COD',
+            variant: 'default' as const,
+            icon: MapPinIcon,
+            onClick: () => onRequestCod(container),
+            priority: 'high'
+          })
+        }
+        if (onRequestReuse) {
+          actions.push({
+            id: 'request-reuse',
+            label: 'Tìm Re-use',
+            variant: 'secondary' as const,
+            icon: ArrowRightLeft,
+            onClick: () => onRequestReuse(container),
+            priority: 'medium'
+          })
+        }
+        break
+
+      case 'AWAITING_COD_PAYMENT':
+        if (onPayCodFee) {
+          actions.push({
+            id: 'pay-cod-fee',
+            label: 'Thanh toán COD',
+            variant: 'default' as const,
+            icon: CreditCard,
+            onClick: async () => {
+              setIsLoading(true)
+              try {
+                await onPayCodFee(container)
+              } finally {
+                setIsLoading(false)
+              }
+            },
+            priority: 'high'
+          })
+        }
+        break
+
+      case 'AWAITING_COD_APPROVAL':
+        // Chờ admin duyệt, không có action cho dispatcher
+        break
+
+      case 'ON_GOING_COD':
+        if (onConfirmCodDelivery) {
+          actions.push({
+            id: 'confirm-delivery',
+            label: 'Xác nhận hoàn tất COD',
+            variant: 'default' as const,
+            icon: CheckCircle,
+            onClick: () => {
+              setConfirmDialogOpen(true)
+            },
+            priority: 'high'
+          })
+        }
+        break
+
+      case 'DEPOT_PROCESSING':
+        if (onConfirmDepotCompletion) {
+          actions.push({
+            id: 'confirm-depot-completion',
+            label: 'Xác nhận hoàn tất depot',
+            variant: 'default' as const,
+            icon: CheckCircle,
+            onClick: async () => {
+              setIsLoading(true)
+              try {
+                await onConfirmDepotCompletion(container)
+              } finally {
+                setIsLoading(false)
+              }
+            },
+            priority: 'high'
+          })
+        }
+        break
+
+      case 'COD_REJECTED':
+      case 'REUSE_REJECTED':
+        // Có thể yêu cầu lại
+        if (onRequestCod) {
+          actions.push({
+            id: 'request-cod-again',
+            label: 'Yêu cầu COD lại',
+            variant: 'outline' as const,
+            icon: MapPinIcon,
+            onClick: () => onRequestCod(container),
+            priority: 'medium'
+          })
+        }
+        break
+
+      default:
+        break
+    }
+
+    return actions
+  }
+
+  const availableActions = getAvailableActions()
+
+  const handleConfirmCodCompletion = async () => {
+    if (!onConfirmCodDelivery) return
+    
+    setIsLoading(true)
+    try {
+      await onConfirmCodDelivery(container)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
-    <Card className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${statusInfo.bg} ${statusInfo.border} border-2`}>
-      <CardContent className="p-5">
-        <div className="space-y-4">
-          {/* Header with Container Icon */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                <Container className="w-5 h-5 text-white" />
+    <>
+      <Card className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${statusInfo.bg} ${statusInfo.border} border-2`}>
+        <CardContent className="p-5">
+          <div className="space-y-4">
+            {/* Header with Container Icon */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                  <Container className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="font-bold text-text-primary text-lg">{container.container_number}</div>
+                  <Badge variant="outline" className="mt-1 bg-white/80">{container.container_type}</Badge>
+                </div>
+              </div>
+              <Badge variant={statusInfo.variant} className="shadow-sm">{statusInfo.text}</Badge>
+            </div>
+            
+            {/* Shipping Line */}
+            <div className="rounded-lg p-3">
+              <div className="text-sm text-gray-600 font-medium">Hãng tàu</div>
+              <div className="text-text-primary font-semibold">{container.shipping_line?.name || 'N/A'}</div>
+            </div>
+            
+            {/* Location */}
+            <div className="flex items-center gap-3 text-text-secondary">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <MapPin className="w-4 h-4 text-blue-600" />
+              </div>
+              <span className="font-medium">{container.drop_off_location}</span>
+            </div>
+            
+            {/* Time */}
+            <div className="flex items-center gap-3 text-text-secondary">
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <Clock className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <div className="font-bold text-text-primary text-lg">{container.container_number}</div>
-                <Badge variant="outline" className="mt-1 bg-white/80">{container.container_type}</Badge>
+                <div className="text-xs text-gray-500">Sẵn sàng lúc</div>
+                <div className="font-medium">{formatStoredDateTimeVN(container.available_from_datetime)}</div>
               </div>
             </div>
-            <Badge variant={statusInfo.variant} className="shadow-sm">{statusInfo.text}</Badge>
-          </div>
-          
-          {/* Shipping Line */}
-          <div className="rounded-lg p-3">
-            <div className="text-sm text-gray-600 font-medium">Hãng tàu</div>
-            <div className="text-text-primary font-semibold">{container.shipping_line?.name || 'N/A'}</div>
-          </div>
-          
-          {/* Location */}
-          <div className="flex items-center gap-3 text-text-secondary">
-            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-              <MapPin className="w-4 h-4 text-blue-600" />
+
+            {/* Action Buttons */}
+            <div className="pt-3 border-t border-gray-200">
+              <div className="flex flex-wrap gap-2">
+                {/* Button Xem chi tiết luôn hiển thị */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDetailModalOpen(true)}
+                  className="flex items-center gap-1.5 text-xs"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  Xem chi tiết
+                </Button>
+                
+                {/* Các action buttons khác */}
+                {availableActions
+                  .filter(action => action.id !== 'view-details')
+                  .sort((a, b) => {
+                    const priorityOrder = { high: 3, medium: 2, low: 1 }
+                    return priorityOrder[b.priority] - priorityOrder[a.priority]
+                  })
+                  .map((action) => (
+                    <Button
+                      key={action.id}
+                      variant={action.variant}
+                      size="sm"
+                      onClick={action.onClick}
+                      disabled={isLoading}
+                      className="text-xs"
+                    >
+                      <action.icon className="w-3 h-3 mr-1" />
+                      {action.label}
+                    </Button>
+                  ))}
+              </div>
             </div>
-            <span className="font-medium">{container.drop_off_location}</span>
           </div>
-          
-          {/* Time */}
-          <div className="flex items-center gap-3 text-text-secondary">
-            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-              <Clock className="w-4 h-4 text-green-600" />
+        </CardContent>
+      </Card>
+      
+      {/* Confirmation Dialog */}
+      <ConfirmCodCompletionDialog
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        container={container}
+        onConfirm={handleConfirmCodCompletion}
+        isLoading={isLoading}
+      />
+      
+      {/* Detail Modal */}
+      <OrderDetailModal
+        isOpen={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        container={container}
+        onRequestCod={onRequestCod}
+        onPayCodFee={onPayCodFee}
+        onConfirmCodDelivery={onConfirmCodDelivery}
+        onConfirmDepotCompletion={onConfirmDepotCompletion}
+        onRequestReuse={onRequestReuse}
+      />
+    </>
+  )
+}
+
+interface BookingCardProps {
+  booking: ExportBooking & { shipping_line?: Organization }
+  onViewDetails?: (booking: ExportBooking) => void
+  onRequestCod?: (booking: ExportBooking) => void
+  onPayCodFee?: (booking: ExportBooking) => void
+  onConfirmCodDelivery?: (booking: ExportBooking) => void
+  onConfirmDepotCompletion?: (booking: ExportBooking) => void
+  onRequestReuse?: (booking: ExportBooking) => void
+}
+
+export function BookingCard({ 
+  booking, 
+  onViewDetails,
+  onRequestCod,
+  onPayCodFee,
+  onConfirmCodDelivery,
+  onConfirmDepotCompletion,
+  onRequestReuse
+}: BookingCardProps) {
+  const [isLoading, setIsLoading] = useState(false)
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
+
+  const statusMap = {
+    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
+    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'ON_GOING_COD': { text: 'Đang thực hiện COD', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'secondary' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
+    'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'COD_REJECTED': { text: 'Bị từ chối COD', variant: 'destructive' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'REUSE_REJECTED': { text: 'Bị từ chối Re-use', variant: 'destructive' as const, bg: 'bg-red-50', border: 'border-red-200' },
+  }
+
+  const getStatusInfo = (status: string) => {
+    return statusMap[status as keyof typeof statusMap] || { 
+      text: status, 
+      variant: 'outline' as const, 
+      bg: 'bg-gray-50', 
+      border: 'border-gray-200' 
+    }
+  }
+
+  const statusInfo = getStatusInfo(booking.status)
+
+  // Xác định các action có thể thực hiện dựa trên status
+  const getAvailableActions = () => {
+    const actions: any[] = []
+
+    // Các action theo status
+    switch (booking.status) {
+      case 'AVAILABLE':
+        if (onRequestCod) {
+          actions.push({
+            id: 'request-cod',
+            label: 'Yêu cầu COD',
+            variant: 'default' as const,
+            icon: MapPinIcon,
+            onClick: () => onRequestCod(booking),
+            priority: 'high'
+          })
+        }
+        if (onRequestReuse) {
+          actions.push({
+            id: 'request-reuse',
+            label: 'Tìm Re-use',
+            variant: 'secondary' as const,
+            icon: ArrowRightLeft,
+            onClick: () => onRequestReuse(booking),
+            priority: 'medium'
+          })
+        }
+        break
+
+      case 'AWAITING_COD_PAYMENT':
+        if (onPayCodFee) {
+          actions.push({
+            id: 'pay-cod',
+            label: 'Thanh toán phí COD',
+            variant: 'default' as const,
+            icon: CreditCard,
+            onClick: () => onPayCodFee(booking),
+            priority: 'high'
+          })
+        }
+        break
+
+      case 'ON_GOING_COD':
+        if (onConfirmCodDelivery) {
+          actions.push({
+            id: 'confirm-cod',
+            label: 'Xác nhận giao hàng',
+            variant: 'default' as const,
+            icon: CheckCircle,
+            onClick: () => onConfirmCodDelivery(booking),
+            priority: 'high'
+          })
+        }
+        break
+
+      case 'DEPOT_PROCESSING':
+        if (onConfirmDepotCompletion) {
+          actions.push({
+            id: 'confirm-depot',
+            label: 'Xác nhận hoàn tất',
+            variant: 'default' as const,
+            icon: CheckCircle,
+            onClick: () => setConfirmDialogOpen(true),
+            priority: 'high'
+          })
+        }
+        break
+    }
+
+    return actions
+  }
+
+  const availableActions = getAvailableActions()
+
+  return (
+    <>
+      <Card className={`transition-all duration-200 hover:shadow-md ${statusInfo.bg} ${statusInfo.border} border-2`}>
+        <CardContent className="p-4">
+          <div className="space-y-3">
+            {/* Header với booking number và status */}
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <Container className="w-4 h-4 text-blue-600" />
+                  <span className="font-semibold text-gray-900">
+                    {booking.booking_number}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  {booking.shipping_line?.name || 'N/A'}
+                </div>
+              </div>
+              <Badge variant={statusInfo.variant} className="ml-2">
+                {statusInfo.text}
+              </Badge>
             </div>
-            <div>
-              <div className="text-xs text-gray-500">Sẵn sàng lúc</div>
-              <div className="font-medium">{formatStoredDateTimeVN(container.available_from_datetime)}</div>
+
+            {/* Thông tin chi tiết */}
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-gray-500" />
+                <div>
+                  <div className="text-gray-600">Lấy tại</div>
+                  <div className="font-medium">{booking.pick_up_location}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Thời gian */}
+            <div className="flex items-center gap-2 text-sm">
+              <Clock className="w-4 h-4 text-gray-500" />
+              <span className="text-gray-600">Cần trước:</span>
+              <span className="font-medium">
+                {formatStoredDateTimeVN(booking.needed_by_datetime)}
+              </span>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="pt-3 border-t border-gray-200">
+              <div className="flex flex-wrap gap-2">
+                {/* Button Xem chi tiết luôn hiển thị */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDetailModalOpen(true)}
+                  className="flex items-center gap-1.5 text-xs"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  Xem chi tiết
+                </Button>
+                
+                {/* Các action buttons khác */}
+                {availableActions
+                  .filter(action => action.id !== 'view-details')
+                  .sort((a, b) => {
+                    const priorityOrder = { high: 3, medium: 2, low: 1 }
+                    return priorityOrder[b.priority] - priorityOrder[a.priority]
+                  })
+                  .map((action) => (
+                    <Button
+                      key={action.id}
+                      variant={action.variant}
+                      size="sm"
+                      onClick={action.onClick}
+                      disabled={isLoading}
+                      className="text-xs"
+                    >
+                      <action.icon className="w-3 h-3 mr-1" />
+                      {action.label}
+                    </Button>
+                  ))}
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      
+      {/* Detail Modal */}
+      <OrderDetailModal
+        isOpen={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        booking={booking}
+        onRequestCod={onRequestCod}
+        onPayCodFee={onPayCodFee}
+        onConfirmCodDelivery={onConfirmCodDelivery}
+        onConfirmDepotCompletion={onConfirmDepotCompletion as unknown as (item: ImportContainer) => void}
+        onRequestReuse={onRequestReuse}
+      />
+    </>
   )
 }
 
 interface PickupOrderCardProps {
   booking: ExportBooking & { shipping_line?: Organization }
+  onViewDetails?: (booking: ExportBooking) => void
+  onRequestReuse?: (booking: ExportBooking) => void
 }
 
-export function PickupOrderCard({ booking }: PickupOrderCardProps) {
+export function PickupOrderCard({ 
+  booking, 
+  onViewDetails,
+  onRequestReuse
+}: PickupOrderCardProps) {
+  const [isLoading, setIsLoading] = useState(false)
+  const [detailModalOpen, setDetailModalOpen] = useState(false)
+
   const statusMap = {
     'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
     'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
@@ -113,6 +549,44 @@ export function PickupOrderCard({ booking }: PickupOrderCardProps) {
 
   const statusInfo = getStatusInfo(booking.status)
   const nearDeadline = isNearDeadline()
+
+  // Xác định các action có thể thực hiện dựa trên status
+  const getAvailableActions = () => {
+    const actions: any[] = []
+
+    // Không thêm nút xem chi tiết vào actions array vì đã có button riêng biệt
+
+    // Các action theo status
+    switch (booking.status) {
+      case 'AVAILABLE':
+        if (onRequestReuse) {
+          actions.push({
+            id: 'request-reuse',
+            label: 'Tìm Re-use',
+            variant: 'default' as const,
+            icon: ArrowRightLeft,
+            onClick: () => onRequestReuse(booking),
+            priority: 'high'
+          })
+        }
+        break
+
+      case 'AWAITING_REUSE_APPROVAL':
+        // Chờ admin duyệt, không có action cho dispatcher
+        break
+
+      case 'ON_GOING_REUSE':
+        // Đã ghép, có thể xem chi tiết
+        break
+
+      default:
+        break
+    }
+
+    return actions
+  }
+
+  const availableActions = getAvailableActions()
 
   return (
     <Card className={`relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] ${statusInfo.bg} ${statusInfo.border} border-2 ${nearDeadline ? 'ring-2 ring-red-200' : ''}`}>
@@ -163,8 +637,52 @@ export function PickupOrderCard({ booking }: PickupOrderCardProps) {
               </div>
             </div>
           </div>
+
+          {/* Action Buttons */}
+          <div className="pt-3 border-t border-gray-200">
+            <div className="flex flex-wrap gap-2">
+              {/* Button Xem chi tiết luôn hiển thị */}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setDetailModalOpen(true)}
+                className="flex items-center gap-1.5 text-xs"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Xem chi tiết
+              </Button>
+              
+              {/* Các action buttons khác */}
+              {availableActions
+                .sort((a, b) => {
+                  const priorityOrder = { high: 3, medium: 2, low: 1 }
+                  return priorityOrder[b.priority] - priorityOrder[a.priority]
+                })
+                .map((action) => (
+                  <Button
+                    key={action.id}
+                    variant={action.variant}
+                    size="sm"
+                    onClick={action.onClick}
+                    disabled={isLoading}
+                    className="text-xs"
+                  >
+                    <action.icon className="w-3 h-3 mr-1" />
+                    {action.label}
+                  </Button>
+                ))}
+            </div>
+          </div>
         </div>
       </CardContent>
+      
+      {/* Detail Modal */}
+      <OrderDetailModal
+        isOpen={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        booking={booking}
+        onRequestReuse={onRequestReuse}
+      />
     </Card>
   )
 }
@@ -178,9 +696,47 @@ interface MatchSuggestion {
 
 interface ReuseCardProps {
   suggestion: MatchSuggestion
+  onCreateReuseRequest?: (suggestion: MatchSuggestion) => void
+  onViewDetails?: (suggestion: MatchSuggestion) => void
 }
 
-export function ReuseCard({ suggestion }: ReuseCardProps) {
+export function ReuseCard({ 
+  suggestion, 
+  onCreateReuseRequest,
+  onViewDetails
+}: ReuseCardProps) {
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Xác định các action có thể thực hiện
+  const getAvailableActions = () => {
+    const actions: any[] = []
+
+    // Không thêm nút xem chi tiết vào actions array vì đã có button riêng biệt
+
+    // Nút tạo yêu cầu Re-use
+    if (onCreateReuseRequest) {
+      actions.push({
+        id: 'create-reuse-request',
+        label: 'Tạo yêu cầu Re-use',
+        variant: 'default' as const,
+        icon: ArrowRightLeft,
+        onClick: async () => {
+          setIsLoading(true)
+          try {
+            await onCreateReuseRequest(suggestion)
+          } finally {
+            setIsLoading(false)
+          }
+        },
+        priority: 'high'
+      })
+    }
+
+    return actions
+  }
+
+  const availableActions = getAvailableActions()
+
   return (
     <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02] bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200">
       <CardContent className="p-5">
@@ -192,7 +748,7 @@ export function ReuseCard({ suggestion }: ReuseCardProps) {
             </div>
             <div>
               <div className="text-sm text-gray-600 font-medium">Gợi ý ghép nối</div>
-              <div className="text-text-primary font-semibold">Tái sử dụng container</div>
+              <div className="text-text-primary font-semibold">Re-use container</div>
             </div>
           </div>
           
@@ -230,8 +786,34 @@ export function ReuseCard({ suggestion }: ReuseCardProps) {
               </div>
             </div>
           </div>
+
+          {/* Action Buttons */}
+          {availableActions.length > 0 && (
+            <div className="pt-3 border-t border-emerald-200">
+              <div className="flex flex-wrap gap-2">
+                {availableActions
+                  .sort((a, b) => {
+                    const priorityOrder = { high: 3, medium: 2, low: 1 }
+                    return priorityOrder[b.priority] - priorityOrder[a.priority]
+                  })
+                  .map((action) => (
+                    <Button
+                      key={action.id}
+                      variant={action.variant}
+                      size="sm"
+                      onClick={action.onClick}
+                      disabled={isLoading}
+                      className="text-xs"
+                    >
+                      <action.icon className="w-3 h-3 mr-1" />
+                      {action.label}
+                    </Button>
+                  ))}
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
   )
-} 
+}

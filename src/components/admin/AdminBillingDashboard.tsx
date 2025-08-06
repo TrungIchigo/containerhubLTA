@@ -34,8 +34,6 @@ import {
   Receipt, 
   FileText, 
   CheckCircle, 
-  Clock,
-  AlertTriangle,
   Building2,
   Loader2,
   TrendingUp,
@@ -67,7 +65,6 @@ interface CodPaymentRequest {
   cod_fee: number
   status: string
   delivery_confirmed_at: string
-  days_since_delivery: number
 }
 
 export function AdminBillingDashboard() {
@@ -78,6 +75,8 @@ export function AdminBillingDashboard() {
   const [stats, setStats] = useState<BillingStats | null>(null)
   const [orgSummary, setOrgSummary] = useState<OrganizationBillingSummary[]>([])
   const [codPaymentRequests, setCodPaymentRequests] = useState<CodPaymentRequest[]>([])
+
+  const [codRelatedInvoices, setCodRelatedInvoices] = useState<any[]>([])
   const [selectedOrg, setSelectedOrg] = useState<string>('')
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
@@ -96,6 +95,17 @@ export function AdminBillingDashboard() {
 
   useEffect(() => {
     loadData()
+    loadCodPaymentRequests().then(result => {
+      if (result.success) {
+        setCodPaymentRequests(result.data)
+      }
+    })
+
+    loadCodRelatedInvoices().then(result => {
+      if (result.success) {
+        setCodRelatedInvoices(result.data)
+      }
+    })
   }, [])
 
   const loadData = async () => {
@@ -145,6 +155,24 @@ export function AdminBillingDashboard() {
     } catch (error) {
       console.error('Error loading COD payment requests:', error)
       return { success: false, error: 'Failed to load COD payment requests' }
+    }
+  }
+
+
+
+  const loadCodRelatedInvoices = async () => {
+    try {
+      const response = await fetch('/api/invoices/cod-related')
+      const result = await response.json()
+      
+      if (result.success) {
+        return { success: true, data: result.data }
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error('Error loading COD related invoices:', error)
+      return { success: false, error: 'Failed to load COD related invoices' }
     }
   }
 
@@ -248,19 +276,60 @@ export function AdminBillingDashboard() {
   }
 
   const getStatusBadge = (status: string) => {
+    return (
+      <Badge variant={getStatusVariant(status)}>
+        {getStatusLabel(status)}
+      </Badge>
+    )
+  }
+
+  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
-      case 'UNPAID':
-        return <Badge variant="destructive">Chưa thanh toán</Badge>
-      case 'INVOICED':
-        return <Badge variant="secondary">Đã xuất hóa đơn</Badge>
-      case 'PAID':
-        return <Badge variant="default" className="bg-green-100 text-green-800">Đã thanh toán</Badge>
       case 'PENDING':
-        return <Badge variant="outline">Chờ thanh toán</Badge>
-      case 'OVERDUE':
-        return <Badge variant="destructive">Quá hạn</Badge>
+      case 'AWAITING_INFO':
+        return 'outline'
+      case 'APPROVED':
+      case 'PAID':
+      case 'COMPLETED':
+        return 'default'
+      case 'DECLINED':
+      case 'EXPIRED':
+      case 'CANCELLED':
+        return 'destructive'
+      case 'PENDING_PAYMENT':
+      case 'PROCESSING_AT_DEPOT':
+        return 'secondary'
       default:
-        return <Badge variant="secondary">{status}</Badge>
+        return 'secondary'
+    }
+  }
+
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case 'PENDING':
+        return 'Chờ duyệt'
+      case 'APPROVED':
+        return 'Đã duyệt'
+      case 'DECLINED':
+        return 'Từ chối'
+      case 'AWAITING_INFO':
+        return 'Chờ thông tin'
+      case 'EXPIRED':
+        return 'Hết hạn'
+      case 'REVERSED':
+        return 'Đã hoàn'
+      case 'PENDING_PAYMENT':
+        return 'Chờ thanh toán'
+      case 'PAID':
+        return 'Đã thanh toán'
+      case 'PROCESSING_AT_DEPOT':
+        return 'Xử lý tại depot'
+      case 'COMPLETED':
+        return 'Hoàn thành'
+      case 'CANCELLED':
+        return 'Đã hủy'
+      default:
+        return status
     }
   }
 
@@ -285,241 +354,65 @@ export function AdminBillingDashboard() {
   return (
     <div className="space-y-6">
       {/* Statistics Cards */}
-      {stats && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tổng Giao Dịch</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total_transactions}</div>
-              <p className="text-xs text-muted-foreground">
-                {formatCurrency(stats.total_amount)}
-              </p>
-            </CardContent>
-          </Card>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Phí COD</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(codPaymentRequests.reduce((sum, req) => sum + (req.cod_fee || 0), 0))}
+            </div>
+            <p className="text-xs text-muted-foreground">Tổng phí COD chờ thanh toán</p>
+          </CardContent>
+        </Card>
+        
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Chưa Thanh Toán</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
-                {formatCurrency(stats.unpaid_amount)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Cần xuất hóa đơn
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Hóa Đơn Chờ</CardTitle>
-              <Receipt className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pending_invoices}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.overdue_invoices} quá hạn
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Đã Thu</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {formatCurrency(stats.paid_amount)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Doanh thu thực tế
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Đã Thu</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(stats?.paid_amount || 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">Doanh thu đã thu</p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="transactions">Giao Dịch Chưa Xuất</TabsTrigger>
-          <TabsTrigger value="invoices">Quản Lý Hóa Đơn</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="cod-payments">COD Chờ Thanh Toán</TabsTrigger>
+          <TabsTrigger value="invoices">Hóa Đơn COD/Reuse</TabsTrigger>
           <TabsTrigger value="summary">Tóm Tắt Tổ Chức</TabsTrigger>
         </TabsList>
 
-        {/* Unpaid Transactions Tab */}
-        <TabsContent value="transactions" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>Giao Dịch Chưa Xuất Hóa Đơn</CardTitle>
-                  <CardDescription>
-                    Các giao dịch cần được xuất hóa đơn
-                  </CardDescription>
-                </div>
-                <Dialog open={invoiceDialogOpen} onOpenChange={setInvoiceDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <FileText className="mr-2 h-4 w-4" />
-                      Tạo Hóa Đơn
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Tạo Hóa Đơn Mới</DialogTitle>
-                      <DialogDescription>
-                        Chọn tổ chức và khoảng thời gian để tạo hóa đơn
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="organization">Tổ Chức</Label>
-                        <select
-                          id="organization"
-                          className="w-full p-2 border rounded-md"
-                          value={selectedOrg}
-                          onChange={(e) => setSelectedOrg(e.target.value)}
-                        >
-                          <option value="">Chọn tổ chức...</option>
-                          {orgSummary.map((org) => (
-                            <option key={org.organization_id} value={org.organization_id}>
-                              {org.organization_name} ({formatCurrency(org.unpaid_amount)} chưa thanh toán)
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label>Từ ngày</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant="outline" className="w-full justify-start text-left font-normal">
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {periodStart ? format(periodStart, 'dd/MM/yyyy') : 'Chọn ngày'}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={periodStart}
-                                onSelect={setPeriodStart}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        
-                        <div>
-                          <Label>Đến ngày</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant="outline" className="w-full justify-start text-left font-normal">
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {periodEnd ? format(periodEnd, 'dd/MM/yyyy') : 'Chọn ngày'}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={periodEnd}
-                                onSelect={setPeriodEnd}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                      </div>
-                      
-                      <Button 
-                        onClick={handleCreateInvoice} 
-                        disabled={isCreatingInvoice}
-                        className="w-full"
-                      >
-                        {isCreatingInvoice && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Tạo Hóa Đơn
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {transactions.length === 0 ? (
-                <div className="text-center py-8">
-                  <CheckCircle className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-2 text-sm font-semibold">Không có giao dịch chưa xuất</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Tất cả giao dịch đã được xuất hóa đơn hoặc thanh toán
-                  </p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Tổ Chức</TableHead>
-                      <TableHead>Loại Giao Dịch</TableHead>
-                      <TableHead>Số Tiền</TableHead>
-                      <TableHead>Mô Tả</TableHead>
-                      <TableHead>Ngày Tạo</TableHead>
-                      <TableHead>Trạng Thái</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {transactions.map((transaction) => (
-                      <TableRow key={transaction.id}>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <Building2 className="mr-2 h-4 w-4" />
-                            {transaction.payer_organization?.name || 'N/A'}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {transaction.transaction_type === 'COD_SERVICE_FEE' ? 'Phí COD' : 'Phí Marketplace'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-mono">
-                          {formatCurrency(transaction.amount)}
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {transaction.description}
-                        </TableCell>
-                        <TableCell>{formatDate(transaction.created_at)}</TableCell>
-                        <TableCell>{getStatusBadge(transaction.status)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        {/* Invoices Tab */}
+
+        {/* COD/Reuse Invoices Tab */}
         <TabsContent value="invoices" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Quản Lý Hóa Đơn</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Receipt className="h-5 w-5" />
+                Hóa Đơn COD/Reuse
+              </CardTitle>
               <CardDescription>
-                Tất cả hóa đơn đã phát hành
+                Danh sách tất cả các hóa đơn liên quan đến phí COD và phí reuse
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {invoices.length === 0 ? (
+              {codRelatedInvoices.length === 0 ? (
                 <div className="text-center py-8">
                   <Receipt className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-2 text-sm font-semibold">Chưa có hóa đơn nào</h3>
+                  <h3 className="mt-2 text-sm font-semibold">Chưa có hóa đơn COD/Reuse</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Hóa đơn sẽ xuất hiện khi bạn tạo từ các giao dịch
+                    Hóa đơn liên quan COD và reuse sẽ xuất hiện ở đây
                   </p>
                 </div>
               ) : (
@@ -527,48 +420,44 @@ export function AdminBillingDashboard() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Số Hóa Đơn</TableHead>
-                      <TableHead>Tổ Chức</TableHead>
-                      <TableHead>Kỳ Hạn</TableHead>
-                      <TableHead>Tổng Tiền</TableHead>
-                      <TableHead>Hạn Thanh Toán</TableHead>
+                      <TableHead>Container</TableHead>
+                      <TableHead>Loại Phí</TableHead>
+                      <TableHead>Công Ty</TableHead>
+                      <TableHead>Số Tiền</TableHead>
+                      <TableHead>Ngày Tạo</TableHead>
                       <TableHead>Trạng Thái</TableHead>
-                      <TableHead>Thao Tác</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {invoices.map((invoice) => (
+                    {codRelatedInvoices.map((invoice) => (
                       <TableRow key={invoice.id}>
                         <TableCell className="font-mono">
-                          {invoice.invoice_number}
+                          {invoice.invoice_number || 'N/A'}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {invoice.container_number || 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={invoice.fee_type === 'COD' ? 'default' : 'secondary'}>
+                            {invoice.fee_type === 'COD' ? 'Phí COD' : 'Phí Reuse'}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center">
                             <Building2 className="mr-2 h-4 w-4" />
-                            {invoice.organization?.name || 'N/A'}
+                            {invoice.company_name || 'N/A'}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          {formatDate(invoice.period_start)} - {formatDate(invoice.period_end)}
-                        </TableCell>
                         <TableCell className="font-mono">
-                          {formatCurrency(invoice.total_amount)}
+                          {formatCurrency(invoice.amount || 0)}
                         </TableCell>
                         <TableCell>
-                          {formatDate(invoice.due_date)}
+                          {formatDate(invoice.created_at)}
                         </TableCell>
-                        <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                         <TableCell>
-                          {invoice.status === 'PENDING' && (
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setSelectedInvoice(invoice)
-                                setPaymentDialogOpen(true)
-                              }}
-                            >
-                              Đánh Dấu Đã Trả
-                            </Button>
-                          )}
+                          <Badge variant={getStatusVariant(invoice.status)}>
+                            {getStatusLabel(invoice.status)}
+                          </Badge>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -612,7 +501,6 @@ export function AdminBillingDashboard() {
                       <TableHead>Công ty</TableHead>
                       <TableHead>Phí COD</TableHead>
                       <TableHead>Ngày giao hàng</TableHead>
-                      <TableHead>Số ngày chờ</TableHead>
                       <TableHead>Trạng thái</TableHead>
                       <TableHead>Hành động</TableHead>
                     </TableRow>
@@ -638,13 +526,6 @@ export function AdminBillingDashboard() {
                           {formatCurrency(request.cod_fee)}
                         </TableCell>
                         <TableCell>{formatDate(request.delivery_confirmed_at)}</TableCell>
-                        <TableCell>
-                          <Badge 
-                            variant={request.days_since_delivery > 7 ? "destructive" : request.days_since_delivery > 3 ? "outline" : "secondary"}
-                          >
-                            {request.days_since_delivery} ngày
-                          </Badge>
-                        </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="border-orange-300 text-orange-600">
                             Chờ thanh toán
@@ -797,14 +678,6 @@ export function AdminBillingDashboard() {
                   <div className="font-mono">{formatCurrency(selectedCodRequest.cod_fee)}</div>
                   <div>Ngày giao hàng:</div>
                   <div>{formatDate(selectedCodRequest.delivery_confirmed_at)}</div>
-                  <div>Số ngày chờ:</div>
-                  <div>
-                    <Badge 
-                      variant={selectedCodRequest.days_since_delivery > 7 ? "destructive" : "secondary"}
-                    >
-                      {selectedCodRequest.days_since_delivery} ngày
-                    </Badge>
-                  </div>
                 </div>
               </div>
               
@@ -843,4 +716,4 @@ export function AdminBillingDashboard() {
       </Dialog>
     </div>
   )
-} 
+}

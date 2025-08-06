@@ -5,17 +5,17 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { Search, X, ArrowUpDown, ChevronDown } from 'lucide-react'
+import { X, ArrowUpDown } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 interface FilterState {
-  search: string
   containerTypeId: string
   shippingLineId: string
   fromDate: string
   toDate: string
-  status: string
+  statuses: string[] // Changed to array for multiple selection
   sortBy: string
   sortOrder: 'asc' | 'desc'
   page: number
@@ -38,17 +38,30 @@ interface ShippingLine {
   name: string
 }
 
+const STATUS_OPTIONS = [
+  { value: 'AVAILABLE', label: 'Sẵn sàng', color: 'bg-green-100 text-green-800' },
+  { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt Re-use', color: 'bg-yellow-100 text-yellow-800' },
+  { value: 'AWAITING_COD_APPROVAL', label: 'Chờ duyệt COD', color: 'bg-orange-100 text-orange-800' },
+  { value: 'AWAITING_COD_PAYMENT', label: 'Chờ thanh toán phí COD', color: 'bg-orange-100 text-orange-800' },
+  { value: 'AWAITING_REUSE_PAYMENT', label: 'Chờ thanh toán phí Re-use', color: 'bg-orange-100 text-orange-800' },
+  { value: 'ON_GOING_COD', label: 'Đang thực hiện COD', color: 'bg-blue-100 text-blue-800' },
+    { value: 'ON_GOING_REUSE', label: 'Đang thực hiện Re-use', color: 'bg-blue-100 text-blue-800' },
+  { value: 'DEPOT_PROCESSING', label: 'Đang xử lý tại Depot', color: 'bg-purple-100 text-purple-800' },
+  { value: 'COMPLETED', label: 'Hoàn tất', color: 'bg-green-100 text-green-800' },
+  { value: 'COD_REJECTED', label: 'Bị từ chối COD', color: 'bg-red-100 text-red-800' },
+  { value: 'REUSE_REJECTED', label: 'Bị từ chối Re-use', color: 'bg-red-100 text-red-800' },
+]
+
 export default function ContainerFilters({ 
   onFiltersChange,
   totalCount
 }: ContainerFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
-    search: '',
     containerTypeId: 'all',
     shippingLineId: 'all',
     fromDate: '',
     toDate: '',
-    status: 'all',
+    statuses: [], // Empty array means all statuses
     sortBy: 'available_from_datetime',
     sortOrder: 'desc',
     page: 1,
@@ -95,7 +108,7 @@ export default function ContainerFilters({
     }
   }
 
-  const updateFilter = (key: keyof FilterState, value: string | number) => {
+  const updateFilter = (key: keyof FilterState, value: any) => {
     setFilters(prev => ({
       ...prev,
       [key]: value,
@@ -104,14 +117,27 @@ export default function ContainerFilters({
     }))
   }
 
+  const toggleStatus = (status: string) => {
+    setFilters(prev => {
+      const newStatuses = prev.statuses.includes(status)
+        ? prev.statuses.filter(s => s !== status)
+        : [...prev.statuses, status]
+      
+      return {
+        ...prev,
+        statuses: newStatuses,
+        page: 1
+      }
+    })
+  }
+
   const clearFilters = () => {
     setFilters({
-      search: '',
       containerTypeId: 'all',
       shippingLineId: 'all',
       fromDate: '',
       toDate: '',
-      status: 'all',
+      statuses: [],
       sortBy: 'available_from_datetime',
       sortOrder: 'desc',
       page: 1,
@@ -137,27 +163,18 @@ export default function ContainerFilters({
   }
 
   const hasActiveFilters = Boolean(
-    filters.search || 
     (filters.containerTypeId && filters.containerTypeId !== 'all') || 
     (filters.shippingLineId && filters.shippingLineId !== 'all') || 
     filters.fromDate || 
     filters.toDate || 
-    (filters.status && filters.status !== 'all')
+    filters.statuses.length > 0
   )
-
-  // Pagination calculations
-  const totalPages = Math.ceil(totalCount / filters.pageSize)
-  const startItem = (filters.page - 1) * filters.pageSize + 1
-  const endItem = Math.min(filters.page * filters.pageSize, totalCount)
-
-  const pageSizeOptions = [10, 20, 30, 50]
 
   if (loading) {
     return (
       <Card className="mb-6">
         <CardContent className="p-4">
           <div className="animate-pulse space-y-4">
-            <div className="h-10 bg-gray-200 rounded"></div>
             <div className="grid grid-cols-4 gap-4">
               <div className="h-10 bg-gray-200 rounded"></div>
               <div className="h-10 bg-gray-200 rounded"></div>
@@ -173,39 +190,15 @@ export default function ContainerFilters({
   return (
     <Card className="mb-6">
       <CardContent className="p-4 space-y-4">
-        {/* Search and Clear */}
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary w-4 h-4" />
-            <Input
-              placeholder="Tìm kiếm số container, địa điểm..."
-              value={filters.search}
-              onChange={(e) => updateFilter('search', e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              onClick={clearFilters}
-              className="flex items-center gap-2"
-            >
-              <X className="w-4 h-4" />
-              Xóa bộ lọc
-            </Button>
-          )}
-        </div>
-
-        {/* Filters Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        {/* Main Filters Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {/* Container Type */}
           <div>
-            <label className="text-sm font-medium text-text-primary mb-2 block">
+            <label className="text-sm font-medium text-text-primary mb-2 block break-words">
               Loại container
             </label>
             <Select value={filters.containerTypeId || undefined} onValueChange={(value) => updateFilter('containerTypeId', value || '')}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Tất cả loại" />
               </SelectTrigger>
               <SelectContent>
@@ -221,11 +214,11 @@ export default function ContainerFilters({
 
           {/* Shipping Line */}
           <div>
-            <label className="text-sm font-medium text-text-primary mb-2 block">
+            <label className="text-sm font-medium text-text-primary mb-2 block break-words">
               Hãng tàu
             </label>
             <Select value={filters.shippingLineId || undefined} onValueChange={(value) => updateFilter('shippingLineId', value || '')}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Tất cả hãng tàu" />
               </SelectTrigger>
               <SelectContent>
@@ -239,72 +232,86 @@ export default function ContainerFilters({
 
           {/* From Date */}
           <div>
-            <label className="text-sm font-medium text-text-primary mb-2 block">
+            <label className="text-sm font-medium text-text-primary mb-2 block break-words">
               Từ ngày
             </label>
             <Input
               type="date"
               value={filters.fromDate}
               onChange={(e) => updateFilter('fromDate', e.target.value)}
+              className="w-full"
             />
           </div>
 
           {/* To Date */}
           <div>
-            <label className="text-sm font-medium text-text-primary mb-2 block">
+            <label className="text-sm font-medium text-text-primary mb-2 block break-words">
               Đến ngày
             </label>
             <Input
               type="date"
               value={filters.toDate}
               onChange={(e) => updateFilter('toDate', e.target.value)}
+              className="w-full"
             />
           </div>
 
-          {/* Status */}
-          <div>
-            <label className="text-sm font-medium text-text-primary mb-2 block">
-              Trạng thái
-            </label>
-            <Select value={filters.status || undefined} onValueChange={(value) => updateFilter('status', value || '')}>
-              <SelectTrigger>
-                <SelectValue placeholder="Tất cả trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                <SelectItem value="AVAILABLE">Sẵn sàng</SelectItem>
-                <SelectItem value="AWAITING_REUSE_APPROVAL">Chờ duyệt tái sử dụng</SelectItem>
-                <SelectItem value="AWAITING_COD_APPROVAL">Chờ duyệt COD</SelectItem>
-                <SelectItem value="AWAITING_COD_PAYMENT">Chờ thanh toán phí COD</SelectItem>
-                <SelectItem value="AWAITING_REUSE_PAYMENT">Chờ thanh toán phí tái sử dụng</SelectItem>
-                <SelectItem value="ON_GOING_COD">Đã thanh toán - Đang thực hiện COD</SelectItem>
-                <SelectItem value="ON_GOING_REUSE">Đã thanh toán - Đang thực hiện Tái sử dụng</SelectItem>
-                <SelectItem value="PROCESSING">Đang xử lý tại Depot</SelectItem>
-                <SelectItem value="COMPLETED">Hoàn tất</SelectItem>
-                <SelectItem value="COD_REJECTED">Bị từ chối COD</SelectItem>
-                <SelectItem value="REUSE_REJECTED">Bị từ chối tái sử dụng</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Sort */}
-          <div>
-            <label className="text-sm font-medium text-text-primary mb-2 block">
-              Sắp xếp theo ngày rảnh
-            </label>
-            <Button
-              variant="outline"
-              onClick={() => toggleSort('available_from_datetime')}
-              className="w-full justify-between"
-            >
-              {filters.sortOrder === 'desc' ? 'Giảm dần' : 'Tăng dần'}
-              <ArrowUpDown className="w-4 h-4" />
-            </Button>
+          {/* Sort and Clear Filters */}
+          <div className="flex flex-col gap-2">
+            <div>
+              <label className="text-sm font-medium text-text-primary mb-2 block break-words">
+                Sắp xếp theo ngày rảnh
+              </label>
+              <Button
+                variant="outline"
+                onClick={() => toggleSort('available_from_datetime')}
+                className="w-full justify-between"
+              >
+                {filters.sortOrder === 'desc' ? 'Giảm dần' : 'Tăng dần'}
+                <ArrowUpDown className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            {hasActiveFilters && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearFilters}
+                className="flex items-center gap-2 text-xs"
+              >
+                <X className="w-3 h-3" />
+                Xóa bộ lọc
+              </Button>
+            )}
           </div>
         </div>
 
-
+        {/* Status Filter Checkboxes */}
+        <div className="border-t pt-4">
+          <label className="text-sm font-medium text-text-primary mb-3 block">
+            Lọc theo trạng thái
+          </label>
+          <div className="flex flex-wrap gap-3">
+            {STATUS_OPTIONS.map((status) => (
+              <div key={status.value} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`status-${status.value}`}
+                  checked={filters.statuses.includes(status.value)}
+                  onCheckedChange={() => toggleStatus(status.value)}
+                />
+                <label
+                  htmlFor={`status-${status.value}`}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  <Badge variant="outline" className={status.color}>
+                    {status.label}
+                  </Badge>
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
       </CardContent>
     </Card>
   )
-} 
+}

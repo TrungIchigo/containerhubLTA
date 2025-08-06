@@ -10,7 +10,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'i-ContainerHub@LTA',
-  description: 'Hệ thống tối ưu hóa logistics container thông qua hoạt động tái sử dụng container.',
+  description: 'Hệ thống tối ưu hóa logistics container thông qua hoạt động Re-use container.',
   icons: {
     icon: 'https://uelfhngfhiirnxinvtbg.supabase.co/storage/v1/object/public/assets/logo.png',
     shortcut: 'https://uelfhngfhiirnxinvtbg.supabase.co/storage/v1/object/public/assets/logo.png',
@@ -26,6 +26,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" className={inter.variable}>
+      <head>
+        <script src="/polyfill.js" />
+      </head>
       <body suppressHydrationWarning>
         <div className="min-h-screen font-sans antialiased">
           {children}
@@ -33,4 +36,4 @@ export default function RootLayout({
       </body>
     </html>
   )
-} 
+}

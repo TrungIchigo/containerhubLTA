@@ -141,7 +141,7 @@ export default function CreateRuleDialog({ children }: CreateRuleDialogProps) {
               Tạo Quy tắc Phê duyệt Tự động
             </DialogTitle>
             <DialogDescription>
-              Thiết lập điều kiện để hệ thống tự động phê duyệt các yêu cầu tái sử dụng container phù hợp.
+              Thiết lập điều kiện để hệ thống tự động phê duyệt các yêu cầu Re-use container phù hợp.
             </DialogDescription>
           </DialogHeader>
 
@@ -377,4 +377,4 @@ export default function CreateRuleDialog({ children }: CreateRuleDialogProps) {
       </DialogContent>
     </Dialog>
   )
-} 
+}

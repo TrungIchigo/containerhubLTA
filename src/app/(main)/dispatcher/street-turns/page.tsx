@@ -98,7 +98,7 @@ export default async function StreetTurnsListPage() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-text-primary">
-                Tái Sử Dụng Đã Duyệt
+                Re-use Đã Duyệt
               </h1>
             </div>
           </div>
@@ -203,7 +203,7 @@ export default async function StreetTurnsListPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 p-3">
                 <CheckCircle className="h-5 w-5" />
-                Danh Sách Yêu Cầu Tái Sử Dụng Đã Duyệt
+                Danh Sách Yêu Cầu Re-use Đã Duyệt
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -211,7 +211,7 @@ export default async function StreetTurnsListPage() {
                 <div className="text-center py-12 text-text-secondary">
                   <CheckCircle className="h-12 w-12 mx-auto mb-4 text-text-secondary" />
                   <p className="text-lg font-medium mb-2">Chưa có yêu cầu nào được duyệt</p>
-                  <p>Tạo yêu cầu tái sử dụng container để bắt đầu tiết kiệm chi phí</p>
+                  <p>Tạo yêu cầu Re-use container để bắt đầu tiết kiệm chi phí</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -321,7 +321,7 @@ export default async function StreetTurnsListPage() {
             Có lỗi xảy ra
           </h1>
           <p className="text-text-secondary mb-6">
-            Không thể tải danh sách tái sử dụng. Vui lòng thử lại sau.
+            Không thể tải danh sách Re-use. Vui lòng thử lại sau.
           </p>
           <Button asChild>
             <Link href="/dispatcher">Quay lại Dashboard</Link>
@@ -330,4 +330,4 @@ export default async function StreetTurnsListPage() {
       </div>
     )
   }
-} 
+}

@@ -45,7 +45,7 @@ export function SuggestionLeaderboard({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <RefreshCw className="w-5 h-5 text-info" />
-            Gợi ý Tái sử dụng
+            Gợi ý Re-use
           </CardTitle>
         </CardHeader>
         <CardContent className="py-12">
@@ -57,7 +57,7 @@ export function SuggestionLeaderboard({
               Chưa có Gợi Ý Ghép nối
             </h3>
             <p className="text-text-secondary text-sm mb-4">
-              Thêm lệnh giao trả và lấy rỗng để có gợi ý tái sử dụng
+              Thêm lệnh giao trả và lấy rỗng để có gợi ý Re-use
             </p>
             <div className="text-xs text-text-secondary space-y-1 bg-gray-50 p-3 rounded-lg">
               <p className="font-medium">Điều kiện ghép nối:</p>
@@ -190,4 +190,4 @@ export function SuggestionLeaderboard({
       </div>
     </div>
   )
-} 
+}

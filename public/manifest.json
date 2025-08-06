@@ -1,7 +1,7 @@
 {
   "name": "i-ContainerHub@LTA",
   "short_name": "ContainerHub",
-  "description": "Hệ thống tối ưu hóa logistics container thông qua hoạt động tái sử dụng container.",
+  "description": "Hệ thống tối ưu hóa logistics container thông qua hoạt động Re-use container.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -13,4 +13,4 @@
       "type": "image/png"
     }
   ]
-} 
+}

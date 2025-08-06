@@ -34,7 +34,7 @@ export default async function AutoApprovalRulesPage() {
                 Quản lý Quy tắc Phê duyệt Tự động
               </h1>
               <p className="text-text-secondary mt-1">
-                Thiết lập các quy tắc để hệ thống tự động phê duyệt các yêu cầu tái sử dụng container, giúp bạn tiết kiệm thời gian và tăng hiệu quả.
+                Thiết lập các quy tắc để hệ thống tự động phê duyệt các yêu cầu Re-use container, giúp bạn tiết kiệm thời gian và tăng hiệu quả.
               </p>
             </div>
           </div>
@@ -92,4 +92,4 @@ export default async function AutoApprovalRulesPage() {
       </div>
     )
   }
-} 
+}

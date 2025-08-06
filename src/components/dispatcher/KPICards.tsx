@@ -31,7 +31,7 @@ export default function KPICards({
       href: '/dispatcher/bookings'
     },
     {
-      title: 'Tái Sử Dụng Đã Duyệt',
+      title: 'Re-use Đã Duyệt',
       value: approvedStreetTurns,
       icon: CheckCircle,
       iconColor: 'text-text-primary',
@@ -73,4 +73,4 @@ export default function KPICards({
       })}
     </div>
   )
-} 
+}

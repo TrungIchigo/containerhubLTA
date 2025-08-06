@@ -76,16 +76,16 @@ export default function ContainersPageClient({
 
   const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed" }> = {
     AVAILABLE: { text: 'Sẵn sàng', variant: 'approved' },
-    AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt tái sử dụng', variant: 'pending' },
+    AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt Re-use', variant: 'pending' },
     COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive' },
     AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending' },
     AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'warning' },
-    AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí tái sử dụng', variant: 'warning' },
-    ON_GOING_COD: { text: 'Đã thanh toán - Đang thực hiện COD', variant: 'info' },
-    ON_GOING_REUSE: { text: 'Đã thanh toán - Đang thực hiện Tái sử dụng', variant: 'info' },
+    AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí Re-use', variant: 'warning' },
+    ON_GOING_COD: { text: 'Đang thực hiện COD', variant: 'info' },
+  ON_GOING_REUSE: { text: 'Đang thực hiện Re-use', variant: 'info' },
     DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'secondary' },
     COMPLETED: { text: 'Hoàn tất', variant: 'approved' },
-    REUSE_REJECTED: { text: 'Bị từ chối tái sử dụng', variant: 'destructive' },
+    REUSE_REJECTED: { text: 'Bị từ chối Re-use', variant: 'destructive' },
     EXPIRED: { text: 'Hết hạn', variant: 'outline' },
     PAYMENT_CANCELLED: { text: 'Đã hủy thanh toán', variant: 'outline' },
   };
@@ -233,4 +233,4 @@ export default function ContainersPageClient({
       </Card>
     </>
   )
-} 
+}

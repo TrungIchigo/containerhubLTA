@@ -49,7 +49,7 @@ export function DispatcherRealtimeUpdater({ userOrgId }: DispatcherRealtimeUpdat
             if (newStatus === 'APPROVED') {
               toast({
                 title: "🎉 Yêu cầu được phê duyệt!",
-                description: `Tái sử dụng container ${containerNumber} → lệnh ${bookingNumber} đã được chấp thuận.`,
+                description: `Re-use container ${containerNumber} → lệnh ${bookingNumber} đã được chấp thuận.`,
                 variant: 'default',
                 duration: 5000,
               })
@@ -79,4 +79,4 @@ export function DispatcherRealtimeUpdater({ userOrgId }: DispatcherRealtimeUpdat
   }, [supabase, toast, userOrgId, router])
 
   return null // Component này không render gì cả, chỉ chứa logic
-} 
+}

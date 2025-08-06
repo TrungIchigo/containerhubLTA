@@ -4,12 +4,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Eye, EyeOff, Loader2, CheckCircle, Sparkles, Shield, Truck, Container } from 'lucide-react'
+import { Eye, EyeOff, CheckCircle, Sparkles, Shield, Truck, Container } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 import { gsap } from 'gsap'
+import { LtaLoadingCompact } from '@/components/ui/ltaloading'
 
 export default function LoginForm() {
   const [formData, setFormData] = useState({
@@ -34,8 +35,8 @@ export default function LoginForm() {
 
   // Check for success message from registration
   useEffect(() => {
-    const success = searchParams.get('success')
-    const message = searchParams.get('message')
+    const success = searchParams?.get('success')
+    const message = searchParams?.get('message')
     
     if (success === 'registration' && message) {
       setSuccessMessage(decodeURIComponent(message))
@@ -383,7 +384,9 @@ export default function LoginForm() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    <div className="mr-2 w-5 h-5">
+                      <LtaLoadingCompact />
+                    </div>
                     Đang xử lý...
                   </>
                 ) : (
@@ -403,4 +406,4 @@ export default function LoginForm() {
       </div>
     </div>
   )
-} 
+}

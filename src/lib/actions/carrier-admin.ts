@@ -121,8 +121,8 @@ export async function getCarrierAdminDashboardData() {
     console.log('Found COD requests:', codRequests?.length || 0)
 
     // Get KPI data with individual error handling
-    let approvedThisMonth = []
-    let totalApproved = []
+    let approvedThisMonth: any[] = []
+    let totalApproved: any[] = []
     
     try {
       // 2. Approved this month
@@ -325,4 +325,4 @@ export async function declineRequest(requestId: string, reason: string) {
   revalidatePath('/carrier-admin')
   revalidatePath('/dispatcher')
   revalidatePath('/dispatcher/requests')
-} 
+}

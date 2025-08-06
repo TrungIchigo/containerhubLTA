@@ -115,7 +115,7 @@ export default function MatchSuggestions({ initialSuggestions }: MatchSuggestion
         <CardContent>
           <div className="text-center py-8 text-text-secondary">
             <p className="text-lg font-medium mb-4">Chưa có Gợi Ý Ghép nối</p>
-            <p className="mb-4">Hãy thêm lệnh giao trả và lệnh lấy rỗng để hệ thống tạo gợi ý tái sử dụng container phù hợp.</p>
+            <p className="mb-4">Hãy thêm lệnh giao trả và lệnh lấy rỗng để hệ thống tạo gợi ý Re-use container phù hợp.</p>
           </div>
         </CardContent>
       </Card>
@@ -378,4 +378,4 @@ export default function MatchSuggestions({ initialSuggestions }: MatchSuggestion
       </div>
     </div>
   )
-} 
+}

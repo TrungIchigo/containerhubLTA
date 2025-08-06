@@ -38,7 +38,7 @@ export default function RequestQueueTable({ requests }: RequestQueueTableProps) 
               Không có yêu cầu nào đang chờ xử lý
             </h3>
             <p className="text-body text-text-secondary">
-              Tất cả yêu cầu tái sử dụng đã được xử lý xong.
+              Tất cả yêu cầu Re-use đã được xử lý xong.
             </p>
           </div>
         </CardContent>
@@ -196,4 +196,4 @@ export default function RequestQueueTable({ requests }: RequestQueueTableProps) 
       </CardContent>
     </Card>
   )
-} 
+}

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { getCarrierCodRequests } from '@/lib/actions/cod'
+import { getCarrierCodRequests, confirmCodPayment, confirmCodPaymentByRequestId, confirmCodDelivery } from '@/lib/actions/cod'
 import { getCurrentUser } from '@/lib/actions/auth'
 import { createClient } from '@/lib/supabase/client'
 import { NextRequest } from 'next/server'
-import { confirmCodCompletion, completeCodProcess } from '@/lib/actions/cod'
+import { confirmCodCompletion, completeCodProcess, completeDepotProcessing } from '@/lib/actions/cod'
 
 export async function GET() {
   try {
@@ -66,6 +66,20 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ success: false, message: 'Access denied - Only dispatchers can perform this action' }), { status: 403 });
     }
 
+    // Xử lý action confirm_payment cho button "Tôi đã chuyển khoản"
+    if (body.action === 'confirm_payment') {
+      const result = await confirmCodPaymentByRequestId(body.requestId);
+      console.log('[DEBUG] API /api/cod/carrier-requests - confirmCodPayment result:', result);
+      return new Response(JSON.stringify(result), { status: 200 });
+    }
+    
+    // Xử lý action confirmCodDelivery cho button "Xác nhận hoàn tất COD"
+    if (body.action === 'confirmCodDelivery') {
+      const result = await confirmCodDelivery(body.containerId);
+      console.log('[DEBUG] API /api/cod/carrier-requests - confirmCodDelivery result:', result);
+      return new Response(JSON.stringify(result), { status: 200 });
+    }
+    
     // Chấp nhận cả action: 'confirm_cod_complete' và 'confirmCodCompletion'
     if (body.action === 'confirm_cod_complete' || body.action === 'confirmCodCompletion') {
       const result = await confirmCodCompletion(body.containerId);
@@ -77,9 +91,15 @@ export async function POST(req: Request) {
       console.log('[DEBUG] API /api/cod/carrier-requests - completeCodProcess result:', result);
       return new Response(JSON.stringify(result), { status: 200 });
     }
+    
+    if (body.action === 'complete_depot_processing') {
+      const result = await completeDepotProcessing(body.containerId);
+      console.log('[DEBUG] API /api/cod/carrier-requests - completeDepotProcessing result:', result);
+      return new Response(JSON.stringify(result), { status: 200 });
+    }
     return new Response(JSON.stringify({ success: false, message: 'Action không hợp lệ' }), { status: 400 });
   } catch (error: any) {
     console.error('[DEBUG] API /api/cod/carrier-requests - Exception:', error);
     return new Response(JSON.stringify({ success: false, message: 'Lỗi server' }), { status: 500 });
   }
-} 
+}

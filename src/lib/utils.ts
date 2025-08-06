@@ -139,7 +139,7 @@ export function getStatusColor(status: string): string {
     case 'ON_GOING_COD':
     case 'ON_GOING_REUSE':
       return 'text-blue-700 bg-blue-100'
-    case 'PROCESSING':
+    case 'DEPOT_PROCESSING':
       return 'text-purple-700 bg-purple-100'
     case 'DECLINED':
     case 'COD_REJECTED':
@@ -155,25 +155,25 @@ export function getStatusLabel(status: string): string {
     case 'AVAILABLE':
       return 'Sẵn sàng'
     case 'AWAITING_REUSE_APPROVAL':
-      return 'Chờ duyệt tái sử dụng'
+      return 'Chờ duyệt Re-use'
     case 'AWAITING_COD_APPROVAL':
       return 'Chờ duyệt COD'
     case 'AWAITING_COD_PAYMENT':
       return 'Chờ thanh toán phí COD'
     case 'AWAITING_REUSE_PAYMENT':
-      return 'Chờ thanh toán phí tái sử dụng'
+      return 'Chờ thanh toán phí Re-use'
     case 'ON_GOING_COD':
-      return 'Đã thanh toán - Đang thực hiện COD'
+      return 'Đang thực hiện COD'
     case 'ON_GOING_REUSE':
-      return 'Đã thanh toán - Đang thực hiện Tái sử dụng'
-    case 'PROCESSING':
+      return 'Đang thực hiện Re-use'
+    case 'DEPOT_PROCESSING':
       return 'Đang xử lý tại Depot'
     case 'COMPLETED':
       return 'Hoàn tất'
     case 'COD_REJECTED':
       return 'Bị từ chối COD'
     case 'REUSE_REJECTED':
-      return 'Bị từ chối tái sử dụng'
+      return 'Bị từ chối Re-use'
     case 'PENDING':
       return 'Chờ xử lý'
     case 'APPROVED':

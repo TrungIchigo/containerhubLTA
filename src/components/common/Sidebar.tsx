@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { BarChart3, Truck, Ship, FileText, Settings, Store, Activity, TrendingUp, Receipt } from 'lucide-react'
+import { BarChart3, Truck, Ship, FileText, Settings, Store, Activity, TrendingUp, Receipt, Menu } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import SupportContact from './SupportContact'
 import DispatcherDropdown from './DispatcherDropdown'
@@ -23,9 +23,10 @@ export default function Sidebar() {
     totalRequests: 0,
     activeListings: 0
   })
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   
   const allNavigation: NavigationItem[] = [   
-    { name: 'Bảng Điều Phối', href: '/dispatcher', icon: Truck, roles: ['DISPATCHER'], isDropdown: true },
+    { name: 'Bảng Điều Phối', href: '/dispatcher', icon: Truck, roles: ['DISPATCHER'] },
     { name: 'Thị Trường', href: '/marketplace', icon: Store, roles: ['DISPATCHER'] },
     { name: 'Quản lý Yêu Cầu', href: '/dispatcher/requests', icon: FileText, roles: ['DISPATCHER'] },
     { name: 'Thanh Toán', href: '/billing', icon: Receipt, roles: ['DISPATCHER'] },
@@ -103,78 +104,144 @@ export default function Sidebar() {
   )
 
   return (
-    <aside className="hidden lg:block fixed left-0 top-[73px] bottom-0 w-60 bg-secondary-dark text-secondary-foreground shadow-sm z-40 overflow-y-auto">
-      <div className="flex flex-col h-full">
-        <div className="flex-1 p-4">
-          {/* Quick Stats Section */}
-          <div className="mb-6 bg-secondary/20 rounded-lg p-3">
-            <div className="flex items-center gap-2 mb-3">
-              <Activity className="w-4 h-4 text-accent" />
-              <span className="text-sm font-medium">Thống Kê Nhanh</span>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-secondary-light">
-                  {userRole === 'DISPATCHER' ? 'Yêu cầu của tôi' : 'Yêu cầu chờ duyệt'}
-                </span>
-                <span className="font-semibold text-accent">{stats.totalRequests}</span>
+    <>
+      {/* Hamburger menu for mobile */}
+      <button className="lg:hidden fixed top-4 left-4 z-50 bg-white rounded-full p-2 shadow" onClick={() => setSidebarOpen(true)}>
+        <Menu className="w-6 h-6 text-primary" />
+      </button>
+      {/* Sidebar overlay for mobile */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40" onClick={() => setSidebarOpen(false)}>
+          <aside className="fixed left-0 top-0 bottom-0 w-64 bg-secondary-dark text-secondary-foreground shadow-lg z-50 h-full flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex-1 p-4 overflow-y-auto">
+              {/* Quick Stats Section */}
+              <div className="mb-6 bg-secondary/20 rounded-lg p-3">
+                <div className="flex items-center gap-2 mb-3">
+                  <Activity className="w-4 h-4 text-accent" />
+                  <span className="text-sm font-medium">Thống Kê Nhanh</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-secondary-light">
+                      {userRole === 'DISPATCHER' ? 'Yêu cầu của tôi' : 'Yêu cầu chờ duyệt'}
+                    </span>
+                    <span className="font-semibold text-accent">{stats.totalRequests}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-secondary-light">
+                      {userRole === 'DISPATCHER' ? 'Cơ hội khả dụng' : 'Quy tắc đang hoạt động'}
+                    </span>
+                    <span className="font-semibold text-accent">{stats.activeListings}</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-secondary-light">
-                  {userRole === 'DISPATCHER' ? 'Cơ hội khả dụng' : 'Quy tắc đang hoạt động'}
-                </span>
-                <span className="font-semibold text-accent">{stats.activeListings}</span>
+              <nav className="space-y-1">
+                {navigation.map((item) => {
+                  const IconComponent = item.icon
+                  const isActive = pathname === item.href ||
+                    (item.href === '/dispatcher' && pathname && (
+                      pathname.startsWith('/dispatcher/containers') ||
+                      pathname.startsWith('/dispatcher/bookings') ||
+                      pathname.startsWith('/dispatcher/street-turns') ||
+                      pathname.startsWith('/dispatcher/dropoff-orders') ||
+                      pathname.startsWith('/dispatcher/pickup-orders') ||
+                      pathname.startsWith('/dispatcher/suggestions')
+                    )) ||
+                    (item.href === '/dispatcher/requests' && pathname?.startsWith('/dispatcher/requests')) ||
+                    (item.href === '/carrier-admin/rules' && pathname?.startsWith('/carrier-admin/rules')) ||
+                    (item.href === '/marketplace' && pathname?.startsWith('/marketplace')) ||
+                    (item.href === '/billing' && pathname?.startsWith('/billing'))
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-button text-sm font-medium transition-all duration-200 group hover:bg-primary/10 hover:text-primary ${
+                        isActive
+                          ? 'bg-primary text-primary-foreground shadow-button'
+                          : 'text-secondary-light hover:bg-secondary-light/10 hover:text-secondary-foreground'
+                      }`}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <IconComponent className={`w-4 h-4 ${
+                        isActive ? 'text-primary-foreground' : 'text-secondary-light group-hover:text-secondary-foreground'
+                      }`} />
+                      <span>{item.name}</span>
+                    </Link>
+                  )
+                })}
+              </nav>
+            </div>
+            <div className="p-4">
+              <SupportContact compact={true} />
+            </div>
+          </aside>
+        </div>
+      )}
+      {/* Sidebar for desktop */}
+      <aside className="hidden lg:block fixed left-0 top-[73px] bottom-0 w-60 bg-secondary-dark text-secondary-foreground shadow-sm z-40 overflow-y-auto">
+        <div className="flex flex-col h-full">
+          <div className="flex-1 p-4">
+            {/* Quick Stats Section */}
+            <div className="mb-6 bg-secondary/20 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-3">
+                <Activity className="w-4 h-4 text-accent" />
+                <span className="text-sm font-medium">Thống Kê Nhanh</span>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-secondary-light">
+                    {userRole === 'DISPATCHER' ? 'Yêu cầu của tôi' : 'Yêu cầu chờ duyệt'}
+                  </span>
+                  <span className="font-semibold text-accent">{stats.totalRequests}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-secondary-light">
+                    {userRole === 'DISPATCHER' ? 'Cơ hội khả dụng' : 'Quy tắc đang hoạt động'}
+                  </span>
+                  <span className="font-semibold text-accent">{stats.activeListings}</span>
+                </div>
               </div>
             </div>
+            <nav className="space-y-1">
+              {navigation.map((item) => {
+                const IconComponent = item.icon
+                const isActive = pathname === item.href ||
+                  (item.href === '/dispatcher' && pathname && (
+                    pathname.startsWith('/dispatcher/containers') ||
+                    pathname.startsWith('/dispatcher/bookings') ||
+                    pathname.startsWith('/dispatcher/street-turns') ||
+                    pathname.startsWith('/dispatcher/dropoff-orders') ||
+                    pathname.startsWith('/dispatcher/pickup-orders') ||
+                    pathname.startsWith('/dispatcher/suggestions')
+                  )) ||
+                  (item.href === '/dispatcher/requests' && pathname?.startsWith('/dispatcher/requests')) ||
+                  (item.href === '/carrier-admin/rules' && pathname?.startsWith('/carrier-admin/rules')) ||
+                  (item.href === '/marketplace' && pathname?.startsWith('/marketplace')) ||
+                  (item.href === '/billing' && pathname?.startsWith('/billing'))
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-button text-sm font-medium transition-all duration-200 group hover:bg-primary/10 hover:text-primary ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-button'
+                        : 'text-secondary-light hover:bg-secondary-light/10 hover:text-secondary-foreground'
+                    }`}
+                  >
+                    <IconComponent className={`w-4 h-4 ${
+                      isActive ? 'text-primary-foreground' : 'text-secondary-light group-hover:text-secondary-foreground'
+                    }`} />
+                    <span>{item.name}</span>
+                  </Link>
+                )
+              })}
+            </nav>
           </div>
-          
-          {/* Navigation Menu */}
-          <nav className="space-y-1">
-            {navigation.map((item) => {
-              const IconComponent = item.icon
-              const isActive = pathname === item.href || 
-                (item.href === '/dispatcher' && (
-                  pathname.startsWith('/dispatcher/containers') ||
-                  pathname.startsWith('/dispatcher/bookings') ||
-                  pathname.startsWith('/dispatcher/street-turns') ||
-                  pathname.startsWith('/dispatcher/dropoff-orders') ||
-                  pathname.startsWith('/dispatcher/pickup-orders') ||
-                  pathname.startsWith('/dispatcher/suggestions')
-                )) ||
-                (item.href === '/dispatcher/requests' && pathname.startsWith('/dispatcher/requests')) ||
-                (item.href === '/carrier-admin/rules' && pathname.startsWith('/carrier-admin/rules')) ||
-                (item.href === '/marketplace' && pathname.startsWith('/marketplace')) ||
-                (item.href === '/billing' && pathname.startsWith('/billing'))
-
-              if (item.isDropdown) {
-                return <DispatcherDropdown key={item.name} isActive={isActive} />
-              }
-
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-button text-sm font-medium transition-all duration-200 group hover:bg-primary/10 hover:text-primary ${
-                    isActive
-                      ? 'bg-primary text-primary-foreground shadow-button'
-                      : 'text-secondary-light hover:bg-secondary-light/10 hover:text-secondary-foreground'
-                  }`}
-                >
-                  <IconComponent className={`w-4 h-4 ${
-                    isActive ? 'text-primary-foreground' : 'text-secondary-light group-hover:text-secondary-foreground'
-                  }`} />
-                  <span>{item.name}</span>
-                </Link>
-              )
-            })}
-          </nav>
+          <div className="p-4">
+            <SupportContact compact={true} />
+          </div>
         </div>
-
-        {/* Support Contact at bottom */}
-        <div className="p-4">
-          <SupportContact compact={true} />
-        </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   )
-} 
+}

@@ -78,16 +78,16 @@ export default function ContainerDetailDialog({
 
   const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed"; color: string }> = {
     AVAILABLE: { text: 'Sẵn sàng', variant: 'approved', color: 'text-green-600' },
-    AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt tái sử dụng', variant: 'pending', color: 'text-yellow-600' },
+    AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt Re-use', variant: 'pending', color: 'text-yellow-600' },
     COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive', color: 'text-red-600' },
     AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending', color: 'text-orange-600' },
     AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'warning', color: 'text-orange-600' },
-    AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí tái sử dụng', variant: 'warning', color: 'text-orange-600' },
-    ON_GOING_COD: { text: 'Đã thanh toán - Đang thực hiện COD', variant: 'info', color: 'text-blue-600' },
-    ON_GOING_REUSE: { text: 'Đã thanh toán - Đang thực hiện Tái sử dụng', variant: 'info', color: 'text-blue-600' },
+    AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí Re-use', variant: 'warning', color: 'text-orange-600' },
+    ON_GOING_COD: { text: 'Đang thực hiện COD', variant: 'info', color: 'text-blue-600' },
+  ON_GOING_REUSE: { text: 'Đang thực hiện Re-use', variant: 'info', color: 'text-blue-600' },
     DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'secondary', color: 'text-purple-600' },
     COMPLETED: { text: 'Hoàn tất', variant: 'approved', color: 'text-green-600' },
-    REUSE_REJECTED: { text: 'Bị từ chối tái sử dụng', variant: 'destructive', color: 'text-red-600' },
+    REUSE_REJECTED: { text: 'Bị từ chối Re-use', variant: 'destructive', color: 'text-red-600' },
     EXPIRED: { text: 'Hết hạn', variant: 'outline', color: 'text-gray-600' },
     PAYMENT_CANCELLED: { text: 'Đã hủy thanh toán', variant: 'outline', color: 'text-gray-600' },
   };
@@ -388,4 +388,4 @@ export default function ContainerDetailDialog({
       </AlertDialog>
     </>
   )
-} 
+}

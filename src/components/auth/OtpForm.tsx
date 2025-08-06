@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RefreshCw } from 'lucide-react'
 import { verifyOtp, resendOtp } from '@/lib/actions/auth'
-import { Loader } from '@/components/ui/loader'
+import { LtaLoadingCompact } from '@/components/ui/ltaloading'
 
 interface OtpFormProps {
   email: string
@@ -138,7 +138,9 @@ export default function OtpForm({
           >
             {isLoading ? (
               <>
-                <Loader className="mr-2 h-4 w-4 animate-spin" />
+                <div className="mr-2 w-4 h-4">
+                  <LtaLoadingCompact />
+                </div>
                 Đang gửi...
               </>
             ) : canResendOtp ? (
@@ -170,7 +172,7 @@ export default function OtpForm({
             {isLoading ? (
               <>
                 <div className="mr-2 w-4 h-4">
-                  <Loader size="sm" />
+                  <LtaLoadingCompact />
                 </div>
                 Đang xác thực...
               </>

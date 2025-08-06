@@ -86,7 +86,7 @@ export default function AutoApprovalRulesTable({ rules }: AutoApprovalRulesTable
     }
 
     const summary = summarizeRuleConditions(rule.conditions)
-    const parts = []
+    const parts: string[] = []
 
     if (summary.containerTypes && summary.containerTypes.length > 0) {
       parts.push(`Loại: ${summary.containerTypes.join(', ')}`)
@@ -246,4 +246,4 @@ export default function AutoApprovalRulesTable({ rules }: AutoApprovalRulesTable
       </CardContent>
     </Card>
   )
-} 
+}

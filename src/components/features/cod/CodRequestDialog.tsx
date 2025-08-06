@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -22,6 +22,7 @@ interface CodRequestDialogProps {
   isOpen: boolean
   onClose: () => void
   container: ImportContainer
+  onSuccess?: () => void
 }
 
 // Form validation schema
@@ -32,7 +33,7 @@ const codRequestSchema = z.object({
 
 type CodRequestFormData = z.infer<typeof codRequestSchema>
 
-export default function CodRequestDialog({ isOpen, onClose, container }: CodRequestDialogProps) {
+export default function CodRequestDialog({ isOpen, onClose, container, onSuccess }: CodRequestDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [codFee, setCodFee] = useState<CodFeeResult | null>(null)
   const [isLoadingFee, setIsLoadingFee] = useState(false)
@@ -60,7 +61,7 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
   })
 
   // Function to calculate COD fee
-  const calculateCodFee = async (originDepotId: string | null, destinationDepotId: string) => {
+  const calculateCodFee = useCallback(async (originDepotId: string | null, destinationDepotId: string) => {
     if (!originDepotId || !destinationDepotId) {
       setCodFee(null)
       return
@@ -79,11 +80,12 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
     } finally {
       setIsLoadingFee(false)
     }
-  }
+  }, [])
 
   // Watch for depot changes to calculate fee
   const watchedDepotId = form.watch('depot_id')
   
+  // Trong useEffect
   useEffect(() => {
     console.log('🔍 useEffect triggered:', { 
       watchedDepotId, 
@@ -91,15 +93,22 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
       containerNumber: container?.container_number 
     })
     
-    // Chỉ tính phí khi người dùng đã chọn depot mới
     if (watchedDepotId && container?.depot_id && watchedDepotId !== container.depot_id) {
       console.log('✅ Valid depot selection, calculating COD fee...')
+      console.log('📍 Origin depot ID:', container.depot_id)
+      console.log('📍 Destination depot ID:', watchedDepotId)
       calculateCodFee(container.depot_id, watchedDepotId)
     } else if (!watchedDepotId) {
       console.log('⚠️ No destination depot selected, clearing COD fee')
       setCodFee(null)
+    } else {
+      console.log('❌ Invalid depot selection:', {
+        watchedDepotId,
+        containerDepotId: container?.depot_id,
+        isSame: watchedDepotId === container.depot_id
+      })
     }
-  }, [watchedDepotId]) // Chỉ theo dõi sự thay đổi của depot được chọn
+  }, [watchedDepotId, container?.depot_id, calculateCodFee]) // Theo dõi tất cả dependencies cần thiết
 
   const onSubmit = async (data: CodRequestFormData) => {
     // Mở dialog xác nhận thay vì gửi trực tiếp
@@ -130,7 +139,7 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
 
   // Helper to update combined reasons
   const updateCombinedReasons = (reasons: string[], freetext: string) => {
-    const parts = []
+    const parts: string[] = []
     if (reasons.length > 0) {
       parts.push(reasons.join('; '))
     }
@@ -157,20 +166,22 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
     setSelectedReasons([])
     setFreetextReason('')
     setShowConfirm(false)
+    onSuccess?.()
     onClose()
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto overflow-x-hidden">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] w-[95vw] max-w-[600px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-text-primary flex items-center gap-2">
             <MapPin className="h-5 w-5 text-primary" />
             Tạo Yêu Cầu Thay Đổi Nơi Giao Trả
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-full overflow-hidden">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-2">
           {/* Thông tin Container hiện tại */}
           <div className="space-y-3">
             <h3 className="text-base font-semibold text-text-primary border-b pb-2">
@@ -225,7 +236,7 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
 
 
           {/* Phí COD */}
-          {codFee && (
+          {(codFee || isLoadingFee) && (
             <div className="space-y-3">
               <h3 className="text-base font-semibold text-text-primary border-b pb-2 flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-primary" />
@@ -238,7 +249,7 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
                     <span className="text-sm text-muted-foreground">Đang tính phí...</span>
                   </div>
-                ) : codFee.success && codFee.fee ? (
+                ) : codFee?.success && codFee.fee ? (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">Phí COD:</span>
@@ -250,9 +261,21 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
                       <p className="text-sm text-muted-foreground">{codFee.message}</p>
                     )}
                   </div>
+                ) : codFee && !codFee.success ? (
+                  <div className="space-y-2">
+                    <div className="text-sm text-red-600 font-medium">
+                      ❌ Lỗi tính phí COD
+                    </div>
+                    <div className="text-sm text-red-600">
+                      {codFee.message || 'Không thể tính phí cho tuyến này'}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-2">
+                      Debug: Origin: {container?.depot_id}, Destination: {watchedDepotId}
+                    </div>
+                  </div>
                 ) : (
-                  <div className="text-sm text-red-600">
-                    {codFee.message}
+                  <div className="text-sm text-gray-500">
+                    Chọn depot để xem phí COD
                   </div>
                 )}
               </div>
@@ -306,8 +329,10 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
             )}
           </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end gap-2">
+          </div>
+
+          {/* Submit Button - Fixed at bottom */}
+          <div className="flex justify-end gap-2 pt-4 border-t flex-shrink-0 mt-4">
             <Button
               type="button"
               variant="outline"
@@ -344,9 +369,12 @@ export default function CodRequestDialog({ isOpen, onClose, container }: CodRequ
           container={container}
           selectedDepotName={selectedDepotName}
           codFee={codFee}
-          formData={form.getValues()}
+          formData={{
+            depot_id: form.getValues('depot_id') || '',
+            reason_for_request: form.getValues('reason_for_request')
+          } as { depot_id: string; reason_for_request?: string }}
         />
       </DialogContent>
     </Dialog>
   )
-} 
+}

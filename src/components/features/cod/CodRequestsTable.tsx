@@ -41,7 +41,7 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
       'AWAITING_INFO': { text: 'Chờ bổ sung', variant: 'warning' as const, icon: AlertCircle },
       'EXPIRED': { text: 'Hết hạn', variant: 'declined' as const, icon: Clock },
       'REVERSED': { text: 'Đã hủy', variant: 'declined' as const, icon: XCircle },
-      'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán', variant: 'warning' as const, icon: DollarSign },
+      'PENDING_PAYMENT': { text: 'Chờ thanh toán', variant: 'warning' as const, icon: DollarSign },
       'PAID': { text: 'Đã thanh toán', variant: 'approved' as const, icon: CheckCircle },
       'PROCESSING_AT_DEPOT': { text: 'Đang xử lý', variant: 'pending' as const, icon: Clock },
       'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const, icon: CheckCircle },
@@ -242,7 +242,7 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
                         </div>
                       </td>
                       <td className="table-cell text-center w-24">
-                        {request.status === 'AWAITING_COD_PAYMENT' && request.cod_fee && request.cod_fee > 0 ? (
+                        {request.status === 'PENDING_PAYMENT' && request.cod_fee && request.cod_fee > 0 ? (
                           // Payment button for pending payments
                           <Button
                             size="sm"

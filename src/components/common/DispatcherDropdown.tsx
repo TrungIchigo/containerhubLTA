@@ -27,7 +27,7 @@ export default function DispatcherDropdown({ isActive }: DispatcherDropdownProps
       '/dispatcher/pickup-orders',
       '/dispatcher/suggestions'
     ]
-    if (menuItems.some(path => pathname.startsWith(path))) {
+    if (pathname && menuItems.some(path => pathname.startsWith(path))) {
       setIsOpen(true)
     }
   }, [pathname])
@@ -44,7 +44,7 @@ export default function DispatcherDropdown({ isActive }: DispatcherDropdownProps
       icon: Box,
     },
     {
-      name: 'Gợi ý tái sử dụng',
+      name: 'Gợi ý Re-use',
       href: '/dispatcher/suggestions',
       icon: ArrowDownUp,
     }
@@ -89,7 +89,7 @@ export default function DispatcherDropdown({ isActive }: DispatcherDropdownProps
             <div className="py-1 space-y-1">
               {menuItems.map((item) => {
                 const IconComponent = item.icon
-                const isItemActive = pathname.startsWith(item.href)
+                const isItemActive = pathname?.startsWith(item.href)
                 
                 return (
                   <Link
@@ -116,4 +116,4 @@ export default function DispatcherDropdown({ isActive }: DispatcherDropdownProps
       </AnimatePresence>
     </div>
   )
-} 
+}

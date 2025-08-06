@@ -4,7 +4,7 @@ export default function MyRequestsTable() {
   return (
     <div className="space-y-4">
       <p className="text-muted-foreground">
-        Danh sách các yêu cầu Tái Sử Dụng Container đã gửi
+        Danh sách các yêu cầu Re-use Container đã gửi
       </p>
       
       <div className="border border-border rounded-lg p-4 shadow-sm">
@@ -23,4 +23,4 @@ export default function MyRequestsTable() {
       </div>
     </div>
   )
-} 
+}

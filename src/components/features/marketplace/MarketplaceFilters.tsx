@@ -26,13 +26,13 @@ export default function MarketplaceFilters({ shippingLines }: MarketplaceFilters
   const searchParams = useSearchParams()
   
   const [filters, setFilters] = useState({
-    container_type: searchParams.get('container_type') || '',
-    shipping_line_name: searchParams.get('shipping_line_name') || '',
-    location: searchParams.get('location') || '',
-    max_distance_km: searchParams.get('max_distance_km') || '',
-    min_rating: searchParams.get('min_rating') || '',
-    start_date: searchParams.get('start_date') || '',
-    end_date: searchParams.get('end_date') || ''
+    container_type: searchParams?.get('container_type') || '',
+    shipping_line_name: searchParams?.get('shipping_line_name') || '',
+    location: searchParams?.get('location') || '',
+    max_distance_km: searchParams?.get('max_distance_km') || '',
+    min_rating: searchParams?.get('min_rating') || '',
+    start_date: searchParams?.get('start_date') || '',
+    end_date: searchParams?.get('end_date') || ''
   })
 
 
@@ -274,4 +274,4 @@ export default function MarketplaceFilters({ shippingLines }: MarketplaceFilters
       </div>
     </div>
   )
-} 
+}

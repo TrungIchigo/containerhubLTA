@@ -66,7 +66,7 @@ export default function ApproveRequestDialog({
           </DialogTitle>
           <DialogDescription className="text-left space-y-3 pt-4">
             <p>
-              Bạn sắp phê duyệt yêu cầu tái sử dụng container{' '}
+              Bạn sắp phê duyệt yêu cầu Re-use container{' '}
               <span className="font-semibold text-text-primary">
                 {request.import_container?.container_number}
               </span>{' '}
@@ -132,4 +132,4 @@ export default function ApproveRequestDialog({
       </DialogContent>
     </Dialog>
   )
-} 
+}

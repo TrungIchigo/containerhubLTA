@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { OrganizationType } from '@/lib/types'
 import { requestNewOrganization, verifyOtp, resendOtp } from '@/lib/actions/auth'
+import { LtaLoadingCompact } from '@/components/ui/ltaloading'
 import { useRouter } from 'next/navigation'
 
 interface NewOrganizationFormProps {
@@ -292,7 +293,9 @@ export default function NewOrganizationForm({
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <div className="mr-2 w-4 h-4">
+                    <LtaLoadingCompact />
+                  </div>
                   Đang gửi...
                 </>
               ) : canResendOtp ? (
@@ -323,7 +326,9 @@ export default function NewOrganizationForm({
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <div className="mr-2 w-4 h-4">
+                    <LtaLoadingCompact />
+                  </div>
                   Đang xác thực...
                 </>
               ) : (
@@ -461,7 +466,9 @@ export default function NewOrganizationForm({
           >
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <div className="mr-2 w-4 h-4">
+                  <LtaLoadingCompact />
+                </div>
                 Đang xử lý...
               </>
             ) : (

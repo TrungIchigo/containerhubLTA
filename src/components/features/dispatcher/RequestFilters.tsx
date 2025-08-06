@@ -20,13 +20,13 @@ export default function RequestFilters({ className }: RequestFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   
-  const [search, setSearch] = useState(searchParams.get('search') || '')
-  const [status, setStatus] = useState(searchParams.get('status') || '')
+  const [search, setSearch] = useState(searchParams?.get('search') || '')
+  const [status, setStatus] = useState(searchParams?.get('status') || '')
 
   // Debounced search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      const params = new URLSearchParams(searchParams.toString())
+      const params = new URLSearchParams(searchParams?.toString() || '')
       
       if (search) {
         params.set('search', search)
@@ -52,7 +52,7 @@ export default function RequestFilters({ className }: RequestFiltersProps) {
   const handleStatusChange = (newStatus: string) => {
     setStatus(newStatus)
     
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(searchParams?.toString() || '')
     
     if (newStatus) {
       params.set('status', newStatus)
@@ -102,4 +102,4 @@ export default function RequestFilters({ className }: RequestFiltersProps) {
       </div>
     </div>
   )
-} 
+}

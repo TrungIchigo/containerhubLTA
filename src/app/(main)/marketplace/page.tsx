@@ -53,7 +53,7 @@ async function MarketplaceContent({ searchParams }: MarketplacePageProps) {
               <div className="flex items-center gap-2">
                 <Recycle className="w-5 h-5 text-green-600" />
                 <h2 className="text-h3 font-semibold text-text-primary">
-                  Cơ Hội Tái Sử Dụng Container
+                  Cơ Hội Re-use Container
                 </h2>
               </div>
               <span className="text-body-small text-text-secondary">
@@ -196,7 +196,7 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
           </div>
           <div>
             <h1 className="text-h1 font-bold text-text-primary">
-              Thị Trường Tái Sử Dụng Container
+              Thị Trường Re-use Container
             </h1>
             <p className="text-body text-text-secondary">
               Khám phá các cơ hội ghép nối với lệnh giao trả từ các công ty khác
@@ -213,4 +213,4 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
   )
 }
 
-export const dynamic = 'force-dynamic' 
+export const dynamic = 'force-dynamic'

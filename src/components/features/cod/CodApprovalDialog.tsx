@@ -55,15 +55,15 @@ export default function CodApprovalDialog({ isOpen, onClose, request }: CodAppro
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-text-primary flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-600" />
             Phê Duyệt Yêu Cầu COD
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto flex-1 pr-2">
           {/* Thông tin yêu cầu */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-text-primary border-b pb-2">
@@ -160,36 +160,37 @@ export default function CodApprovalDialog({ isOpen, onClose, request }: CodAppro
             </div>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isLoading}
-            >
-              Hủy
-            </Button>
-            <Button
-              onClick={handleApprove}
-              disabled={isLoading}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Đang xử lý...
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Phê Duyệt
-                </>
-              )}
-            </Button>
-          </div>
+        </div>
+
+        {/* Action buttons - Fixed at bottom */}
+        <div className="flex justify-end gap-3 pt-4 border-t flex-shrink-0 mt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            disabled={isLoading}
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={handleApprove}
+            disabled={isLoading}
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Đang xử lý...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Phê Duyệt
+              </>
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
   )
-} 
+}

@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Checkbox } from '@/components/ui/checkbox'
 import { Plus, Loader2, Package, ImageIcon, FileText } from 'lucide-react'
 import { addImportContainer } from '@/lib/actions/dispatcher'
-import { validateContainerNumber, datetimeLocalToUTC } from '@/lib/utils'
+import { validateContainerNumber, datetimeLocalToUTC, utcToDatetimeLocal } from '@/lib/utils'
 import { useCargoTypes } from '@/hooks/useCargoTypes'
 import ImageUploader from '@/components/common/ImageUploader'
 import DocumentUploader from '@/components/common/DocumentUploader'
@@ -19,6 +19,7 @@ import DepotSelector from '@/components/common/DepotSelector'
 import ContainerTypeSelect from '@/components/common/ContainerTypeSelect'
 import { createClient } from '@/lib/supabase/client'
 import type { Organization } from '@/lib/types'
+import type { CreateImportContainerForm } from '@/lib/types'
 import { useId } from 'react'
 
 interface AddImportContainerFormProps {
@@ -182,26 +183,22 @@ export default function AddImportContainerForm({
 
   // Handle form submission
   const onSubmit = async (data: FormData) => {
-    console.log('Submitting form with data:', data)
-    
-    // Check if there's a container number error or warning before submitting
-    if (containerNumberError || containerNumberWarning) {
-      console.log('Form submission blocked due to container errors')
-      form.setError('container_number', { 
-        type: 'manual', 
-        message: containerNumberError || containerNumberWarning
-      })
-      return
-    }
-
     setIsLoading(true)
-
+    
     try {
       // Convert datetime to UTC for proper storage
       const processedData = {
-        ...data,
-        available_from_datetime: datetimeLocalToUTC(data.available_from_datetime)
-      }
+        container_number: data.container_number,
+        container_type_id: data.container_type_id,
+        cargo_type_id: data.cargo_type_id,
+        city_id: data.city_id,
+        depot_id: data.depot_id,
+        available_from_datetime: datetimeLocalToUTC(data.available_from_datetime),
+        shipping_line_org_id: data.shipping_line_org_id,
+        condition_images: data.condition_images || [],
+        attached_documents: data.attached_documents || [],
+        is_listed_on_marketplace: data.is_listed_on_marketplace || false
+      } as CreateImportContainerForm
       
       console.log('Processed data:', processedData)
       await addImportContainer(processedData)
@@ -230,19 +227,19 @@ export default function AddImportContainerForm({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {!externalIsOpen && !externalOnOpenChange && (
         <DialogTrigger asChild>
-          <Button className="bg-primary hover:bg-primary-dark text-white">
+          <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transition-all duration-200 font-medium">
             <Plus className="mr-2 h-4 w-4" />
-            Thêm Lệnh Giao Trả
+            Tạo Lệnh Giao Trả
           </Button>
         </DialogTrigger>
       )}
       
       <DialogContent 
         className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto"
-        aria-label="Form thêm lệnh giao trả container"
+        aria-label="Form tạo lệnh giao trả container"
       >
         <DialogHeader>
-          <DialogTitle className="text-text-primary">Thêm Lệnh Giao Trả</DialogTitle>
+          <DialogTitle className="text-text-primary">Tạo Lệnh Giao Trả</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -477,7 +474,7 @@ export default function AddImportContainerForm({
                 {...form.register('is_listed_on_marketplace')}
               />
               <Label htmlFor="is_listed_on_marketplace" className="text-sm font-medium">
-                Đăng lên Marketplace để tìm kiếm cơ hội tái sử dụng
+                Đăng lên Marketplace để tìm kiếm cơ hội Re-use
               </Label>
             </div>
           </div>

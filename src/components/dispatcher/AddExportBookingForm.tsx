@@ -17,6 +17,7 @@ import ContainerTypeSelect from '@/components/common/ContainerTypeSelect'
 import { createClient } from '@/lib/supabase/client'
 import type { Organization } from '@/lib/types'
 import { validateContainerNumber, datetimeLocalToUTC, utcToDatetimeLocal } from '@/lib/utils'
+import type { CreateExportBookingForm } from '@/lib/types'
 
 const formSchema = z.object({
   booking_number: z.string().min(1, 'Số booking là bắt buộc'),
@@ -81,12 +82,18 @@ export default function AddExportBookingForm({
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true)
-
+    
     try {
       // Convert datetime to UTC for proper storage
-      const processedData = {
-        ...data,
-        needed_by_datetime: datetimeLocalToUTC(data.needed_by_datetime)
+      const processedData: CreateExportBookingForm = {
+        booking_number: data.booking_number,
+        container_type_id: data.container_type_id,
+        cargo_type_id: data.cargo_type_id,
+        city_id: data.city_id,
+        depot_id: data.depot_id,
+        needed_by_datetime: datetimeLocalToUTC(data.needed_by_datetime),
+        shipping_line_org_id: data.shipping_line_org_id,
+        attached_documents: data.attached_documents || []
       }
       
       await addExportBooking(processedData)
@@ -123,16 +130,19 @@ export default function AddExportBookingForm({
       {/* Only show trigger button when not controlled externally */}
       {!externalIsOpen && !externalOnOpenChange && (
         <DialogTrigger asChild>
-          <Button className="bg-green-600 hover:bg-green-700 text-white">
+          <Button className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-md hover:shadow-lg transition-all duration-200 font-medium">
             <Plus className="mr-2 h-4 w-4" />
-            Thêm Lệnh Lấy Rỗng
+            Tạo Lệnh Lấy Rỗng
           </Button>
         </DialogTrigger>
       )}
       
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent 
+        className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto"
+        aria-label="Form tạo lệnh lấy rỗng booking"
+      >
         <DialogHeader>
-          <DialogTitle className="text-text-primary">Thêm Lệnh Lấy Rỗng</DialogTitle>
+          <DialogTitle className="text-text-primary">Tạo Lệnh Lấy Rỗng</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">

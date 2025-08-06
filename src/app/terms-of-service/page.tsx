@@ -42,7 +42,7 @@ export default function TermsOfServicePage() {
               </h2>
               <p className="text-gray-700 leading-relaxed">
                 i-ContainerHub@LTA là một nền tảng công nghệ trung gian, kết nối các Công ty Vận tải 
-                và Hãng tàu nhằm mục đích tối ưu hóa việc tái sử dụng container (Street-turn) và 
+                và Hãng tàu nhằm mục đích tối ưu hóa việc Re-use container (Street-turn) và 
                 thay đổi nơi trả container (COD). Chúng tôi không phải là một bên trong các hợp đồng 
                 vận chuyển và không chịu trách nhiệm về tình trạng vật lý của container hay hàng hóa.
               </p>
@@ -148,4 +148,4 @@ export default function TermsOfServicePage() {
       </div>
     </div>
   )
-} 
+}

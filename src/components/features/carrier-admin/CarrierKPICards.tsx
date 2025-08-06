@@ -36,14 +36,14 @@ export function CarrierKPICardsInline({
         </div>
       </div>
 
-      {/* Yêu cầu Tái Sử Dụng */}
+      {/* Yêu cầu Re-use */}
       <div className="bg-gradient-to-r from-amber-400 to-orange-400 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
             <RotateCcw className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="text-orange-100 text-xs font-medium uppercase tracking-wide">Yêu cầu Tái Sử Dụng</div>
+            <div className="text-orange-100 text-xs font-medium uppercase tracking-wide">Yêu cầu Re-use</div>
             <div className="text-2xl font-bold">{pendingStreetTurnRequests}</div>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function CarrierKPICards({ kpis }: CarrierKPICardsProps) {
       isUrgent: false
     },
     {
-      title: 'Tổng Lượt Tái Sử Dụng',
+      title: 'Tổng Lượt Re-use',
       value: kpis.totalApproved,
       icon: RotateCcw,
       iconColor: 'text-text-primary',
@@ -140,4 +140,4 @@ export default function CarrierKPICards({ kpis }: CarrierKPICardsProps) {
       })}
     </div>
   )
-} 
+}

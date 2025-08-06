@@ -66,7 +66,7 @@ export async function createAutoApprovalRule(formData: CreateRuleFormData) {
   }
 
   // Create conditions
-  const conditions = []
+  const conditions: any[] = []
 
   // Container type condition
   if (formData.conditions.containerTypes.length > 0) {
@@ -155,7 +155,7 @@ export async function updateAutoApprovalRule(ruleId: string, formData: CreateRul
   }
 
   // Create new conditions (same logic as create)
-  const conditions = []
+  const conditions: any[] = []
 
   if (formData.conditions.containerTypes.length > 0) {
     conditions.push({

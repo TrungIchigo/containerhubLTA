@@ -96,7 +96,7 @@ export default function DashboardCharts({
       <div className="card">
         <div className="mb-4">
           <h3 className="text-h3 font-semibold text-text-primary">
-            Xu Hướng Tái Sử Dụng Container Theo Thời Gian
+            Xu Hướng Re-use Container Theo Thời Gian
           </h3>
           <p className="text-body-small text-text-secondary">
             Theo dõi số lượng yêu cầu theo từng ngày
@@ -193,4 +193,4 @@ export default function DashboardCharts({
       </div>
     </div>
   )
-} 
+}

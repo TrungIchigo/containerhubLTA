@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch COD requests with PENDING_PAYMENT status
+    // Valid statuses: PENDING, APPROVED, DECLINED, AWAITING_INFO, EXPIRED, REVERSED, PENDING_PAYMENT, PAID, PROCESSING_AT_DEPOT, COMPLETED, CANCELLED
     const { data: codRequests, error: codError } = await supabase
       .from('cod_requests')
       .select(`
@@ -52,9 +53,8 @@ export async function GET(request: NextRequest) {
           name
         )
       `)
-      .eq('status', 'AWAITING_COD_PAYMENT')
+      .eq('status', 'PENDING_PAYMENT')
       .not('cod_fee', 'is', null)
-      .gt('cod_fee', 0)
       .order('delivery_confirmed_at', { ascending: true })
 
     if (codError) {
@@ -67,18 +67,13 @@ export async function GET(request: NextRequest) {
 
     // Transform data for frontend
     const transformedData = (codRequests || []).map((request: any) => {
-      const deliveryDate = new Date(request.delivery_confirmed_at)
-      const now = new Date()
-      const daysSinceDelivery = Math.floor((now.getTime() - deliveryDate.getTime()) / (1000 * 60 * 60 * 24))
-
       return {
         id: request.id,
         container_number: request.import_container?.container_number || 'N/A',
         requesting_org_name: request.requesting_org?.name || 'N/A',
         cod_fee: request.cod_fee,
         status: request.status,
-        delivery_confirmed_at: request.delivery_confirmed_at,
-        days_since_delivery: daysSinceDelivery
+        delivery_confirmed_at: request.delivery_confirmed_at
       }
     })
 
@@ -95,4 +90,4 @@ export async function GET(request: NextRequest) {
       error: 'Internal server error' 
     }, { status: 500 })
   }
-} 
+}

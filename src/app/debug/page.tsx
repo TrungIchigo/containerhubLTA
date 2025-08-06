@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 
 export default function DebugPage() {
   const [errors, setErrors] = useState<string[]>([])
@@ -73,15 +74,15 @@ export default function DebugPage() {
         <div className="bg-gray-50 p-4 rounded-lg">
           <h2 className="text-lg font-semibold text-gray-800">Navigation Test</h2>
           <div className="mt-2 space-y-2">
-            <a href="/test" className="inline-block bg-blue-500 text-white px-4 py-2 rounded mr-2 hover:bg-blue-600">
+            <Link href="/test" className="inline-block bg-blue-500 text-white px-4 py-2 rounded mr-2 hover:bg-blue-600">
               Test Page
-            </a>
-            <a href="/login" className="inline-block bg-green-500 text-white px-4 py-2 rounded mr-2 hover:bg-green-600">
+            </Link>
+            <Link href="/login" className="inline-block bg-green-500 text-white px-4 py-2 rounded mr-2 hover:bg-green-600">
               Login Page
-            </a>
-            <a href="/register" className="inline-block bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
+            </Link>
+            <Link href="/register" className="inline-block bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">
               Register Page
-            </a>
+            </Link>
           </div>
         </div>
       </div>

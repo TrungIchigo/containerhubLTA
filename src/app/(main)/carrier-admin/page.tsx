@@ -139,11 +139,11 @@ async function CarrierDashboardContent({ user }: { user: any }) {
               </div>
             </div>
 
-            {/* Cột 2: Yêu cầu Tái Sử Dụng */}
+            {/* Cột 2: Yêu cầu Re-use */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-text-primary">
-                  Yêu cầu Tái Sử Dụng Mới Nhất
+                  Yêu cầu Re-use Mới Nhất
                 </h2>
                 <Button variant="outline" size="sm" asChild className="border-primary text-primary hover:bg-primary hover:text-white">
                   <Link href="/carrier-admin/street-turn-requests" className="flex items-center gap-2">
@@ -171,10 +171,10 @@ async function CarrierDashboardContent({ user }: { user: any }) {
                           <RefreshCw className="h-6 w-6 text-warning" />
                         </div>
                         <h3 className="text-lg font-semibold text-text-primary mb-2">
-                          Chưa có Yêu cầu Tái Sử Dụng
+                          Chưa có Yêu cầu Re-use
                         </h3>
                         <p className="text-text-secondary text-sm">
-                          Chưa có yêu cầu tái sử dụng container nào
+                          Chưa có yêu cầu Re-use container nào
                         </p>
                       </div>
                     </CardContent>
@@ -246,4 +246,4 @@ async function CarrierDashboardContent({ user }: { user: any }) {
       </div>
     )
   }
-} 
+}

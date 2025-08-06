@@ -92,7 +92,7 @@ export default function CarrierStreetTurnRequestsTable({ requests }: CarrierStre
         <CardHeader>
           <CardTitle className="text-h3 text-text-primary flex items-center gap-2">
             <RefreshCw className="h-5 w-5 text-primary" />
-            Yêu Cầu Tái Sử Dụng Container
+            Yêu Cầu Re-use Container
           </CardTitle>
         </CardHeader>
         
@@ -161,7 +161,7 @@ export default function CarrierStreetTurnRequestsTable({ requests }: CarrierStre
               <RefreshCw className="h-12 w-12 mx-auto mb-4 text-gray-300" />
               <p className="text-body">
                 {requests.length === 0 
-                  ? 'Chưa có yêu cầu tái sử dụng nào.' 
+                  ? 'Chưa có yêu cầu Re-use nào.' 
                   : 'Không tìm thấy yêu cầu nào với bộ lọc hiện tại.'
                 }
               </p>
@@ -317,4 +317,4 @@ export default function CarrierStreetTurnRequestsTable({ requests }: CarrierStre
       )}
     </>
   )
-} 
+}
