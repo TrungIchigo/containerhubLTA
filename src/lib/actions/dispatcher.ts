@@ -3,11 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from './auth'
 import { revalidatePath } from 'next/cache'
-import { geocodeAddress } from '@/lib/google-maps'
-import { validateContainerNumber } from '@/lib/utils'
 import type { ImportContainer, ExportBooking, Organization, CreateImportContainerForm, CreateExportBookingForm } from '@/lib/types'
 import type { ScoredExportBooking } from '@/lib/utils/dispatcher'
-import { cookies } from 'next/headers'
 
 // Check if container number already exists
 export async function checkContainerNumberExists(containerNumber: string): Promise<boolean> {
@@ -176,16 +173,34 @@ export async function addImportContainer(data: CreateImportContainerForm) {
       throw new Error('Invalid container type selected')
     }
 
-    // Get depot info
+    // Get depot info - handle both regular depots and GPG depots
     let depot: any = null
     if (data.depot_id) {
-      const { data: depotData, error: depotError } = await supabase
-        .from('depots')
-        .select('id, name, address, latitude, longitude')
-        .eq('id', data.depot_id)
-        .single()
+      let depotData: any = null
+      let depotError: any = null
+      
+      // Check if it's a GPG depot (prefixed with 'gpg_')
+      if (data.depot_id.startsWith('gpg_')) {
+        const actualDepotId = data.depot_id.replace('gpg_', '')
+        const result = await supabase
+          .from('gpg_depots')
+          .select('id, name, address, latitude, longitude')
+          .eq('id', actualDepotId)
+          .single()
+        depotData = result.data
+        depotError = result.error
+      } else {
+        // Regular depot from 'depots' table
+        const result = await supabase
+          .from('depots')
+          .select('id, name, address, latitude, longitude')
+          .eq('id', data.depot_id)
+          .single()
+        depotData = result.data
+        depotError = result.error
+      }
 
-      if (depotError) {
+      if (depotError || !depotData) {
         console.error('Depot lookup error:', depotError)
         throw new Error('Invalid depot selected')
       }
@@ -193,13 +208,17 @@ export async function addImportContainer(data: CreateImportContainerForm) {
     }
 
     // Prepare insert data
+    // For GPG depots, save the actual depot ID without prefix
+    const actualDepotId = data.depot_id && data.depot_id.startsWith('gpg_') 
+      ? data.depot_id.replace('gpg_', '') 
+      : data.depot_id
+      
     const insertData = {
       container_number: data.container_number,
       container_type: containerType.code, // Keep legacy field for compatibility
       container_type_id: data.container_type_id,
       cargo_type_id: data.cargo_type_id,
-      city_id: data.city_id,
-      depot_id: data.depot_id,
+      depot_id: actualDepotId,
       drop_off_location: depot?.address || `${depot?.name || 'Depot'}`,
       available_from_datetime: data.available_from_datetime,
       trucking_company_org_id: profile.organization_id,
@@ -276,16 +295,34 @@ export async function addExportBooking(data: CreateExportBookingForm) {
       throw new Error('Invalid container type selected')
     }
 
-    // Get depot info
+    // Get depot info - handle both regular depots and GPG depots
     let depot: any = null
     if (data.depot_id) {
-      const { data: depotData, error: depotError } = await supabase
-        .from('depots')
-        .select('id, name, address, latitude, longitude')
-        .eq('id', data.depot_id)
-        .single()
+      let depotData: any = null
+      let depotError: any = null
+      
+      // Check if it's a GPG depot (prefixed with 'gpg_')
+      if (data.depot_id.startsWith('gpg_')) {
+        const actualDepotId = data.depot_id.replace('gpg_', '')
+        const result = await supabase
+          .from('gpg_depots')
+          .select('id, name, address, latitude, longitude')
+          .eq('id', actualDepotId)
+          .single()
+        depotData = result.data
+        depotError = result.error
+      } else {
+        // Regular depot from 'depots' table
+        const result = await supabase
+          .from('depots')
+          .select('id, name, address, latitude, longitude')
+          .eq('id', data.depot_id)
+          .single()
+        depotData = result.data
+        depotError = result.error
+      }
 
-      if (depotError) {
+      if (depotError || !depotData) {
         console.error('Depot lookup error:', depotError)
         throw new Error('Invalid depot selected')
       }
@@ -293,6 +330,11 @@ export async function addExportBooking(data: CreateExportBookingForm) {
     }
 
     // Insert the new export booking with proper schema fields
+    // For GPG depots, save the actual depot ID without prefix
+    const actualDepotId = data.depot_id && data.depot_id.startsWith('gpg_') 
+      ? data.depot_id.replace('gpg_', '') 
+      : data.depot_id
+      
     const { data: booking, error } = await supabase
       .from('export_bookings')
       .insert({
@@ -300,8 +342,7 @@ export async function addExportBooking(data: CreateExportBookingForm) {
         required_container_type: containerType.code, // Keep legacy field for compatibility
         container_type_id: data.container_type_id,
         cargo_type_id: data.cargo_type_id,
-        city_id: data.city_id,
-        depot_id: data.depot_id,
+        depot_id: actualDepotId,
         pick_up_location: depot?.address || `${depot?.name || 'Depot'}`,
         needed_by_datetime: data.needed_by_datetime,
         shipping_line_org_id: data.shipping_line_org_id,

@@ -25,7 +25,7 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
-import { QRCodeDisplay } from '@/components/common/QRCodeDisplay'
+import DynamicQRCodeDisplay from '@/components/common/DynamicQRCodeDisplay'
 import { OneStopLogo } from '@/components/common/OneStopLogo'
 import { 
   getPrepaidFund,
@@ -336,19 +336,19 @@ export function TopUpDialog({
 
               {/* QR Code Display */}
               <div className="flex justify-center">
-                <QRCodeDisplay
-                  value={qrCodeInfo.qr_data || ''}
-                  size={200}
-                  description="Quét mã để nạp tiền nhanh qua ứng dụng ngân hàng"
-                  bankInfo={{
-                    bankName: "Liên Việt Post Bank (LPB)",
-                    accountNumber: qrCodeInfo.account_number,
-                    accountName: qrCodeInfo.account_name,
-                    amount: qrCodeInfo.amount,
-                    transferContent: qrCodeInfo.transfer_content
-                  }}
-                  className="border-0 shadow-none"
-                />
+                <DynamicQRCodeDisplay
+                value={qrCodeInfo.qr_data || ''}
+                size={200}
+                description="Quét mã để nạp tiền nhanh qua ứng dụng ngân hàng"
+                bankInfo={{
+                  bankName: "Liên Việt Post Bank (LPB)",
+                  accountNumber: qrCodeInfo.account_number,
+                  accountName: qrCodeInfo.account_name,
+                  amount: qrCodeInfo.amount,
+                  transferContent: qrCodeInfo.transfer_content
+                }}
+                className="border-0 shadow-none"
+              />
               </div>
 
               {/* Bank Transfer Details */}
@@ -491,4 +491,4 @@ export function TopUpDialog({
       </DialogContent>
     </Dialog>
   )
-} 
+}

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { AuthProvider } from '@/components/providers/AuthProvider'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -30,9 +31,11 @@ export default function RootLayout({
         <script src="/polyfill.js" />
       </head>
       <body suppressHydrationWarning>
-        <div className="min-h-screen font-sans antialiased">
-          {children}
-        </div>
+        <AuthProvider>
+          <div className="min-h-screen font-sans antialiased">
+            {children}
+          </div>
+        </AuthProvider>
       </body>
     </html>
   )

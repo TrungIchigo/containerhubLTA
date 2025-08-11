@@ -157,7 +157,6 @@ export interface CreateImportContainerForm {
   container_number: string
   container_type_id: string
   cargo_type_id: string
-  city_id: string
   depot_id: string
   available_from_datetime: string
   shipping_line_org_id: string
@@ -172,7 +171,6 @@ export interface CreateExportBookingForm {
   booking_number: string
   container_type_id: string
   cargo_type_id: string
-  city_id: string
   depot_id: string
   needed_by_datetime: string
   shipping_line_org_id: string
@@ -266,4 +264,4 @@ export interface CodRequestWithDetails extends CodRequest {
   }
   requesting_org: Organization
   approving_org: Organization
-} 
+}

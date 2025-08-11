@@ -18,10 +18,11 @@ import Pagination from '@/components/common/Pagination'
 import ContainerFilters from '@/components/dispatcher/ContainerFilters'
 import BookingFilters from '@/components/dispatcher/BookingFilters'
 import { useToast } from '@/hooks/use-toast'
-import CodRequestDialog from '@/components/features/cod/CodRequestDialog'
+
 import { CodPaymentDialog } from '@/components/features/cod/CodPaymentDialog'
 import { ConfirmDepotCompletionDialog } from '@/components/dialogs/ConfirmDepotCompletionDialog'
 import { OrderDetailModal } from '@/components/features/dispatcher/dashboard/OrderDetailModal'
+import CodRequestDialog from '@/components/features/cod/CodRequestDialog'
 
 interface DashboardData {
   importContainers: any[]
@@ -54,7 +55,7 @@ export default function DispatcherPage() {
   const [bookingFilters, setBookingFilters] = useState<any>({ pageSize: 10, page: 1 })
   const [showCreateContainer, setShowCreateContainer] = useState(false)
   const [showCreateBooking, setShowCreateBooking] = useState(false)
-  const [showCodRequest, setShowCodRequest] = useState(false)
+
   const [showCodPayment, setShowCodPayment] = useState(false)
   const [showDepotCompletion, setShowDepotCompletion] = useState(false)
   const [selectedContainer, setSelectedContainer] = useState<any>(null)
@@ -62,6 +63,8 @@ export default function DispatcherPage() {
   const [depotCompletionContainer, setDepotCompletionContainer] = useState<any>(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [selectedDetailItem, setSelectedDetailItem] = useState<any>(null)
+  const [showCodRequest, setShowCodRequest] = useState(false)
+  const [codRequestContainer, setCodRequestContainer] = useState<any>(null)
 
   // Filter data based on current filters
   const getFilteredImportContainers = () => {
@@ -441,7 +444,8 @@ export default function DispatcherPage() {
   const handleRequestCod = async (container: any) => {
     try {
       console.log('Requesting COD for container:', container.id)
-      setSelectedContainer(container)
+      // Mở popup CodRequestDialog
+      setCodRequestContainer(container)
       setShowCodRequest(true)
     } catch (error) {
       console.error('Error requesting COD:', error)
@@ -451,6 +455,22 @@ export default function DispatcherPage() {
           variant: "destructive"
         })
     }
+  }
+
+  const handleCloseCodRequest = () => {
+    setShowCodRequest(false)
+    setCodRequestContainer(null)
+  }
+
+  const handleCodRequestSuccess = () => {
+    handleCloseCodRequest()
+    // Refresh data to show updated container status
+    loadDashboardData()
+    toast({
+      title: "✅ Thành công",
+      description: 'Yêu cầu COD đã được gửi thành công',
+      variant: "default"
+    })
   }
 
   const handlePayCodFee = async (container: any) => {
@@ -704,23 +724,6 @@ export default function DispatcherPage() {
           <CreateBookingDialog shippingLines={data.shippingLines} onSuccess={() => { setShowCreateBooking(false); loadDashboardData(); }} />
         )}
 
-        {/* Dialog Yêu Cầu COD */}
-        {showCodRequest && selectedContainer && (
-          <CodRequestDialog 
-            isOpen={showCodRequest}
-            onClose={() => {
-              setShowCodRequest(false)
-              setSelectedContainer(null)
-            }}
-            container={selectedContainer}
-            onSuccess={() => {
-              setShowCodRequest(false)
-              setSelectedContainer(null)
-              loadDashboardData() // Refresh data after successful COD request
-            }}
-          />
-        )}
-
         {/* Dialog Thanh Toán COD */}
         <CodPaymentDialog 
           open={showCodPayment}
@@ -856,6 +859,16 @@ export default function DispatcherPage() {
             onConfirmCodDelivery={handleConfirmCodDelivery}
             onConfirmDepotCompletion={handleConfirmDepotCompletion}
             onRequestReuse={handleRequestReuse}
+          />
+        )}
+
+        {/* COD Request Dialog */}
+        {codRequestContainer && (
+          <CodRequestDialog
+            isOpen={showCodRequest}
+            onClose={handleCloseCodRequest}
+            container={codRequestContainer}
+            onSuccess={handleCodRequestSuccess}
           />
         )}
       </div>

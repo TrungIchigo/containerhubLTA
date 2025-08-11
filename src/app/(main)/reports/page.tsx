@@ -3,6 +3,7 @@ import { getDashboardStats, getDashboardTrendData } from '@/lib/actions/dashboar
 import KPICards from '@/components/dashboard/KPICards'
 import TimeFilter from '@/components/dashboard/TimeFilter'
 import DashboardCharts from '@/components/dashboard/DashboardCharts'
+import ClientOnly from '@/components/common/ClientOnly'
 
 interface ReportsPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -55,10 +56,21 @@ async function ReportsContent({ searchParams }: ReportsPageProps) {
             </p>
           </div>
           
-          <DashboardCharts 
-            trendData={trendData.trend_data}
-            statusDistribution={trendData.status_distribution}
-          />
+          <ClientOnly
+            fallback={
+              <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                  <p className="text-sm text-gray-600">Đang tải biểu đồ...</p>
+                </div>
+              </div>
+            }
+          >
+            <DashboardCharts 
+              trendData={trendData.trend_data}
+              statusDistribution={trendData.status_distribution}
+            />
+          </ClientOnly>
         </div>
 
         {/* Summary Information */}

@@ -152,6 +152,103 @@ export function useDepotDetails(depotId: string | null) {
   return { depot, loading, error }
 } 
 
+// Hook để lấy tất cả depots từ cả hai bảng depots và gpg_depots
+export function useAllDepots() {
+  const [depots, setDepots] = useState<(DepotOption & { cityName?: string; isMajorCity?: boolean })[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchAllDepots = async () => {
+      try {
+        setLoading(true)
+        const supabase = createClient()
+        
+        // Lấy depots từ bảng depots với thông tin city
+        const { data: regularDepots, error: regularError } = await supabase
+          .from('depots')
+          .select(`
+            id,
+            name,
+            address,
+            latitude,
+            longitude,
+            city:cities(id, name, is_major_city)
+          `)
+          .order('name', { ascending: true })
+
+        if (regularError) {
+          console.warn('Error fetching regular depots:', regularError)
+        }
+
+        // Lấy depots từ bảng gpg_depots
+        const { data: gpgDepots, error: gpgError } = await supabase
+          .from('gpg_depots')
+          .select('id, name, address, latitude, longitude')
+          .order('name', { ascending: true })
+
+        if (gpgError) {
+          console.warn('Error fetching GPG depots:', gpgError)
+        }
+
+        // Kết hợp và chuyển đổi dữ liệu
+        const allDepots: (DepotOption & { cityName?: string; isMajorCity?: boolean })[] = []
+
+        // Thêm regular depots
+        if (regularDepots) {
+          regularDepots.forEach((depot: any) => {
+            allDepots.push({
+              value: depot.id,
+              label: depot.name,
+              address: depot.address || undefined,
+              latitude: depot.latitude || undefined,
+              longitude: depot.longitude || undefined,
+              cityName: depot.city?.name,
+              isMajorCity: depot.city?.is_major_city || false
+            })
+          })
+        }
+
+        // Thêm GPG depots với prefix để phân biệt
+        if (gpgDepots) {
+          gpgDepots.forEach((depot: any) => {
+            allDepots.push({
+              value: `gpg_${depot.id}`,
+              label: `${depot.name} (GPG)`,
+              address: depot.address || undefined,
+              latitude: depot.latitude || undefined,
+              longitude: depot.longitude || undefined,
+              cityName: 'GPG Network',
+              isMajorCity: true // Treat GPG as major for sorting
+            })
+          })
+        }
+
+        // Sắp xếp: GPG depots trước, sau đó major cities, cuối cùng theo tên
+        allDepots.sort((a, b) => {
+          if (a.cityName === 'GPG Network' && b.cityName !== 'GPG Network') return -1
+          if (a.cityName !== 'GPG Network' && b.cityName === 'GPG Network') return 1
+          if (a.isMajorCity && !b.isMajorCity) return -1
+          if (!a.isMajorCity && b.isMajorCity) return 1
+          return a.label.localeCompare(b.label)
+        })
+
+        setDepots(allDepots)
+        setError(null)
+      } catch (err: any) {
+        console.error('Error fetching all depots:', err)
+        setError(err.message || 'Có lỗi xảy ra khi tải danh sách depot')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAllDepots()
+  }, [])
+
+  return { depots, loading, error }
+}
+
 export function useGpgDepots(originDepotId?: string | null) {
   const [depots, setDepots] = useState<DepotOption[]>([])
   const [loading, setLoading] = useState(false)
@@ -255,4 +352,4 @@ export function useGpgDepots(originDepotId?: string | null) {
   }, [originDepotId])
 
   return { depots, loading, error }
-} 
+}

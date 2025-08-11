@@ -1,4 +1,9 @@
 // @ts-check
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -22,7 +27,18 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   // Move to top-level as recommended
-  serverExternalPackages: ['@supabase/supabase-js', '@supabase/ssr', '@supabase/node-fetch', 'isows', 'ws', 'bufferutil', 'utf-8-validate'],
+  serverExternalPackages: [
+    '@supabase/supabase-js', 
+    '@supabase/ssr', 
+    '@supabase/node-fetch', 
+    'isows', 
+    'ws', 
+    'bufferutil', 
+    'utf-8-validate',
+    'qrcode.react',
+    'gsap',
+    'framer-motion'
+  ],
   
   // Performance optimizations
   experimental: {
@@ -40,23 +56,27 @@ const nextConfig = {
   
   // Webpack configuration for better module resolution
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Fix global and self issues for Supabase in server-side rendering
+    // Handle SSR polyfills without complex plugins
     if (isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        'fs': false,
-        'net': false,
-        'tls': false,
-        'crypto': false,
-      }
+        'self': false,
+        'window': false,
+        'document': false,
+        'navigator': false,
+        'location': false
+      };
     }
     
-    // Fix self is not defined error
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        'typeof self': '"undefined"',
-      })
-    )
+    // Handle leaflet for client-side only
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
     // Development optimizations
     if (dev) {
       // Faster file watching
@@ -83,16 +103,6 @@ const nextConfig = {
     config.optimization = {
       ...config.optimization,
       moduleIds: 'deterministic',
-      splitChunks: {
-        chunks: 'all',
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-          },
-        },
-      },
     }
     
     return config

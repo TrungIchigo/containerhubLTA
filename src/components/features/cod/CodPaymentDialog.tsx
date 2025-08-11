@@ -31,7 +31,7 @@ import {
 import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
 import { TopUpDialog } from './TopUpDialog'
-import { QRCodeDisplay } from '@/components/common/QRCodeDisplay'
+import DynamicQRCodeDisplay from '@/components/common/DynamicQRCodeDisplay'
 import { OneStopLogo } from '@/components/common/OneStopLogo'
 import { 
   getPrepaidFund,
@@ -320,7 +320,7 @@ export function CodPaymentDialog({
                             <div className="space-y-4">
                               {/* QR Code Display */}
                               <div className="flex justify-center">
-                                <QRCodeDisplay
+                                <DynamicQRCodeDisplay
                                   value={qrCodeInfo.qr_data || ''}
                                   size={200}
                                   description="Quét mã để thanh toán nhanh qua ứng dụng ngân hàng"

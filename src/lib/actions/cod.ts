@@ -13,6 +13,7 @@ interface CreateCodRequestData {
   depot_id: string
   reason_for_request: string
   container_number: string
+  cod_fee: number // Phí COD đã được tính toán ở client
 }
 
 interface CodRequestResult {
@@ -191,63 +192,26 @@ export async function createCodRequest(data: CreateCodRequestData): Promise<CodR
 
     // Kiểm tra đã được thực hiện ở trên (dòng 84-98)
 
-    // BƯỚC 3: Tính toán phí COD tự động từ bảng gpg_cod_fee_matrix
-    // Container từ bất kỳ depot nào có thể COD đến depot GPG
-    let calculatedCodFee = 0
-    console.log('=== COD FEE CALCULATION START ===')
+    // BƯỚC 3: Xác thực phí COD đã được tính toán ở client
+    console.log('=== COD FEE VALIDATION START ===')
     console.log('Container depot_id:', container.depot_id)
     console.log('Requested depot_id:', data.depot_id)
+    console.log('Client-calculated COD fee:', data.cod_fee, 'VNĐ')
     
-    try {
-      if (container.depot_id && data.depot_id) {
-        console.log('Both depot IDs available, querying gpg_cod_fee_matrix directly...')
-        
-        // Query trực tiếp bảng gpg_cod_fee_matrix (bảng này đã có phí từ tất cả depot → depot GPG)
-        const { data: feeData, error: feeError } = await supabase
-          .from('gpg_cod_fee_matrix')
-          .select('fee, distance_km, road_distance_km')
-          .eq('origin_depot_id', container.depot_id)
-          .eq('destination_depot_id', data.depot_id)
-          .maybeSingle()
-
-        console.log('🔍 Fee query result:', { feeData, feeError })
-
-        if (!feeError && feeData) {
-          calculatedCodFee = feeData.fee
-          console.log('✅ COD fee successfully calculated:', calculatedCodFee, 'VNĐ')
-        } else {
-          // Thử tìm ngược lại
-          const { data: reverseFeeData, error: reverseFeeError } = await supabase
-            .from('gpg_cod_fee_matrix')
-            .select('fee, distance_km, road_distance_km')
-            .eq('origin_depot_id', data.depot_id)
-            .eq('destination_depot_id', container.depot_id)
-            .maybeSingle()
-
-          if (!reverseFeeError && reverseFeeData) {
-            calculatedCodFee = reverseFeeData.fee
-            console.log('✅ COD fee found in reverse lookup:', calculatedCodFee, 'VNĐ')
-          } else {
-            console.log('❌ No COD fee found in gpg_cod_fee_matrix for this route')
-          }
-        }
-      } else {
-        console.log('❌ Missing depot IDs:', { 
-          containerDepot: container.depot_id, 
-          requestedDepot: data.depot_id 
-        })
+    // Tin tưởng vào phí đã được tính toán ở client, chỉ xác thực cơ bản
+    const calculatedCodFee = data.cod_fee
+    
+    // Xác thực cơ bản: phí phải >= 0
+    if (calculatedCodFee < 0) {
+      console.error('❌ Invalid COD fee:', calculatedCodFee)
+      return {
+        success: false,
+        message: 'Phí COD không hợp lệ. Vui lòng thử lại.'
       }
-    } catch (error) {
-      console.error('❌ Exception in COD fee calculation:', error)
-      console.error('Error details:', {
-        name: (error as any)?.name,
-        message: (error as any)?.message,
-        stack: (error as any)?.stack
-      })
     }
     
-    console.log('=== COD FEE CALCULATION END ===')
-    console.log('Final calculatedCodFee:', calculatedCodFee, 'VNĐ')
+    console.log('✅ COD fee validated:', calculatedCodFee, 'VNĐ')
+    console.log('=== COD FEE VALIDATION END ===')
 
     // BƯỚC 4: Tạo yêu cầu COD với phí đã tính
     const codRequestData = {

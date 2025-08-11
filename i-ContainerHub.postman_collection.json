@@ -1,0 +1,41 @@
+{
+	"info": {
+		"_postman_id": "2df98b42-5845-4f93-9270-a945406244d6",
+		"name": "i-ContainerHub",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9026647"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user\": \"\",\r\n    \"password\": \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://apiedepottest.gsotgroup.vn/api/Users/Login",
+					"protocol": "https",
+					"host": [
+						"apiedepottest",
+						"gsotgroup",
+						"vn"
+					],
+					"path": [
+						"api",
+						"Users",
+						"Login"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
