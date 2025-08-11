@@ -228,15 +228,16 @@ export function LtaLoadingInline({ text = 'Đang tải...' }: { text?: string })
   )
 }
 
-export function LtaLoadingCompact({ text = 'Đang xử lý...' }: { text?: string }) {
+export function LtaLoadingCompact({ text = 'Đang xử lý...', className }: { text?: string, className?: string }) {
   return (
     <LtaLoading 
       text={text}
       size="sm"
       variant="default"
       showText={false}
+      className={className}
     />
   )
 }
 
-export default LtaLoading 
+export default LtaLoading

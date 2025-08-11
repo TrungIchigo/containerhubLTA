@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
+import { hybridAuthService } from '@/lib/services/hybrid-auth'
 import { gsap } from 'gsap'
 import { LtaLoadingCompact } from '@/components/ui/ltaloading'
 
@@ -163,43 +164,57 @@ export default function LoginForm() {
 
   const handleLogin = async () => {
     try {
-      const supabase = createClient()
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Use hybrid authentication service
+      const result = await hybridAuthService.authenticate({
         email: formData.email,
         password: formData.password
       })
 
-      if (error) throw error
+      if (result.success) {
+        // Success animation
+        gsap.to(formRef.current, {
+          scale: 1.05,
+          duration: 0.3,
+          yoyo: true,
+          repeat: 1,
+          ease: "power2.out"
+        })
 
-      // Success animation
-      gsap.to(formRef.current, {
-        scale: 1.05,
-        duration: 0.3,
-        yoyo: true,
-        repeat: 1,
-        ease: "power2.out"
-      })
-
-      // Lấy thông tin user profile để redirect đúng dashboard
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user?.id)
-        .single()
-
-      // AuthGuard sẽ handle redirect, nhưng ta có thể manual redirect dựa trên role
-      if (profile?.role === 'DISPATCHER') {
-        router.push('/dispatcher')
-      } else if (profile?.role === 'CARRIER_ADMIN') {
-        router.push('/carrier-admin')
+        // Handle different authentication sources
+        if (result.source === 'supabase') {
+          // Standard Supabase user - redirect based on profile
+          router.push(result.redirectTo || '/dashboard')
+        } else if (result.source === 'edepot') {
+          // eDepot user - sync data and redirect
+          if (result.eDepotUser && result.eDepotToken) {
+            await hybridAuthService.syncEDepotUserToSupabase(result.eDepotUser, result.eDepotToken)
+          }
+          router.push(result.redirectTo || '/dashboard')
+        }
       } else {
-        router.push('/dashboard')
+        // Handle different failure scenarios
+        if (result.requiresEDepotRegistration) {
+          // Redirect to eDepot registration page
+          router.push(result.redirectTo || '/auth/edepot-register')
+          return
+        }
+        
+        // Standard authentication error
+        setErrorMessage(result.error || 'Email hoặc mật khẩu không chính xác.')
+        
+        // Error shake animation
+        gsap.to(formRef.current, {
+          x: -10,
+          duration: 0.1,
+          repeat: 5,
+          yoyo: true,
+          ease: "power2.out"
+        })
       }
       
     } catch (error: any) {
       console.error('Lỗi đăng nhập:', error)
-      setErrorMessage('Email hoặc mật khẩu không chính xác.')
+      setErrorMessage('Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại.')
       
       // Error shake animation
       gsap.to(formRef.current, {

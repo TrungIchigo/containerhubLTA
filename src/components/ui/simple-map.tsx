@@ -1,8 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
+import { useEffect, useRef, useState } from 'react'
 import { useMarketplaceStore } from '@/stores/marketplace-store'
 import { formatStoredDateTimeVN } from '@/lib/utils'
 import type { MarketplaceListing } from '@/lib/types'
@@ -30,8 +28,72 @@ export default function SimpleMap({
     listing => listing.latitude !== null && listing.longitude !== null
   )
 
+  // State to track if map is initialized
+  const [isMapReady, setIsMapReady] = useState(false)
+  const [leafletLib, setLeafletLib] = useState<any>(null)
+
+  // Initialize map
+  useEffect(() => {
+    // Dynamic import leaflet to avoid SSR issues
+    const initializeMap = async () => {
+      try {
+        const L = (await import('leaflet')).default
+        // Import CSS dynamically
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+        document.head.appendChild(link)
+        
+        setLeafletLib(L)
+        
+        if (!containerRef.current || mapRef.current) return
+
+        // Fix Leaflet icons
+        delete (L.Icon.Default.prototype as any)._getIconUrl
+        L.Icon.Default.mergeOptions({
+          iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+          shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+          iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+        })
+
+        // Create map
+        const map = L.map(containerRef.current, {
+          center: [10.8231, 106.6297], // Ho Chi Minh City
+          zoom: 10,
+          scrollWheelZoom: true,
+          doubleClickZoom: true,
+          touchZoom: true
+        })
+
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19
+        }).addTo(map)
+
+        mapRef.current = map
+        setIsMapReady(true)
+
+      } catch (error) {
+        console.error('Error initializing map:', error)
+      }
+    }
+
+    initializeMap()
+
+    // Cleanup function
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove()
+        mapRef.current = null
+        setIsMapReady(false)
+        setLeafletLib(null)
+      }
+    }
+  }, [])
+
   // Create custom icons for different states
-  const createIcon = (color: string, isSelected: boolean = false) => {    
+  const createIcon = (L: any, color: string, isSelected: boolean = false) => {
     return new L.Icon({
       iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
       shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
@@ -42,56 +104,14 @@ export default function SimpleMap({
     })
   }
 
-  const defaultIcon = createIcon('blue')
-  const hoverIcon = createIcon('orange')
-  const selectedIcon = createIcon('red', true)
-
-  // Initialize map
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return
-
-    try {
-      // Fix Leaflet icons
-      delete (L.Icon.Default.prototype as any)._getIconUrl
-      L.Icon.Default.mergeOptions({
-        iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-        iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-      })
-
-      // Create map
-      const map = L.map(containerRef.current, {
-        center: [10.8231, 106.6297], // Ho Chi Minh City
-        zoom: 10,
-        scrollWheelZoom: true,
-        doubleClickZoom: true,
-        touchZoom: true
-      })
-
-      // Add tile layer
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
-      }).addTo(map)
-
-      mapRef.current = map
-
-    } catch (error) {
-      console.error('Error initializing map:', error)
-    }
-
-    // Cleanup function
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove()
-        mapRef.current = null
-      }
-    }
-  }, [])
-
   // Update markers when listings change
   useEffect(() => {
-    if (!mapRef.current) return
+    if (!mapRef.current || !isMapReady || !leafletLib) return
+
+    const L = leafletLib
+    const defaultIcon = createIcon(L, 'blue')
+    const hoverIcon = createIcon(L, 'orange')
+    const selectedIcon = createIcon(L, 'red', true)
 
     // Clear existing markers
     Object.values(markersRef.current).forEach(marker => {
@@ -101,7 +121,7 @@ export default function SimpleMap({
 
     // Add new markers
     if (listingsWithCoords.length > 0) {
-      const newMarkers: L.Marker[] = []
+      const newMarkers: any[] = []
 
       listingsWithCoords.forEach(listing => {
         const marker = L.marker([listing.latitude!, listing.longitude!], {
@@ -138,10 +158,17 @@ export default function SimpleMap({
         mapRef.current.setView([listingsWithCoords[0].latitude!, listingsWithCoords[0].longitude!], 13)
       }
     }
-  }, [listingsWithCoords, setSelectedListingId, defaultIcon])
+  }, [listingsWithCoords, setSelectedListingId, isMapReady, leafletLib])
 
   // Update marker styles based on hover/selection state
   useEffect(() => {
+    if (!isMapReady || !leafletLib) return
+    
+    const L = leafletLib
+    const defaultIcon = createIcon(L, 'blue')
+    const hoverIcon = createIcon(L, 'orange')
+    const selectedIcon = createIcon(L, 'red', true)
+    
     Object.entries(markersRef.current).forEach(([listingId, marker]) => {
       let icon = defaultIcon
       
@@ -153,7 +180,7 @@ export default function SimpleMap({
       
       marker.setIcon(icon)
     })
-  }, [hoveredListingId, selectedListingId, defaultIcon, hoverIcon, selectedIcon])
+  }, [hoveredListingId, selectedListingId, isMapReady, leafletLib])
 
   // Show message when no coordinates
   if (listings.length > 0 && listingsWithCoords.length === 0) {
@@ -188,4 +215,4 @@ export default function SimpleMap({
       />
     </div>
   )
-} 
+}

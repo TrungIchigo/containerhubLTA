@@ -8,23 +8,12 @@ export default function DebugPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Log any console errors
-    const originalError = console.error
-    console.error = (...args) => {
-      setErrors(prev => [...prev, args.join(' ')])
-      originalError.apply(console, args)
-    }
-
     // Check if modules are loading
     try {
       console.log('Debug: React loaded successfully')
       setLoading(false)
     } catch (error) {
       setErrors(prev => [...prev, `React error: ${error}`])
-    }
-
-    return () => {
-      console.error = originalError
     }
   }, [])
 
@@ -88,4 +77,4 @@ export default function DebugPage() {
       </div>
     </div>
   )
-} 
+}

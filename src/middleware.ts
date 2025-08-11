@@ -55,7 +55,8 @@ export async function middleware(request: NextRequest) {
     '/forgot-password',
     '/reset-password',
     '/privacy-policy',
-    '/terms-of-service'
+    '/terms-of-service',
+    '/auth/edepot-register'
   ]
 
   // Admin routes
@@ -78,8 +79,26 @@ export async function middleware(request: NextRequest) {
   // Get user session
   const { data: { user } } = await supabase.auth.getUser()
 
-  // If user is not authenticated and trying to access protected route
-  if (!user && !isPublicRoute) {
+  // Check for eDepot session if no Supabase user
+  let hasEDepotSession = false
+  if (!user) {
+    // Check if there's an eDepot session in cookies
+    const eDepotSessionCookie = request.cookies.get('edepot_session')
+    if (eDepotSessionCookie) {
+      try {
+        const sessionData = JSON.parse(eDepotSessionCookie.value)
+        // Check if session is not expired (24 hours)
+        const isExpired = Date.now() - sessionData.timestamp > 24 * 60 * 60 * 1000
+        hasEDepotSession = !isExpired
+      } catch (error) {
+        console.error('Error parsing eDepot session:', error)
+        hasEDepotSession = false
+      }
+    }
+  }
+
+  // If user is not authenticated (neither Supabase nor eDepot) and trying to access protected route
+  if (!user && !hasEDepotSession && !isPublicRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

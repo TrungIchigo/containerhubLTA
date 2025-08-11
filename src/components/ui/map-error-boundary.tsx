@@ -11,6 +11,7 @@ interface MapErrorBoundaryState {
 interface MapErrorBoundaryProps {
   children: React.ReactNode
   fallback?: React.ReactNode
+  onRetry?: () => void
 }
 
 class MapErrorBoundary extends React.Component<MapErrorBoundaryProps, MapErrorBoundaryState> {
@@ -31,6 +32,10 @@ class MapErrorBoundary extends React.Component<MapErrorBoundaryProps, MapErrorBo
   }
 
   handleRetry = () => {
+    // Gọi callback để reset map key trước khi reset state
+    if (this.props.onRetry) {
+      this.props.onRetry()
+    }
     this.setState({ hasError: false, error: undefined })
   }
 
@@ -66,4 +71,4 @@ class MapErrorBoundary extends React.Component<MapErrorBoundaryProps, MapErrorBo
   }
 }
 
-export default MapErrorBoundary 
+export default MapErrorBoundary

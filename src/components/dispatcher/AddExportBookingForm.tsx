@@ -12,7 +12,7 @@ import { Plus, Loader2, Package, FileText } from 'lucide-react'
 import { addExportBooking } from '@/lib/actions/dispatcher'
 import { useCargoTypes } from '@/hooks/useCargoTypes'
 import DocumentUploader from '@/components/common/DocumentUploader'
-import DepotSelector from '@/components/common/DepotSelector'
+import DepotOnlySelector from '@/components/common/DepotOnlySelector'
 import ContainerTypeSelect from '@/components/common/ContainerTypeSelect'
 import { createClient } from '@/lib/supabase/client'
 import type { Organization } from '@/lib/types'
@@ -23,7 +23,6 @@ const formSchema = z.object({
   booking_number: z.string().min(1, 'Số booking là bắt buộc'),
   container_type_id: z.string().min(1, 'Loại container là bắt buộc'),
   cargo_type_id: z.string().min(1, 'Loại hàng hóa là bắt buộc'),
-  city_id: z.string().min(1, 'Thành phố là bắt buộc'),
   depot_id: z.string().min(1, 'Địa điểm lấy hàng là bắt buộc'),
   needed_by_datetime: z.string().min(1, 'Thời gian cần container là bắt buộc'),
   shipping_line_org_id: z.string().min(1, 'Hãng tàu là bắt buộc'),
@@ -60,7 +59,6 @@ export default function AddExportBookingForm({
       booking_number: '',
       container_type_id: '',
       cargo_type_id: '',
-      city_id: '',
       depot_id: '',
       needed_by_datetime: '',
       shipping_line_org_id: '',
@@ -89,7 +87,6 @@ export default function AddExportBookingForm({
         booking_number: data.booking_number,
         container_type_id: data.container_type_id,
         cargo_type_id: data.cargo_type_id,
-        city_id: data.city_id,
         depot_id: data.depot_id,
         needed_by_datetime: datetimeLocalToUTC(data.needed_by_datetime),
         shipping_line_org_id: data.shipping_line_org_id,
@@ -103,7 +100,6 @@ export default function AddExportBookingForm({
         booking_number: '',
         container_type_id: '',
         cargo_type_id: '',
-        city_id: '',
         depot_id: '',
         needed_by_datetime: '',
         shipping_line_org_id: '',
@@ -227,15 +223,14 @@ export default function AddExportBookingForm({
 
             {/* Location Selection */}
             <div className="space-y-2">
-              <DepotSelector
-                cityValue={form.watch('city_id')}
+              <DepotOnlySelector
                 depotValue={form.watch('depot_id')}
-                onCityChange={(cityId) => form.setValue('city_id', cityId)}
-                onDepotChange={(depotId) => form.setValue('depot_id', depotId)}
-                cityError={form.formState.errors.city_id?.message}
+                onDepotChange={(depotId) => {
+                  form.setValue('depot_id', depotId)
+                  form.clearErrors('depot_id')
+                }}
                 depotError={form.formState.errors.depot_id?.message}
-                required={true}
-                cityLabel="Thành phố/Tỉnh"
+                required
                 depotLabel="Địa điểm lấy rỗng"
               />
             </div>
@@ -346,4 +341,4 @@ export default function AddExportBookingForm({
       </DialogContent>
     </Dialog>
   )
-} 
+}
