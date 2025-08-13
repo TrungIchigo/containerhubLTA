@@ -95,11 +95,11 @@ export function SuggestionDetails({
                 
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <p className="text-blue-700 font-medium mb-1">Địa điểm giao</p>
+                    <p className="text-blue-700 font-medium mb-1">Depot trả rỗng</p>
                     <p className="text-text-primary">{import_container.drop_off_location || 'Chưa xác định'}</p>
                   </div>
                   <div>
-                    <p className="text-blue-700 font-medium mb-1">Sẵn sàng từ</p>
+                    <p className="text-blue-700 font-medium mb-1">Hạn trả rỗng</p>
                     <p className="text-text-primary">
                       {import_container.available_from_datetime 
                         ? new Date(import_container.available_from_datetime).toLocaleDateString('vi-VN')
@@ -200,4 +200,4 @@ export function SuggestionDetails({
       </Card>
     </div>
   )
-} 
+}

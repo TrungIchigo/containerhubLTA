@@ -39,7 +39,7 @@ interface ShippingLine {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'AVAILABLE', label: 'Sẵn sàng', color: 'bg-green-100 text-green-800' },
+  { value: 'AVAILABLE', label: 'Lệnh mới tạo', color: 'bg-green-100 text-green-800' },
   { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt Re-use', color: 'bg-yellow-100 text-yellow-800' },
   { value: 'ON_GOING_REUSE', label: 'Đã ghép', color: 'bg-blue-100 text-blue-800' },
 ]

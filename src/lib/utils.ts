@@ -153,7 +153,7 @@ export function getStatusColor(status: string): string {
 export function getStatusLabel(status: string): string {
   switch (status) {
     case 'AVAILABLE':
-      return 'Sẵn sàng'
+      return 'Lệnh mới tạo'
     case 'AWAITING_REUSE_APPROVAL':
       return 'Chờ duyệt Re-use'
     case 'AWAITING_COD_APPROVAL':

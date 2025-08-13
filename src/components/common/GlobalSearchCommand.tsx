@@ -51,8 +51,8 @@ export default function GlobalSearchCommand({ userRole = 'DISPATCHER' }: GlobalS
     if (userRole === 'DISPATCHER') {
       return [
         {
-          label: 'Thêm Lệnh Giao Trả',
-          description: 'Tạo lệnh giao trả container mới',
+          label: 'Thêm Lệnh Trả Rỗng',
+          description: 'Tạo lệnh trả rỗng container mới',
           icon: Plus,
           action: () => router.push('/dispatcher?action=add-import'),
           keywords: ['tạo', 'thêm', 'lệnh', 'giao', 'trả', 'import', 'container']
@@ -96,7 +96,7 @@ export default function GlobalSearchCommand({ userRole = 'DISPATCHER' }: GlobalS
           keywords: ['quy', 'tắc', 'tự', 'động', 'rules', 'auto']
         },
         {
-          label: 'Xem Yêu cầu COD',
+          label: 'Xem Yêu cầu thay đổi địa điểm',
           description: 'Quản lý change of delivery',
           icon: MapPin,
           action: () => router.push('/carrier-admin?tab=cod'),
@@ -127,7 +127,7 @@ export default function GlobalSearchCommand({ userRole = 'DISPATCHER' }: GlobalS
     },
     {
       label: 'Dispatcher',
-      description: 'Quản lý lệnh giao trả và lấy rỗng',
+      description: 'Quản lý lệnh trả rỗng và lấy rỗng',
       icon: Container,
       action: () => router.push('/dispatcher'),
       keywords: ['dispatcher', 'điều', 'phối', 'lệnh'],
@@ -262,7 +262,7 @@ export default function GlobalSearchCommand({ userRole = 'DISPATCHER' }: GlobalS
                     <div className="flex flex-col gap-1">
                       <span className="font-medium text-sm">Tìm Container: {search}</span>
                       <span className="text-xs text-muted-foreground">
-                        Tìm kiếm trong lệnh giao trả
+                        Tìm kiếm trong lệnh trả rỗng
                       </span>
                     </div>
                   </CommandItem>

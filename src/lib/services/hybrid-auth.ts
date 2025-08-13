@@ -264,9 +264,8 @@ class HybridAuthService {
         timestamp: Date.now()
       }
       
-      sessionStorage.setItem('edepot_session', JSON.stringify(sessionData))
-      
-      // Also store in localStorage for persistence across tabs
+      // Store in localStorage for persistence across tabs and browser sessions
+      localStorage.setItem('edepot_session', JSON.stringify(sessionData))
       localStorage.setItem('edepot_user', JSON.stringify(eDepotUser))
     } catch (error) {
       console.error('Error storing eDepot session:', error)
@@ -278,22 +277,26 @@ class HybridAuthService {
    */
   async getEDepotUserSession(): Promise<{ user: EDepotUserData; token: string } | null> {
     try {
-      const response = await fetch('/api/auth/edepot', {
-        method: 'GET',
-        credentials: 'include'
-      })
-
-      if (!response.ok) {
+      // Check for eDepot session in localStorage (client-side only)
+      if (typeof window === 'undefined') {
         return null
       }
 
-      const data = await response.json()
-      
-      if (data.success && data.user) {
-        return { user: data.user, token: data.token }
+      const sessionData = localStorage.getItem('edepot_session')
+      if (!sessionData) {
+        return null
       }
 
-      return null
+      const parsed = JSON.parse(sessionData)
+      
+      // Check if session is expired (24 hours)
+      const isExpired = Date.now() - parsed.timestamp > 24 * 60 * 60 * 1000
+      if (isExpired) {
+        localStorage.removeItem('edepot_session')
+        return null
+      }
+
+      return { user: parsed.user, token: parsed.token }
     } catch (error) {
       console.error('Error getting eDepot session:', error)
       return null
@@ -305,15 +308,11 @@ class HybridAuthService {
    */
   async clearEDepotSession(): Promise<void> {
     try {
-      await fetch('/api/auth/edepot', {
-        method: 'DELETE',
-        credentials: 'include'
-      })
-      
-      // Also clear any client-side storage
+      // Clear client-side storage
       if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('edepot_session')
+        localStorage.removeItem('edepot_session')
         localStorage.removeItem('edepot_user')
+        sessionStorage.removeItem('edepot_session')
       }
     } catch (error) {
       console.error('Error clearing eDepot session:', error)

@@ -24,7 +24,7 @@ const formSchema = z.object({
   container_type_id: z.string().min(1, 'Loại container là bắt buộc'),
   cargo_type_id: z.string().min(1, 'Loại hàng hóa là bắt buộc'),
   depot_id: z.string().min(1, 'Địa điểm lấy hàng là bắt buộc'),
-  needed_by_datetime: z.string().min(1, 'Thời gian cần container là bắt buộc'),
+  needed_by_datetime: z.string().min(1, 'Hạn lấy rỗng là bắt buộc'),
   shipping_line_org_id: z.string().min(1, 'Hãng tàu là bắt buộc'),
   attached_documents: z.array(z.string()).optional()
 })
@@ -204,9 +204,9 @@ export default function AddExportBookingForm({
                 )}
               </div>
 
-              {/* Thời Gian Cần Lấy Rỗng */}
+              {/* Hạn Lấy Rỗng */}
               <div className="space-y-2">
-                <Label htmlFor="needed_by_datetime">Thời Gian Cần Lấy Rỗng <span className="text-red-500">*</span></Label>
+                <Label htmlFor="needed_by_datetime">Hạn Lấy Rỗng <span className="text-red-500">*</span></Label>
                 <Input
                   id="needed_by_datetime"
                   type="datetime-local"

@@ -40,7 +40,7 @@ const IMPORT_CONTAINER_STATUS = [
 type ImportContainerStatus = typeof IMPORT_CONTAINER_STATUS[number];
 
 const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed"; bg: string; border: string }> = {
-  AVAILABLE: { text: 'Sẵn sàng', variant: 'approved', bg: 'bg-green-50', border: 'border-green-200' },
+  AVAILABLE: { text: 'Lệnh mới tạo', variant: 'approved', bg: 'bg-green-50', border: 'border-green-200' },
   AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt Re-use', variant: 'pending', bg: 'bg-yellow-50', border: 'border-yellow-200' },
   COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive', bg: 'bg-red-50', border: 'border-red-200' },
   AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending', bg: 'bg-orange-50', border: 'border-orange-200' },
@@ -211,22 +211,55 @@ export function FullDropOffOrdersTable({
     }
   }
 
+  /**
+   * Tính toán mức độ khẩn cấp dựa trên thời gian còn lại
+   * @param availableFrom - Thời gian hết hạn
+   * @returns Object chứa level và số phút còn lại
+   */
   const getUrgencyLevel = (availableFrom: string) => {
-    if (!availableFrom) return { level: 'none', hours: null }
+    if (!availableFrom) return { level: 'none', minutes: null }
     const availableDate = new Date(availableFrom)
     const now = new Date()
-    const diffHours = Math.round((availableDate.getTime() - now.getTime()) / (1000 * 60 * 60))
-    if (diffHours <= 24 && diffHours >= 0) return { level: 'high', hours: diffHours }
-    if (diffHours <= 72 && diffHours > 24) return { level: 'medium', hours: diffHours }
-    return { level: 'none', hours: diffHours }
+    const diffMinutes = Math.round((availableDate.getTime() - now.getTime()) / (1000 * 60))
+    const diffHours = Math.round(diffMinutes / 60)
+    
+    if (diffHours <= 24 && diffHours >= 0) return { level: 'high', minutes: diffMinutes }
+    if (diffHours <= 72 && diffHours > 24) return { level: 'medium', minutes: diffMinutes }
+    return { level: 'none', minutes: diffMinutes }
   }
 
-  const getUrgencyBadge = (urgency: { level: string, hours: number | null }) => {
+  /**
+   * Format thời gian còn lại theo định dạng yêu cầu
+   * @param minutes - Số phút còn lại
+   * @returns Chuỗi thời gian đã format
+   */
+  const formatRemainingTime = (minutes: number | null): string => {
+    if (minutes === null || minutes < 0) return '0 phút'
+    
+    const days = Math.floor(minutes / (24 * 60))
+    const hours = Math.floor((minutes % (24 * 60)) / 60)
+    const mins = minutes % 60
+    
+    if (days > 0) {
+      // Hiển thị ngày giờ phút
+      return `${days} ngày ${hours} giờ ${mins} phút`
+    } else if (hours > 0) {
+      // Hiển thị giờ phút (nếu còn ít hơn 1 ngày)
+      return `${hours} giờ ${mins} phút`
+    } else {
+      // Hiển thị chỉ phút (nếu còn ít hơn 1 giờ)
+      return `${mins} phút`
+    }
+  }
+
+  const getUrgencyBadge = (urgency: { level: string, minutes: number | null }) => {
     if (urgency.level === 'high') {
-      return <Badge className="bg-red-600 text-white font-bold animate-pulse">GẤP: Còn {urgency.hours}h</Badge>
+      const timeText = formatRemainingTime(urgency.minutes)
+      return <Badge className="bg-red-600 text-white font-bold animate-pulse">GẤP: Còn {timeText}</Badge>
     }
     if (urgency.level === 'medium') {
-      return <Badge className="bg-yellow-400 text-black font-semibold">TRUNG BÌNH: Còn {urgency.hours}h</Badge>
+      const timeText = formatRemainingTime(urgency.minutes)
+      return <Badge className="bg-yellow-400 text-black font-semibold">Còn {timeText} tới hạn trả rỗng</Badge>
     }
     return null
   }
@@ -244,7 +277,7 @@ export function FullDropOffOrdersTable({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Container className="w-5 h-5 text-primary" />
-            Lệnh Giao Trả
+            Lệnh Trả Rỗng
           </CardTitle>
         </CardHeader>
         <CardContent className="py-12">
@@ -253,10 +286,10 @@ export function FullDropOffOrdersTable({
               <Container className="h-8 w-8 text-primary" />
             </div>
             <h3 className="text-lg font-semibold text-text-primary mb-2">
-              Chưa có Lệnh Giao Trả
+              Chưa có Lệnh Trả Rỗng
             </h3>
             <p className="text-text-secondary text-sm">
-              Chưa có lệnh giao trả nào trong hệ thống
+              Chưa có lệnh trả rỗng nào trong hệ thống
             </p>
           </div>
         </CardContent>
@@ -274,7 +307,7 @@ export function FullDropOffOrdersTable({
             </div>
             <div>
               <h2 className="text-xl font-semibold text-text-primary">
-                Tất Cả Lệnh Giao Trả
+                Tất Cả Lệnh Trả Rỗng
               </h2>
               <p className="text-sm text-text-secondary">
                 {importContainers.length} container đang quản lý
@@ -341,7 +374,7 @@ export function FullDropOffOrdersTable({
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="w-4 h-4 text-blue-600" />
-                      <span className="font-medium text-text-primary">Địa điểm giao:</span>
+                      <span className="font-medium text-text-primary">Depot trả rỗng:</span>
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -356,7 +389,7 @@ export function FullDropOffOrdersTable({
                     
                     <div className="flex items-center gap-2 text-sm">
                       <Clock className="w-4 h-4 text-green-600" />
-                      <span className="font-medium text-text-primary">Sẵn sàng từ:</span>
+                      <span className="font-medium text-text-primary">Hạn trả rỗng:</span>
                       <span className="text-text-primary">
                         {container.available_from_datetime 
                           ? new Date(container.available_from_datetime).toLocaleString('vi-VN')
@@ -414,7 +447,7 @@ export function FullDropOffOrdersTable({
 }
 
 /**
- * Skeleton UI cho bảng lệnh giao trả, dùng cho Suspense fallback
+ * Skeleton UI cho bảng lệnh trả rỗng, dùng cho Suspense fallback
  */
 export function FullDropOffOrdersTableSkeleton() {
   return (

@@ -75,7 +75,7 @@ export function SuggestionsContainer({ suggestions, onRequestCreated }: Suggesti
           <div className="text-center py-8 text-gray-500">
             <p className="text-lg font-medium mb-4">Chưa có gợi ý ghép nối</p>
             <p className="mb-4">
-              Hãy thêm lệnh giao trả và lệnh lấy rỗng để hệ thống tạo gợi ý Re-use container phù hợp.
+              Hãy thêm lệnh trả rỗng và lệnh lấy rỗng để hệ thống tạo gợi ý Re-use container phù hợp.
             </p>
           </div>
         </CardContent>

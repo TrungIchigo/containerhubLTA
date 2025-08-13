@@ -134,7 +134,7 @@ export default function NewCodRequestPage({
           </Button>
           <div>
             <h1 className="text-xl font-semibold text-gray-900">
-              Yêu cầu Thay đổi Nơi Trả Container (COD)
+              Yêu cầu Thay đổi Nơi Trả Container (thay đổi địa điểm)
             </h1>
             <p className="text-sm text-gray-600 mt-1">
               Container: <span className="font-medium">{originalOrder.container_number}</span>
@@ -156,7 +156,7 @@ export default function NewCodRequestPage({
             <div className="p-4 border-b">
               <h2 className="font-semibold text-gray-900">Depot GPG Khả dụng</h2>
               <p className="text-sm text-gray-600 mt-1">
-                Sắp xếp theo phí COD thấp nhất
+                Sắp xếp theo phí thay đổi địa điểm thấp nhất
               </p>
             </div>
             <ComparisonTable

@@ -250,7 +250,7 @@ export async function addImportContainer(data: CreateImportContainerForm) {
     
     return { 
       success: true, 
-      message: `Lệnh giao trả container ${data.container_number} đã được tạo thành công!`,
+      message: `Lệnh trả rỗng container ${data.container_number} đã được tạo thành công!`,
       data: container
     }
 
@@ -260,7 +260,7 @@ export async function addImportContainer(data: CreateImportContainerForm) {
     // Return a user-friendly error message
     const errorMessage = error.message?.includes('Invalid') 
       ? error.message
-      : 'Có lỗi xảy ra khi tạo lệnh giao trả. Vui lòng thử lại.'
+      : 'Có lỗi xảy ra khi tạo lệnh trả rỗng. Vui lòng thử lại.'
     
     throw new Error(errorMessage)
   }

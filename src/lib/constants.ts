@@ -122,12 +122,12 @@ export const USER_ROLES = [
  */
 export const STATUS_OPTIONS = {
   IMPORT_CONTAINER: [
-    { value: 'AVAILABLE', label: 'Sẵn sàng', color: 'green' },
+    { value: 'AVAILABLE', label: 'Lệnh mới tạo', color: 'green' },
     { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt Re-use', color: 'yellow' },
-    { value: 'AWAITING_COD_APPROVAL', label: 'Chờ duyệt COD', color: 'yellow' },
-    { value: 'AWAITING_COD_PAYMENT', label: 'Chờ thanh toán phí COD', color: 'orange' },
+    { value: 'AWAITING_COD_APPROVAL', label: 'Chờ duyệt thay đổi địa điểm', color: 'yellow' },
+    { value: 'AWAITING_COD_PAYMENT', label: 'Chờ thanh toán phí thay đổi địa điểm', color: 'orange' },
     { value: 'AWAITING_REUSE_PAYMENT', label: 'Chờ thanh toán phí Re-use', color: 'orange' },
-    { value: 'ON_GOING_COD', label: 'Đang thực hiện COD', color: 'blue' },
+    { value: 'ON_GOING_COD', label: 'Đang thực hiện thay đổi địa điểm', color: 'blue' },
   { value: 'ON_GOING_REUSE', label: 'Đang thực hiện Re-use', color: 'blue' },
     { value: 'DEPOT_PROCESSING', label: 'Đang xử lý tại Depot', color: 'purple' },
     { value: 'COMPLETED', label: 'Hoàn tất', color: 'green' },

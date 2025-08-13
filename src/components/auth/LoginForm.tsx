@@ -8,14 +8,21 @@ import { Eye, EyeOff, CheckCircle, Sparkles, Shield, Truck, Container } from 'lu
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { createClient } from '@/lib/supabase/client'
 import { hybridAuthService } from '@/lib/services/hybrid-auth'
+import { loginWithEdepot } from '@/lib/actions/edepot-auth'
 import { gsap } from 'gsap'
 import { LtaLoadingCompact } from '@/components/ui/ltaloading'
 
 export default function LoginForm() {
+  const [activeTab, setActiveTab] = useState('supabase')
   const [formData, setFormData] = useState({
     email: '',
+    password: ''
+  })
+  const [edepotFormData, setEdepotFormData] = useState({
+    username: '',
     password: ''
   })
   const [showPassword, setShowPassword] = useState(false)
@@ -159,88 +166,89 @@ export default function LoginForm() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
-
-  const handleLogin = async () => {
-    try {
-      // Use hybrid authentication service
-      const result = await hybridAuthService.authenticate({
-        email: formData.email,
-        password: formData.password
-      })
-
-      if (result.success) {
-        // Success animation
-        gsap.to(formRef.current, {
-          scale: 1.05,
-          duration: 0.3,
-          yoyo: true,
-          repeat: 1,
-          ease: "power2.out"
-        })
-
-        // Handle different authentication sources
-        if (result.source === 'supabase') {
-          // Standard Supabase user - redirect based on profile
-          router.push(result.redirectTo || '/dashboard')
-        } else if (result.source === 'edepot') {
-          // eDepot user - sync data and redirect
-          if (result.eDepotUser && result.eDepotToken) {
-            await hybridAuthService.syncEDepotUserToSupabase(result.eDepotUser, result.eDepotToken)
-          }
-          router.push(result.redirectTo || '/dashboard')
-        }
-      } else {
-        // Handle different failure scenarios
-        if (result.requiresEDepotRegistration) {
-          // Redirect to eDepot registration page
-          router.push(result.redirectTo || '/auth/edepot-register')
-          return
-        }
-        
-        // Standard authentication error
-        setErrorMessage(result.error || 'Email hoặc mật khẩu không chính xác.')
-        
-        // Error shake animation
-        gsap.to(formRef.current, {
-          x: -10,
-          duration: 0.1,
-          repeat: 5,
-          yoyo: true,
-          ease: "power2.out"
-        })
-      }
-      
-    } catch (error: any) {
-      console.error('Lỗi đăng nhập:', error)
-      setErrorMessage('Đã xảy ra lỗi trong quá trình đăng nhập. Vui lòng thử lại.')
-      
-      // Error shake animation
-      gsap.to(formRef.current, {
-        x: -10,
-        duration: 0.1,
-        repeat: 5,
-        yoyo: true,
-        ease: "power2.out"
-      })
+    if (activeTab === 'edepot') {
+      setEdepotFormData(prev => ({
+        ...prev,
+        [name]: value
+      }))
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }))
     }
   }
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setErrorMessage('')
+    setSuccessMessage('')
 
-    // Validation
-    if (!formData.email || !formData.password) {
-      setErrorMessage('Vui lòng điền đầy đủ thông tin.')
+    try {
+      let result
+      
+      if (activeTab === 'edepot') {
+        // eDepot login
+        result = await loginWithEdepot(edepotFormData.username, edepotFormData.password)
+      } else {
+        // Supabase login
+        result = await hybridAuthService.authenticate({ email: formData.email, password: formData.password })
+      }
+      
+      if (result.success) {
+        setSuccessMessage('Đăng nhập thành công! Đang chuyển hướng...')
+        
+        // Animate success
+        if (formRef.current) {
+          gsap.to(formRef.current, {
+            scale: 1.02,
+            duration: 0.3,
+            ease: "power2.out",
+            yoyo: true,
+            repeat: 1
+          })
+        }
+        
+        setTimeout(() => {
+          router.push(result.redirectTo || '/dashboard')
+        }, 1500)
+      } else {
+        setErrorMessage(result.error || 'Đăng nhập thất bại')
+        
+        // Animate error
+        if (formRef.current) {
+          gsap.fromTo(formRef.current, 
+            { x: 0 },
+            {
+              x: 10,
+              duration: 0.1,
+              yoyo: true,
+              repeat: 3,
+              ease: "power2.out"
+            }
+          )
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      setErrorMessage('Có lỗi xảy ra khi đăng nhập')
+      
+      // Animate error
+      if (formRef.current) {
+        gsap.fromTo(formRef.current, 
+          { x: 0 },
+          {
+            x: 10,
+            duration: 0.1,
+            yoyo: true,
+            repeat: 3,
+            ease: "power2.out"
+          }
+        )
+      }
+    } finally {
       setIsLoading(false)
-      return
     }
-
-    await handleLogin()
-    setIsLoading(false)
   }
 
   return (
@@ -321,60 +329,119 @@ export default function LoginForm() {
 
             {/* Form với Design System styling */}
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-              {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-text-primary font-medium text-sm">
-                  Địa chỉ email
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="dispatcher@vantai-abc.com"
-                    className="h-12 bg-foreground border-border focus:border-primary focus:ring-primary text-text-primary placeholder:text-text-secondary rounded-input transition-all duration-300 hover:border-primary/50"
-                    required
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-input pointer-events-none"></div>
-                </div>
-              </div>
+              {/* Login Tabs */}
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="supabase">Tài khoản thường</TabsTrigger>
+                  <TabsTrigger value="edepot">eDepot</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="supabase" className="space-y-6 mt-6">
+                  {/* Email Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-text-primary font-medium text-sm">
+                      Địa chỉ email
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        placeholder="dispatcher@vantai-abc.com"
+                        className="h-12 bg-foreground border-border focus:border-primary focus:ring-primary text-text-primary placeholder:text-text-secondary rounded-input transition-all duration-300 hover:border-primary/50"
+                        required
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-input pointer-events-none"></div>
+                    </div>
+                  </div>
 
-              {/* Password Field */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-text-primary font-medium text-sm">
-                    Mật khẩu
-                  </Label>
-                  <Link 
-                    href="/forgot-password" 
-                    className="text-sm text-primary hover:text-primary-dark transition-colors duration-300"
-                  >
-                    Quên mật khẩu?
-                  </Link>
-                </div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder="••••••••"
-                    className="h-12 bg-foreground border-border focus:border-primary focus:ring-primary text-text-primary placeholder:text-text-secondary rounded-input transition-all duration-300 hover:border-primary/50 pr-12"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-primary transition-colors duration-300"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-input pointer-events-none"></div>
-                </div>
-              </div>
+                  {/* Password Field */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password" className="text-text-primary font-medium text-sm">
+                        Mật khẩu
+                      </Label>
+                      <Link 
+                        href="/forgot-password" 
+                        className="text-sm text-primary hover:text-primary-dark transition-colors duration-300"
+                      >
+                        Quên mật khẩu?
+                      </Link>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        name="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        placeholder="••••••••"
+                        className="h-12 bg-foreground border-border focus:border-primary focus:ring-primary text-text-primary placeholder:text-text-secondary rounded-input transition-all duration-300 hover:border-primary/50 pr-12"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-primary transition-colors duration-300"
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-input pointer-events-none"></div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="edepot" className="space-y-6 mt-6">
+                  {/* Username Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="username" className="text-text-primary font-medium text-sm">
+                      Tên đăng nhập eDepot
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="username"
+                        name="username"
+                        type="text"
+                        value={edepotFormData.username}
+                        onChange={handleInputChange}
+                        placeholder="Nhập tên đăng nhập eDepot"
+                        className="h-12 bg-foreground border-border focus:border-primary focus:ring-primary text-text-primary placeholder:text-text-secondary rounded-input transition-all duration-300 hover:border-primary/50"
+                        required
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-input pointer-events-none"></div>
+                    </div>
+                  </div>
+
+                  {/* Password Field */}
+                  <div className="space-y-2">
+                    <Label htmlFor="edepot-password" className="text-text-primary font-medium text-sm">
+                      Mật khẩu eDepot
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="edepot-password"
+                        name="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={edepotFormData.password}
+                        onChange={handleInputChange}
+                        placeholder="••••••••"
+                        className="h-12 bg-foreground border-border focus:border-primary focus:ring-primary text-text-primary placeholder:text-text-secondary rounded-input transition-all duration-300 hover:border-primary/50 pr-12"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-primary transition-colors duration-300"
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 rounded-input pointer-events-none"></div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
 
               {/* Success Message */}
               {successMessage && (

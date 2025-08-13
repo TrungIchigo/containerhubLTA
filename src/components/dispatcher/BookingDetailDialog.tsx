@@ -65,7 +65,7 @@ export default function BookingDetailDialog({
 
   // Status mapping cho booking
   const statusMap = {
-    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const, color: 'text-green-600' },
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'approved' as const, color: 'text-green-600' },
     'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const, color: 'text-yellow-600' },
     'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const, color: 'text-blue-600' },
   }
@@ -274,7 +274,7 @@ export default function BookingDetailDialog({
             <div className="space-y-4">
               <div>
                 <Label htmlFor="needed-datetime" className="text-sm font-medium">
-                  Thời Gian Cần *
+                  Hạn lấy rỗng *
                 </Label>
                 {isEditing ? (
                   <Input
@@ -396,4 +396,4 @@ export default function BookingDetailDialog({
       </AlertDialog>
     </>
   )
-} 
+}

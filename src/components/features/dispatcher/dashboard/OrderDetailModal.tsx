@@ -151,7 +151,7 @@ export function OrderDetailModal({
 
   // Status mapping cho container với các trạng thái COD mới
   const containerStatusMap = {
-    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const, color: 'text-green-700', bg: 'bg-green-50' },
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'approved' as const, color: 'text-green-700', bg: 'bg-green-50' },
     'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending' as const, color: 'text-yellow-700', bg: 'bg-yellow-50' },
     'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
     'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'warning' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
@@ -177,7 +177,7 @@ export function OrderDetailModal({
 
   // Status mapping cho booking
   const bookingStatusMap = {
-    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const, color: 'text-green-700', bg: 'bg-green-50' },
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'approved' as const, color: 'text-green-700', bg: 'bg-green-50' },
     'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const, color: 'text-yellow-700', bg: 'bg-yellow-50' },
     'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const, color: 'text-blue-700', bg: 'bg-blue-50' }
   }
@@ -372,7 +372,7 @@ export function OrderDetailModal({
                       </div>
                       <div className="flex-1">
                         <div className="text-sm font-medium text-orange-700 mb-1">
-                          {isContainer ? 'Sẵn sàng từ' : 'Cần trước'}
+                          {isContainer ? 'Hạn trả rỗng' : 'Hạn lấy rỗng'}
                         </div>
                         <div className="text-lg font-bold text-gray-900">
                           {formatStoredDateTimeVN(

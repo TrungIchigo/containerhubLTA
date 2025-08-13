@@ -199,7 +199,7 @@ export default async function MarketplacePage(props: MarketplacePageProps) {
               Thị Trường Re-use Container
             </h1>
             <p className="text-body text-text-secondary">
-              Khám phá các cơ hội ghép nối với lệnh giao trả từ các công ty khác
+              Khám phá các cơ hội ghép nối với lệnh trả rỗng từ các công ty khác
             </p>
           </div>
         </div>

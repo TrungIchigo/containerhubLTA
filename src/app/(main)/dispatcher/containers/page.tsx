@@ -39,7 +39,7 @@ export default async function ContainersListPage() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-text-primary">
-                Container Sẵn Sàng
+                Container Lệnh Mới Tạo
               </h1>
             </div>
           </div>
@@ -127,4 +127,4 @@ export default async function ContainersListPage() {
       </div>
     )
   }
-} 
+}

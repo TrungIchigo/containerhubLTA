@@ -1,0 +1,235 @@
+{
+	"info": {
+		"_postman_id": "e4a2ad03-e968-439d-a17a-736198be62ee",
+		"name": "i-ContainerHub",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26748940",
+		"_collection_link": "https://gsot-space-362874.postman.co/workspace/Team-Workspace~faea84c6-48e5-4160-8aac-e688881adadf/collection/26748940-e4a2ad03-e968-439d-a17a-736198be62ee?action=share&source=collection_link&creator=26748940"
+	},
+	"item": [
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"//var jsonData = JSON.parse(responseBody);\r",
+							"//postman.setEnvironmentVariable(\"token\", jsonData.token);\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"token\", jsonData.token);\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user\": \"0000000009\",\r\n    \"password\":\"123456\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{apiUrl}}/api/Users/Login",
+					"host": [
+						"{{apiUrl}}"
+					],
+					"path": [
+						"api",
+						"Users",
+						"Login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "gettoken",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// var jsonData = JSON.parse(responseBody);\r",
+							"// postman.setEnvironmentVariable(\"reqtoken\", jsonData.token);\r",
+							"// postman.setEnvironmentVariable(\"reqtime\", jsonData.reqtime);\r",
+							"var jsonData = pm.response.json();\r",
+							"pm.collectionVariables.set(\"reqtoken\", jsonData.token);\r",
+							"pm.collectionVariables.set(\"reqtime\", jsonData.reqtime);\r",
+							"console.log(jsonData.token);\r",
+							"console.log(jsonData.reqtime);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"reqid\": \"ViLTA_GetDefaultWallet\",\r\n    \"data\": {\r\n        \"appversion\": \"2023\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{apiUrl}}/api/data/util/gettokenNonAid",
+					"host": [
+						"{{apiUrl}}"
+					],
+					"path": [
+						"api",
+						"data",
+						"util",
+						"gettokenNonAid"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ViLTA_GetDefaultWallet",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);\r",
+							"postman.setEnvironmentVariable(\"customer\", jsonData.data[0].KhachHang.v);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"token\":\"{{reqtoken}}\",\r\n   \"reqtime\":\"{{reqtime}}\",\r\n   \"data\": {\r\n        \"appversion\": \"2023\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{apiUrl}}/api/data/process/ViLTA_GetDefaultWallet",
+					"host": [
+						"{{apiUrl}}"
+					],
+					"path": [
+						"api",
+						"data",
+						"process",
+						"ViLTA_GetDefaultWallet"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "apiUrl",
+			"value": "https://apiedepottest.gsotgroup.vn",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "reqtime",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "reqtoken",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

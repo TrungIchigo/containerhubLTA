@@ -107,7 +107,7 @@ export function RelatedSuggestionsForPickupOrder({
 
                         <div className="text-sm text-blue-700">
                           <p>Giao tại: {suggestion.import_container.drop_off_location || 'Chưa xác định'}</p>
-                          <p>Sẵn sàng từ: {
+                          <p>Hạn trả rỗng: {
                             suggestion.import_container.available_from_datetime 
                               ? new Date(suggestion.import_container.available_from_datetime).toLocaleDateString('vi-VN')
                               : 'Linh hoạt'
@@ -138,7 +138,7 @@ export function RelatedSuggestionsForPickupOrder({
             <h5 className="font-medium text-text-primary text-sm">Mẹo tối ưu</h5>
             <div className="text-xs text-text-secondary space-y-1">
               <p>• Chọn container gần địa điểm lấy</p>
-              <p>• Đảm bảo container sẵn sàng trước thời hạn</p>
+              <p>• Đảm bảo container lệnh mới tạo trước thời hạn</p>
               <p>• Kiểm tra chất lượng container phù hợp với hàng hóa</p>
             </div>
           </div>
@@ -146,4 +146,4 @@ export function RelatedSuggestionsForPickupOrder({
       </Card>
     </div>
   )
-} 
+}

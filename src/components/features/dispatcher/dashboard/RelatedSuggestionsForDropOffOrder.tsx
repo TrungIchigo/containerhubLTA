@@ -60,7 +60,7 @@ export function RelatedSuggestionsForDropOffOrder({
                 </Badge>
               </div>
               <div className="text-sm text-blue-700">
-                <p>Địa điểm giao: {container.drop_off_location || 'Chưa xác định'}</p>
+                <p>Depot trả rỗng: {container.drop_off_location || 'Chưa xác định'}</p>
                 <p>Trạng thái: {container.status}</p>
               </div>
             </div>
@@ -141,4 +141,4 @@ export function RelatedSuggestionsForDropOffOrder({
       </Card>
     </div>
   )
-} 
+}

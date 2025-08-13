@@ -42,8 +42,8 @@ function generateSmartTimeline(status: string, containerType?: string, container
     },
     {
       id: 'available',
-      title: 'Sẵn sàng xử lý',
-      description: 'Container đã sẵn sàng để tìm cơ hội ghép nối',
+      title: 'Lệnh mới tạo xử lý',
+      description: 'Container đã lệnh mới tạo để tìm cơ hội ghép nối',
       status: status === 'AVAILABLE' ? 'current' : (isStatusAfter(status, 'AVAILABLE') ? 'completed' : 'pending'),
       icon: Package,
       timestamp: containerData?.available_from_datetime ? new Date(containerData.available_from_datetime).toLocaleDateString('vi-VN') : undefined,
@@ -224,7 +224,7 @@ function generateSmartTimeline(status: string, containerType?: string, container
         },
         {
           id: 'ready_for_next',
-          title: 'Sẵn sàng cho chu kỳ mới',
+          title: 'Lệnh mới tạo cho chu kỳ mới',
           description: 'Container có thể được sử dụng cho các yêu cầu mới',
           status: 'completed',
           icon: Package

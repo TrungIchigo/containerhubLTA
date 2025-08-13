@@ -57,7 +57,7 @@ export function SuggestionLeaderboard({
               Chưa có Gợi Ý Ghép nối
             </h3>
             <p className="text-text-secondary text-sm mb-4">
-              Thêm lệnh giao trả và lấy rỗng để có gợi ý Re-use
+              Thêm lệnh trả rỗng và lấy rỗng để có gợi ý Re-use
             </p>
             <div className="text-xs text-text-secondary space-y-1 bg-gray-50 p-3 rounded-lg">
               <p className="font-medium">Điều kiện ghép nối:</p>

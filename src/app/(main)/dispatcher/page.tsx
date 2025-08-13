@@ -693,7 +693,7 @@ export default function DispatcherPage() {
             activeTab={activeTab}
             onTabChange={handleTabChange}
             totalCount={activeTab === "dropoff" ? data.importContainers.length : data.exportBookings.length}
-            title="Tất Cả Lệnh Giao Trả"
+            title="Tất Cả Lệnh Trả Rỗng"
           />
           <div className="ml-auto w-full sm:w-auto mt-2 sm:mt-0">
             <div className="flex gap-2">
@@ -702,7 +702,7 @@ export default function DispatcherPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 w-full sm:w-auto font-medium"
               >
                 <Plus className="w-4 h-4" />
-                Tạo Lệnh Giao Trả
+                Tạo Lệnh Trả Rỗng
               </button>
               <button 
                 onClick={() => setShowCreateBooking(true)}
@@ -715,7 +715,7 @@ export default function DispatcherPage() {
           </div>
         </div>
 
-        {/* Dialog Tạo Lệnh Giao Trả */}
+        {/* Dialog Tạo Lệnh Trả Rỗng */}
         {showCreateContainer && (
           <CreateContainerDialog shippingLines={data.shippingLines} onSuccess={() => { setShowCreateContainer(false); loadDashboardData(); }} />
         )}
@@ -776,7 +776,7 @@ export default function DispatcherPage() {
           {/* Main Content (bảng/cards) - 2/3 width trên xl */}
           <div className="w-full xl:w-2/3 min-w-0 flex flex-col">
             <div className="h-auto flex flex-col min-w-0">
-              {/* Tab Lệnh Giao Trả */}
+              {/* Tab Lệnh Trả Rỗng */}
               {activeTab === "dropoff" && (
                 <div className="w-full min-w-0 overflow-x-auto">
                   <FullDropOffOrdersTable 

@@ -34,7 +34,7 @@ export default function DispatcherDropdown({ isActive }: DispatcherDropdownProps
 
   const menuItems: MenuItem[] = [
     {
-      name: 'Lệnh giao trả',
+      name: 'Lệnh trả rỗng',
       href: '/dispatcher/dropoff-orders',
       icon: Truck,
     },

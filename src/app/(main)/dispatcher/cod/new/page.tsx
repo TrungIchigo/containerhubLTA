@@ -28,7 +28,7 @@ async function getCodRequestData(orderId: string) {
   try {
     // Fetch dữ liệu song song
     const [originalOrderResult, gpgDepotsResult, codFeeMatrixResult] = await Promise.all([
-    // Fetch chi tiết lệnh giao trả gốc
+    // Fetch chi tiết lệnh trả rỗng gốc
     supabase
       .from('import_containers')
       .select(
@@ -71,7 +71,7 @@ async function getCodRequestData(orderId: string) {
         // No rows returned - order not found
         throw new Error('NOTFOUND')
       }
-      throw new Error('Không thể tải thông tin lệnh giao trả')
+      throw new Error('Không thể tải thông tin lệnh trả rỗng')
     }
 
     if (gpgDepotsResult.error) {

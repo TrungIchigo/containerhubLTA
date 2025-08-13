@@ -226,17 +226,17 @@ export default function AddImportContainerForm({
         <DialogTrigger asChild>
           <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md hover:shadow-lg transition-all duration-200 font-medium">
             <Plus className="mr-2 h-4 w-4" />
-            Tạo Lệnh Giao Trả
+            Tạo Lệnh Trả Rỗng
           </Button>
         </DialogTrigger>
       )}
       
       <DialogContent 
         className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto"
-        aria-label="Form tạo lệnh giao trả container"
+        aria-label="Form tạo lệnh trả rỗng container"
       >
         <DialogHeader>
-          <DialogTitle className="text-text-primary">Tạo Lệnh Giao Trả</DialogTitle>
+          <DialogTitle className="text-text-primary">Tạo Lệnh Trả Rỗng</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -337,9 +337,9 @@ export default function AddImportContainerForm({
                 )}
               </div>
 
-              {/* Sẵn sàng từ lúc */}
+              {/* Hạn trả rỗng */}
               <div className="space-y-2">
-                <Label htmlFor="available_from_datetime">Sẵn Sàng Từ Lúc <span className="text-red-500">*</span></Label>
+                <Label htmlFor="available_from_datetime">Hạn Trả Rỗng <span className="text-red-500">*</span></Label>
                 <Input
                   id="available_from_datetime"
                   type="datetime-local"

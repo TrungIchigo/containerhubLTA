@@ -64,7 +64,7 @@ export default function MarketplaceListingsTable({ listings }: MarketplaceListin
             Không tìm thấy cơ hội nào
           </h3>
           <p className="text-body text-text-secondary">
-            Hiện tại không có lệnh giao trả nào phù hợp với bộ lọc của bạn.
+            Hiện tại không có lệnh trả rỗng nào phù hợp với bộ lọc của bạn.
           </p>
           <p className="text-body-small text-text-secondary mt-2">
             Hãy thử điều chỉnh bộ lọc hoặc quay lại sau để xem các cơ hội mới.
@@ -94,7 +94,7 @@ export default function MarketplaceListingsTable({ listings }: MarketplaceListin
                   <th className="table-header">Container</th>
                   <th className="table-header">Công ty cung cấp</th>
                   <th className="table-header">Hãng tàu</th>
-                  <th className="table-header">Địa điểm giao trả</th>
+                  <th className="table-header">Depot trả rỗng</th>
                   <th className="table-header">Thời gian rảnh</th>
                   <th className="table-header text-center">Hành động</th>
                 </tr>
@@ -207,4 +207,4 @@ export default function MarketplaceListingsTable({ listings }: MarketplaceListin
       )}
     </>
   )
-} 
+}

@@ -32,12 +32,12 @@ export function DropoffOrderCard({
   const [detailModalOpen, setDetailModalOpen] = useState(false)
 
   const statusMap = {
-    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
     'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
-    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt thay đổi địa điểm', variant: 'pending' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí thay đổi địa điểm', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
     'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'ON_GOING_COD': { text: 'Đang thực hiện COD', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'ON_GOING_COD': { text: 'Đang thực hiện thay đổi địa điểm', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
   'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
     'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'secondary' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
     'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
@@ -220,7 +220,7 @@ export function DropoffOrderCard({
                 <Clock className="w-4 h-4 text-green-600" />
               </div>
               <div>
-                <div className="text-xs text-gray-500">Sẵn sàng lúc</div>
+                <div className="text-xs text-gray-500">Hạn trả rỗng</div>
                 <div className="font-medium">{formatStoredDateTimeVN(container.available_from_datetime)}</div>
               </div>
             </div>
@@ -752,7 +752,7 @@ export function ReuseCard({
             </div>
           </div>
           
-          {/* Lệnh Giao Trả */}
+          {/* Lệnh Trả Rỗng */}
           <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <Container className="w-4 h-4 text-blue-600" />

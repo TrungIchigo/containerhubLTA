@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 // Define OTP types that match Supabase
@@ -293,7 +294,8 @@ export async function verifyOtp(
     if (orgError) {
       console.error('❌ Organization creation error:', orgError)
       // Clean up user if organization creation fails
-      await supabase.auth.admin.deleteUser(signUpData.user.id)
+      const supabaseAdmin = createAdminClient()
+      await supabaseAdmin.auth.admin.deleteUser(signUpData.user.id)
       return { 
         success: false, 
         message: `Lỗi tạo tổ chức: ${orgError.message}` 
@@ -401,7 +403,8 @@ export async function approveOrganization(organizationId: string) {
     }
 
     // Step 2: Find user associated with this organization (from user metadata)
-    const { data: users, error: usersError } = await supabase.auth.admin.listUsers()
+    const supabaseAdmin = createAdminClient()
+    const { data: users, error: usersError } = await supabaseAdmin.auth.admin.listUsers()
 
     if (usersError) {
       return { 
@@ -441,7 +444,7 @@ export async function approveOrganization(organizationId: string) {
     }
 
     // Step 4: Update user metadata to clear pending organization
-    const { error: updateUserError } = await supabase.auth.admin.updateUserById(
+    const { error: updateUserError } = await supabaseAdmin.auth.admin.updateUserById(
       associatedUser.id,
       {
         user_metadata: {
@@ -477,9 +480,10 @@ export async function approveOrganization(organizationId: string) {
 export async function rejectOrganization(organizationId: string, reason: string) {
   try {
     const supabase = await createClient()
+    const supabaseAdmin = createAdminClient()
 
     // Step 1: Find user associated with this organization
-    const { data: users, error: usersError } = await supabase.auth.admin.listUsers()
+    const { data: users, error: usersError } = await supabaseAdmin.auth.admin.listUsers()
 
     if (usersError) {
       return { 
@@ -507,7 +511,7 @@ export async function rejectOrganization(organizationId: string, reason: string)
 
     // Step 3: Update user metadata to reflect rejection
     if (associatedUser) {
-      const { error: updateUserError } = await supabase.auth.admin.updateUserById(
+      const { error: updateUserError } = await supabaseAdmin.auth.admin.updateUserById(
         associatedUser.id,
         {
           user_metadata: {
@@ -538,4 +542,4 @@ export async function rejectOrganization(organizationId: string, reason: string)
       message: `Lỗi hệ thống: ${error.message}` 
     }
   }
-} 
+}

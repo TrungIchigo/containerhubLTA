@@ -40,7 +40,7 @@ export function SuggestedActions({ actions, status }: SuggestedActionsProps) {
           icon: CheckCircle,
           color: 'text-green-600',
           bg: 'bg-green-50',
-          text: 'Sẵn sàng xử lý'
+          text: 'Lệnh mới tạo xử lý'
         }
       case 'PENDING':
         return {
@@ -67,4 +67,4 @@ export function SuggestedActions({ actions, status }: SuggestedActionsProps) {
   }
 
   const statusInfo = getStatusInfo(status)
-} 
+}

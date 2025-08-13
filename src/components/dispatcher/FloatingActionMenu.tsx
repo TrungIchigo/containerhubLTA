@@ -25,7 +25,7 @@ export default function FloatingActionMenu({ onAddImport, onAddExport }: Floatin
             size="sm"
           >
             <Container className="w-4 h-4" />
-            Thêm Lệnh Giao Trả
+            Thêm Lệnh Trả Rỗng
           </Button>
           <Button
             onClick={() => {
@@ -50,4 +50,4 @@ export default function FloatingActionMenu({ onAddImport, onAddExport }: Floatin
       </Button>
     </div>
   )
-} 
+}

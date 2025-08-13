@@ -28,7 +28,7 @@ export function PageHeader({
                 hover:bg-green-600 focus:bg-green-200
                 data-[state=active]:bg-primary data-[state=active]:text-white
                 text-gray-800 rounded-none first:rounded-l-lg last:rounded-r-lg border-r border-white">
-                📦 Lệnh Giao Trả
+                📦 Lệnh Trả Rỗng
               </TabsTrigger>
               <TabsTrigger value="pickup" className="flex-1 flex items-center justify-center gap-2 text-base font-semibold py-3 transition-all
                 hover:bg-green-600 focus:bg-green-200
