@@ -3,64 +3,31 @@
 import { useState, useEffect } from 'react'
 import { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
+import { ProfileSidebar, AccountDetails, OrganizationDetails, SecuritySettings } from '@/components/features/account'
 import { useToast } from '@/hooks/use-toast'
-import { updateUserProfile, changeUserPassword, validateCurrentPassword } from '@/lib/actions/account'
 
 interface UserProfile {
   id: string
   full_name: string | null
   email: string
   role: string
+  avatar_url?: string | null
+  phone_number?: string | null
   organization?: {
     name: string
+    tax_code?: string
+    address?: string
+    phone_number?: string
+    status?: string
   }
-}
-
-// Custom hook for debounced value
-function useDebounce(value: string, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
 }
 
 export default function AccountPage() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('profile')
   const { toast } = useToast()
-  
-  // Profile form state
-  const [fullName, setFullName] = useState('')
-  const [isProfileChanged, setIsProfileChanged] = useState(false)
-  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
-  
-  // Security form state
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmNewPassword, setConfirmNewPassword] = useState('')
-  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
-  const [passwordError, setPasswordError] = useState('')
-  const [currentPasswordError, setCurrentPasswordError] = useState('')
-  const [isValidatingCurrentPassword, setIsValidatingCurrentPassword] = useState(false)
-  const [currentPasswordValid, setCurrentPasswordValid] = useState(false)
-
-  // Debounce current password for validation
-  const debouncedCurrentPassword = useDebounce(currentPassword, 1000)
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -71,30 +38,39 @@ export default function AccountPage() {
         if (authUser) {
           setUser(authUser)
           
-          // Get user profile
+          // Get user profile with organization details
           const { data: profileData } = await supabase
             .from('profiles')
             .select(`
               id,
               full_name,
               role,
-              organization:organizations(name)
+              avatar_url,
+              phone_number,
+              organization:organizations(
+                name,
+                tax_code,
+                address,
+                phone_number,
+                status
+              )
             `)
             .eq('id', authUser.id)
             .single()
           
           if (profileData) {
-            const userProfile = {
+            const userProfile: UserProfile = {
               id: profileData.id,
               full_name: profileData.full_name,
               email: authUser.email || '',
               role: profileData.role,
+              avatar_url: profileData.avatar_url,
+              phone_number: profileData.phone_number,
               organization: Array.isArray(profileData.organization) 
                 ? profileData.organization[0] 
                 : profileData.organization
             }
             setProfile(userProfile)
-            setFullName(userProfile.full_name || '')
           }
         }
       } catch (error) {
@@ -107,161 +83,45 @@ export default function AccountPage() {
     loadUserData()
   }, [])
 
-  // Check if profile form has changes
-  useEffect(() => {
-    if (profile) {
-      setIsProfileChanged(fullName !== (profile.full_name || ''))
-    }
-  }, [fullName, profile])
-
-  // Realtime password confirmation validation
-  useEffect(() => {
-    if (confirmNewPassword && newPassword) {
-      if (confirmNewPassword !== newPassword) {
-        setPasswordError('Mật khẩu xác nhận không khớp với mật khẩu mới')
-      } else {
-        setPasswordError('')
-      }
-    } else {
-      setPasswordError('')
-    }
-  }, [newPassword, confirmNewPassword])
-
-  // Debounced current password validation
-  useEffect(() => {
-    const validateCurrentPass = async () => {
-      if (debouncedCurrentPassword && debouncedCurrentPassword.length >= 6) {
-        setIsValidatingCurrentPassword(true)
-        try {
-          const result = await validateCurrentPassword(debouncedCurrentPassword)
-          if (result.success) {
-            setCurrentPasswordError('')
-            setCurrentPasswordValid(true)
-          } else {
-            setCurrentPasswordError(result.error || 'Có lỗi xảy ra')
-            setCurrentPasswordValid(false)
-          }
-        } catch (error) {
-          setCurrentPasswordError('Không thể xác thực mật khẩu')
-          setCurrentPasswordValid(false)
-        } finally {
-          setIsValidatingCurrentPassword(false)
-        }
-      } else if (debouncedCurrentPassword) {
-        setCurrentPasswordError('')
-        setCurrentPasswordValid(false)
-      } else {
-        setCurrentPasswordError('')
-        setCurrentPasswordValid(false)
-      }
-    }
-
-    validateCurrentPass()
-  }, [debouncedCurrentPassword])
-
-  const handleUpdateProfile = async () => {
-    if (!profile || !isProfileChanged) return
-
-    setIsUpdatingProfile(true)
-    try {
-      const result = await updateUserProfile(fullName)
-      
-      if (result.success) {
-        toast({
-          title: "✅ Thành công!",
-          description: result.message,
-          className: "bg-green-50 border-green-200 text-green-800"
-        })
-        setProfile({ ...profile, full_name: fullName })
-        setIsProfileChanged(false)
-      } else {
-        toast({
-          title: "❌ Lỗi!",
-          description: result.error,
-          variant: "destructive"
-        })
-      }
-    } catch (error) {
-      console.error('Error updating profile:', error)
-      toast({
-        title: "❌ Lỗi!",
-        description: "Có lỗi xảy ra khi cập nhật thông tin",
-        variant: "destructive"
-      })
-    } finally {
-      setIsUpdatingProfile(false)
-    }
+  /**
+   * Callback khi profile được cập nhật từ AccountDetails component
+   */
+  const handleProfileUpdate = (updatedProfile: UserProfile) => {
+    setProfile(updatedProfile)
   }
 
-  const handleChangePassword = async () => {
-    if (!currentPassword || !newPassword || !confirmNewPassword) {
-      toast({
-        title: "❌ Lỗi!",
-        description: "Vui lòng điền đầy đủ thông tin",
-        variant: "destructive"
-      })
-      return
-    }
+  /**
+   * Callback khi thay đổi tab từ ProfileSidebar
+   */
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+  }
 
-    if (!currentPasswordValid) {
-      toast({
-        title: "❌ Lỗi!",
-        description: "Mật khẩu hiện tại không chính xác",
-        variant: "destructive"
-      })
-      return
-    }
+  /**
+   * Render component tương ứng với tab được chọn
+   */
+  const renderActiveTabContent = () => {
+    if (!profile) return null
 
-    if (newPassword !== confirmNewPassword) {
-      toast({
-        title: "❌ Lỗi!",
-        description: "Mật khẩu xác nhận không khớp",
-        variant: "destructive"
-      })
-      return
-    }
-
-    if (newPassword.length < 8) {
-      toast({
-        title: "❌ Lỗi!",
-        description: "Mật khẩu mới phải có ít nhất 8 ký tự",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setIsUpdatingPassword(true)
-    try {
-      const result = await changeUserPassword(currentPassword, newPassword)
-      
-      if (result.success) {
-        toast({
-          title: "✅ Thành công!",
-          description: result.message,
-          className: "bg-green-50 border-green-200 text-green-800"
-        })
-        setCurrentPassword('')
-        setNewPassword('')
-        setConfirmNewPassword('')
-        setPasswordError('')
-        setCurrentPasswordError('')
-        setCurrentPasswordValid(false)
-      } else {
-        toast({
-          title: "❌ Lỗi!",
-          description: result.error,
-          variant: "destructive"
-        })
-      }
-    } catch (error) {
-      console.error('Error changing password:', error)
-      toast({
-        title: "❌ Lỗi!",
-        description: "Có lỗi xảy ra khi thay đổi mật khẩu",
-        variant: "destructive"
-      })
-    } finally {
-      setIsUpdatingPassword(false)
+    switch (activeTab) {
+      case 'profile':
+        return (
+          <AccountDetails 
+            profile={profile} 
+            onProfileUpdate={handleProfileUpdate}
+          />
+        )
+      case 'organization':
+        return <OrganizationDetails profile={profile} />
+      case 'security':
+        return <SecuritySettings userEmail={profile.email} />
+      default:
+        return (
+          <AccountDetails 
+            profile={profile} 
+            onProfileUpdate={handleProfileUpdate}
+          />
+        )
     }
   }
 
@@ -272,16 +132,26 @@ export default function AccountPage() {
           <div className="animate-pulse h-8 w-48 mb-2 bg-gray-200 rounded"></div>
           <div className="animate-pulse h-4 w-72 bg-gray-200 rounded"></div>
         </div>
-        <Card>
-          <CardHeader>
-            <div className="animate-pulse h-6 w-32 bg-gray-200 rounded"></div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="animate-pulse h-10 w-full bg-gray-200 rounded"></div>
-            <div className="animate-pulse h-10 w-full bg-gray-200 rounded"></div>
-            <div className="animate-pulse h-10 w-full bg-gray-200 rounded"></div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Sidebar Skeleton */}
+          <div className="lg:col-span-1">
+            <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>
+          </div>
+          {/* Content Skeleton */}
+          <div className="lg:col-span-2">
+            <div className="animate-pulse bg-gray-200 rounded-lg h-96"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <p className="text-text-secondary">Không thể tải thông tin tài khoản</p>
+        </div>
       </div>
     )
   }
@@ -293,156 +163,22 @@ export default function AccountPage() {
         <p className="text-text-secondary">Cập nhật thông tin cá nhân và cài đặt bảo mật</p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="profile">Hồ sơ</TabsTrigger>
-          <TabsTrigger value="security">Bảo mật</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="profile">
-          <Card>
-            <CardHeader>
-              <CardTitle>Thông tin cá nhân</CardTitle>
-              <CardDescription>
-                Cập nhật thông tin cá nhân của bạn
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Họ và Tên</Label>
-                <Input
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Nhập họ và tên của bạn"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  value={profile?.email || ''}
-                  disabled
-                  className="bg-gray-50"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Không thể thay đổi email đăng nhập
-                </p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="organization">Tên Công ty/Tổ chức</Label>
-                <Input
-                  id="organization"
-                  value={profile?.organization?.name || 'Chưa có thông tin'}
-                  disabled
-                  className="bg-gray-50"
-                />
-              </div>
-              
-              <Button 
-                onClick={handleUpdateProfile}
-                disabled={!isProfileChanged || isUpdatingProfile}
-                className="bg-primary hover:bg-primary/90"
-              >
-                {isUpdatingProfile ? 'Đang lưu...' : 'Lưu thay đổi'}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="security">
-          <Card>
-            <CardHeader>
-              <CardTitle>Thay đổi mật khẩu</CardTitle>
-              <CardDescription>
-                Cập nhật mật khẩu để đảm bảo an toàn tài khoản
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">Mật khẩu hiện tại</Label>
-                <div className="relative">
-                  <Input
-                    id="currentPassword"
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Nhập mật khẩu hiện tại"
-                    className={
-                      currentPasswordError 
-                        ? 'border-red-500 pr-10' 
-                        : currentPasswordValid 
-                          ? 'border-green-500 pr-10' 
-                          : ''
-                    }
-                  />
-                  {isValidatingCurrentPassword && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                    </div>
-                  )}
-                  {!isValidatingCurrentPassword && currentPassword && !currentPasswordError && currentPasswordValid && (
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500">
-                      ✅
-                    </div>
-                  )}
-                </div>
-                {currentPasswordError && (
-                  <p className="text-sm text-red-600 flex items-center">
-                    <span className="mr-1">⚠️</span>
-                    {currentPasswordError}
-                  </p>
-                )}
-                {!currentPasswordError && currentPasswordValid && (
-                  <p className="text-sm text-green-600 flex items-center">
-                    <span className="mr-1">✅</span>
-                    Mật khẩu chính xác
-                  </p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">Mật khẩu mới</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Nhập mật khẩu mới (tối thiểu 8 ký tự)"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="confirmNewPassword">Xác nhận mật khẩu mới</Label>
-                <Input
-                  id="confirmNewPassword"
-                  type="password"
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  placeholder="Nhập lại mật khẩu mới"
-                  className={passwordError ? 'border-red-500' : ''}
-                />
-                {passwordError && (
-                  <p className="text-sm text-red-600 flex items-center">
-                    <span className="mr-1">⚠️</span>
-                    {passwordError}
-                  </p>
-                )}
-              </div>
-              
-              <Button 
-                onClick={handleChangePassword}
-                disabled={isUpdatingPassword || !!passwordError || !currentPasswordValid}
-                className="bg-primary hover:bg-primary/90"
-              >
-                {isUpdatingPassword ? 'Đang cập nhật...' : 'Cập nhật mật khẩu'}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Sidebar - 1/3 width */}
+        <div className="lg:col-span-1">
+          <ProfileSidebar 
+            profile={profile}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+          />
+        </div>
+        
+        {/* Right Content - 2/3 width */}
+        <div className="lg:col-span-2">
+          {renderActiveTabContent()}
+        </div>
+      </div>
     </div>
   )
-} 
+}

@@ -3,7 +3,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
-export async function updateUserProfile(fullName: string) {
+/**
+ * Cập nhật thông tin profile của người dùng
+ * @param profileData - Dữ liệu profile cần cập nhật
+ * @returns Promise với kết quả thành công hoặc lỗi
+ */
+export async function updateUserProfile(profileData: {
+  full_name: string | null
+  phone_number?: string | null
+  avatar_url?: string | null
+}) {
   const supabase = await createClient()
   
   try {
@@ -17,13 +26,26 @@ export async function updateUserProfile(fullName: string) {
       }
     }
 
+    // Prepare update data
+    const updateData: any = {
+      updated_at: new Date().toISOString()
+    }
+
+    // Add fields if provided
+    if (profileData.full_name !== undefined) {
+      updateData.full_name = profileData.full_name
+    }
+    if (profileData.phone_number !== undefined) {
+      updateData.phone_number = profileData.phone_number
+    }
+    if (profileData.avatar_url !== undefined) {
+      updateData.avatar_url = profileData.avatar_url
+    }
+
     // Update profile in profiles table
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({ 
-        full_name: fullName,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', user.id)
 
     if (profileError) {
@@ -34,18 +56,20 @@ export async function updateUserProfile(fullName: string) {
       }
     }
 
-    // Update display name in Supabase Auth
-    const { error: authError } = await supabase.auth.updateUser({
-      data: {
-        full_name: fullName,
-        display_name: fullName
-      }
-    })
+    // Update display name in Supabase Auth if full_name is provided
+    if (profileData.full_name !== undefined) {
+      const { error: authError } = await supabase.auth.updateUser({
+        data: {
+          full_name: profileData.full_name,
+          display_name: profileData.full_name
+        }
+      })
 
-    if (authError) {
-      console.error('Auth update error:', authError)
-      // Don't fail the entire operation if auth update fails
-      // Profile table is already updated successfully
+      if (authError) {
+        console.error('Auth update error:', authError)
+        // Don't fail the entire operation if auth update fails
+        // Profile table is already updated successfully
+      }
     }
 
     return {
@@ -61,7 +85,15 @@ export async function updateUserProfile(fullName: string) {
   }
 }
 
-export async function changeUserPassword(currentPassword: string, newPassword: string) {
+/**
+ * Thay đổi mật khẩu người dùng
+ * @param passwordData - Dữ liệu mật khẩu cần thay đổi
+ * @returns Promise với kết quả thành công hoặc lỗi
+ */
+export async function changeUserPassword(passwordData: {
+  currentPassword: string
+  newPassword: string
+}) {
   const supabase = await createClient()
   
   try {
@@ -78,7 +110,7 @@ export async function changeUserPassword(currentPassword: string, newPassword: s
     // Verify current password by trying to sign in
     const { error: verifyError } = await supabase.auth.signInWithPassword({
       email: user.email!,
-      password: currentPassword
+      password: passwordData.currentPassword
     })
 
     if (verifyError) {
@@ -90,7 +122,7 @@ export async function changeUserPassword(currentPassword: string, newPassword: s
 
     // Update password
     const { error: updateError } = await supabase.auth.updateUser({
-      password: newPassword
+      password: passwordData.newPassword
     })
 
     if (updateError) {
@@ -165,4 +197,4 @@ export async function validateCurrentPassword(currentPassword: string) {
       error: 'Có lỗi không mong muốn xảy ra'
     }
   }
-} 
+}
