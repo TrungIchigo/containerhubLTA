@@ -13,17 +13,14 @@ import type { PendingCodPayment } from '@/lib/types/billing'
 // Mock COD payment data for testing
 const mockPayment: PendingCodPayment = {
   id: 'test-payment-001',
-  codRequestId: 'COD-TEST-001',
-  amount: 150000,
-  currency: 'VND',
-  status: 'pending',
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  status: 'PENDING_PAYMENT',
+  cod_fee: 150000,
   delivery_confirmed_at: new Date().toISOString(),
+  container_number: 'TEST1234567',
+  requesting_org_name: 'Test Organization',
   original_depot_address: '123 Test Street, District 1, Ho Chi Minh City',
   requested_depot_name: 'Test Depot Location',
-  container_number: 'TEST1234567',
-  route_description: 'Test Route: From Test Origin to Test Destination'
+  created_at: new Date().toISOString()
 }
 
 export default function TestFundReloadPage() {

@@ -53,7 +53,7 @@ const withTimeout = async <T>(
   return Promise.race([
     promise,
     createTimeoutPromise(timeoutMs, timeoutMessage)
-  ])
+  ]) as Promise<T>
 }
 
 export function useEDepotAuth(): UseEDepotAuthReturn {
@@ -148,14 +148,16 @@ export function useEDepotAuth(): UseEDepotAuthReturn {
       }
       
       // Try to get user profile
-      let profile = null
+      let profile: any = null
       try {
         const { data: profileData, error: profileError } = await withTimeout(
-          supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', data.user.id)
-            .single(),
+          Promise.resolve(
+            supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', data.user.id)
+              .single()
+          ),
           8000,
           'Profile fetch timeout'
         )
