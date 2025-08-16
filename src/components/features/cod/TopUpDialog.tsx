@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { useUser } from '@/hooks/use-user'
 import { 
   Dialog, 
   DialogContent, 
@@ -66,6 +67,7 @@ export function TopUpDialog({
   const [isConfirming, setIsConfirming] = useState(false)
   
   const { toast } = useToast()
+  const { user } = useUser()
 
   // Load prepaid fund info when dialog opens
   useEffect(() => {
@@ -78,6 +80,25 @@ export function TopUpDialog({
       setQrCodeInfo(null)
     }
   }, [open])
+
+  // Clear state when user changes (fix for data persistence across different accounts)
+  useEffect(() => {
+    if (user?.id) {
+      console.log('🔄 TopUpDialog: User changed, clearing fund data state and reloading if dialog is open')
+      setPrepaidFund(null)
+      setQrCodeInfo(null)
+      setStep('amount')
+      setSelectedAmount(1000000)
+      setCustomAmount('')
+      
+      // If dialog is currently open, reload the data for the new user
+      if (open) {
+        console.log('🔄 TopUpDialog: Dialog is open, reloading fund data for new user')
+        loadPrepaidFund()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
 
   const loadPrepaidFund = async () => {
     setIsLoadingFund(true)
@@ -203,8 +224,15 @@ export function TopUpDialog({
     return amount.toLocaleString('vi-VN') + 'đ'
   }
 
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: vi })
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'N/A'
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return 'N/A'
+      return format(date, 'dd/MM/yyyy HH:mm', { locale: vi })
+    } catch (error) {
+      return 'N/A'
+    }
   }
 
   return (

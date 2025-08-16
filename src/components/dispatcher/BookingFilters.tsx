@@ -39,9 +39,9 @@ interface ShippingLine {
 }
 
 const STATUS_OPTIONS = [
-  { value: 'AVAILABLE', label: 'Lệnh mới tạo', color: 'bg-green-100 text-green-800' },
-  { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt Re-use', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'ON_GOING_REUSE', label: 'Đã ghép', color: 'bg-blue-100 text-blue-800' },
+  { value: 'AVAILABLE', label: 'Lệnh mới tạo', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt Re-use', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+  { value: 'ON_GOING_REUSE', label: 'Đã ghép', color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
 ]
 
 export default function BookingFilters({ 

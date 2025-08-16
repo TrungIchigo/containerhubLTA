@@ -265,15 +265,15 @@ export default function CodRequestsPage() {
 
   const getStatusBadge = (status: string) => {
     const statusMap = {
-      'PENDING': { text: 'Chờ duyệt', variant: 'pending' as const },
-      'APPROVED': { text: 'Đã duyệt', variant: 'approved' as const },
-      'DECLINED': { text: 'Từ chối', variant: 'declined' as const },
-      'PENDING_PAYMENT': { text: 'Chờ thanh toán', variant: 'warning' as const },
-      'PAID': { text: 'Đã thanh toán', variant: 'info' as const },
-      'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'info' as const },
-      'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const },
-      'EXPIRED': { text: 'Hết hạn', variant: 'declined' as const },
-      'REVERSED': { text: 'Đã hủy', variant: 'declined' as const },
+      'PENDING': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const },
+      'APPROVED': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const },
+      'DECLINED': { text: 'Bị từ chối COD', variant: 'declined-cod' as const },
+      'PENDING_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const },
+      'PAID': { text: 'Đã thanh toán COD', variant: 'completed' as const },
+      'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const },
+      'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const },
+      'EXPIRED': { text: 'Hết hạn', variant: 'declined-cod' as const },
+      'REVERSED': { text: 'Đã hủy', variant: 'declined-cod' as const },
       'AWAITING_INFO': { text: 'Chờ bổ sung thông tin', variant: 'warning' as const },
     }
     
@@ -629,4 +629,4 @@ export default function CodRequestsPage() {
       )}
     </div>
   )
-} 
+}

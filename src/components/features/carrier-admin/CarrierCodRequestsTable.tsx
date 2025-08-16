@@ -164,9 +164,9 @@ export default function CarrierCodRequestsTable() {
 
   const getStatusBadge = (status: string) => {
     const statusMap = {
-      'PENDING': { text: 'Chờ duyệt', variant: 'pending' as const, icon: Clock },
-      'APPROVED': { text: 'Đã duyệt', variant: 'approved' as const, icon: CheckCircle },
-      'DECLINED': { text: 'Đã từ chối', variant: 'declined' as const, icon: XCircle },
+      'PENDING': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, icon: Clock },
+      'APPROVED': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const, icon: CheckCircle },
+      'DECLINED': { text: 'Bị từ chối COD', variant: 'declined-cod' as const, icon: XCircle },
       'AWAITING_INFO': { text: 'Chờ bổ sung', variant: 'warning' as const, icon: MessageSquare },
     }
     
@@ -524,4 +524,4 @@ export default function CarrierCodRequestsTable() {
       )}
     </>
   )
-} 
+}

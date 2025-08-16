@@ -39,18 +39,18 @@ const IMPORT_CONTAINER_STATUS = [
 ] as const;
 type ImportContainerStatus = typeof IMPORT_CONTAINER_STATUS[number];
 
-const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed"; bg: string; border: string }> = {
-  AVAILABLE: { text: 'Lệnh mới tạo', variant: 'approved', bg: 'bg-green-50', border: 'border-green-200' },
-  AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt Re-use', variant: 'pending', bg: 'bg-yellow-50', border: 'border-yellow-200' },
-  COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive', bg: 'bg-red-50', border: 'border-red-200' },
-  AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending', bg: 'bg-orange-50', border: 'border-orange-200' },
-  AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'warning', bg: 'bg-orange-50', border: 'border-orange-200' },
-  AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí Re-use', variant: 'warning', bg: 'bg-orange-50', border: 'border-orange-200' },
-  ON_GOING_COD: { text: 'Đang thực hiện COD', variant: 'info', bg: 'bg-blue-50', border: 'border-blue-200' },
-  ON_GOING_REUSE: { text: 'Đang thực hiện Re-use', variant: 'info', bg: 'bg-blue-50', border: 'border-blue-200' },
-  DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'secondary', bg: 'bg-purple-50', border: 'border-purple-200' },
-  COMPLETED: { text: 'Hoàn tất', variant: 'approved', bg: 'bg-green-50', border: 'border-green-200' },
-  REUSE_REJECTED: { text: 'Bị từ chối Re-use', variant: 'destructive', bg: 'bg-red-50', border: 'border-red-200' },
+const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed" | "new-order" | "pending-reuse" | "pending-cod" | "pending-cod-payment" | "pending-reuse-payment" | "processing-cod" | "processing-reuse" | "processing-depot" | "completed" | "declined-cod" | "declined-reuse"; bg: string; border: string }> = {
+  AVAILABLE: { text: 'Lệnh mới tạo', variant: 'new-order', bg: 'bg-green-50', border: 'border-green-200' },
+  AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt Re-use', variant: 'pending-reuse', bg: 'bg-yellow-50', border: 'border-yellow-200' },
+  COD_REJECTED: { text: 'Bị từ chối COD', variant: 'declined-cod', bg: 'bg-red-50', border: 'border-red-200' },
+  AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending-cod', bg: 'bg-orange-50', border: 'border-orange-200' },
+  AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment', bg: 'bg-orange-50', border: 'border-orange-200' },
+  AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí Re-use', variant: 'pending-reuse-payment', bg: 'bg-orange-50', border: 'border-orange-200' },
+  ON_GOING_COD: { text: 'Đang thực hiện COD', variant: 'processing-cod', bg: 'bg-blue-50', border: 'border-blue-200' },
+  ON_GOING_REUSE: { text: 'Đang thực hiện Re-use', variant: 'processing-reuse', bg: 'bg-blue-50', border: 'border-blue-200' },
+  DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'processing-depot', bg: 'bg-purple-50', border: 'border-purple-200' },
+  COMPLETED: { text: 'Hoàn tất', variant: 'completed', bg: 'bg-green-50', border: 'border-green-200' },
+  REUSE_REJECTED: { text: 'Bị từ chối Re-use', variant: 'declined-reuse', bg: 'bg-red-50', border: 'border-red-200' },
   EXPIRED: { text: 'Hết hạn', variant: 'outline', bg: 'bg-gray-50', border: 'border-gray-200' },
   PAYMENT_CANCELLED: { text: 'Đã hủy thanh toán', variant: 'outline', bg: 'bg-gray-50', border: 'border-gray-200' },
 };
@@ -252,14 +252,25 @@ export function FullDropOffOrdersTable({
     }
   }
 
-  const getUrgencyBadge = (urgency: { level: string, minutes: number | null }) => {
+  /**
+   * Hiển thị badge cảnh báo tới hạn trả rỗng
+   * @param urgency - Mức độ khẩn cấp và thời gian còn lại
+   * @param containerStatus - Trạng thái hiện tại của container
+   * @returns Badge component hoặc null
+   */
+  const getUrgencyBadge = (urgency: { level: string, minutes: number | null }, containerStatus: string) => {
+    // Không hiển thị badge cảnh báo khi container đã ở trạng thái "Đang xử lý tại Depot" trở về sau
+    if (containerStatus === 'DEPOT_PROCESSING' || containerStatus === 'COMPLETED') {
+      return null
+    }
+    
     if (urgency.level === 'high') {
       const timeText = formatRemainingTime(urgency.minutes)
-      return <Badge className="bg-red-600 text-white font-bold animate-pulse">GẤP: Còn {timeText}</Badge>
+      return <Badge className="bg-red-600 text-white font-bold animate-pulse text-xs px-2 py-1">GẤP: Còn {timeText}</Badge>
     }
     if (urgency.level === 'medium') {
       const timeText = formatRemainingTime(urgency.minutes)
-      return <Badge className="bg-yellow-400 text-black font-semibold">Còn {timeText} tới hạn trả rỗng</Badge>
+      return <Badge className="bg-yellow-400 text-black font-semibold text-xs px-2 py-1">Còn {timeText} tới hạn trả rỗng</Badge>
     }
     return null
   }
@@ -358,7 +369,7 @@ export function FullDropOffOrdersTable({
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      {getUrgencyBadge(getUrgencyLevel(container.available_from_datetime))}
+                      {getUrgencyBadge(getUrgencyLevel(container.available_from_datetime), container.status)}
                       <div className="text-right">
                         <Badge variant={statusInfo.variant} className="mb-1">
                           {statusInfo.text}

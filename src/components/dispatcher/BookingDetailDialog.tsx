@@ -65,9 +65,9 @@ export default function BookingDetailDialog({
 
   // Status mapping cho booking
   const statusMap = {
-    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'approved' as const, color: 'text-green-600' },
-    'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const, color: 'text-yellow-600' },
-    'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const, color: 'text-blue-600' },
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'new-order' as const, color: 'text-green-600' },
+    'AWAITING_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const, color: 'text-yellow-600' },
+    'CONFIRMED': { text: 'Đã ghép', variant: 'processing-reuse' as const, color: 'text-blue-600' },
   }
 
   const getStatusInfo = (status: string) => {

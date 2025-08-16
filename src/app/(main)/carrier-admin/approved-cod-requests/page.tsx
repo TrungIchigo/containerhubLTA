@@ -192,10 +192,11 @@ export default function ApprovedCodRequestsPage() {
 
   const getStatusBadge = (status: string) => {
     const statusMap = {
-      'AWAITING_PAYMENT': { text: 'Chờ thanh toán', variant: 'pending' as const },
-      'PAID': { text: 'Đã thanh toán', variant: 'approved' as const },
-      'OVERDUE': { text: 'Quá hạn', variant: 'destructive' as const },
-      'PROCESSING': { text: 'Đang xử lý', variant: 'info' as const },
+      'AWAITING_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const },
+      'PAID': { text: 'Đã thanh toán COD', variant: 'completed' as const },
+      'OVERDUE': { text: 'Quá hạn thanh toán', variant: 'destructive' as const },
+      'PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const },
+      'COMPLETED': { text: 'Hoàn tất COD', variant: 'completed' as const },
     }
     
     const statusInfo = statusMap[status as keyof typeof statusMap] || { text: status, variant: 'outline' as const }
@@ -517,4 +518,4 @@ export default function ApprovedCodRequestsPage() {
       </div>
     </div>
   )
-} 
+}

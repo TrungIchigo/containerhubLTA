@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { useUser } from '@/hooks/use-user'
 import { 
   Dialog, 
   DialogContent, 
@@ -57,6 +58,7 @@ export function CodPaymentDialog({
 }: CodPaymentDialogProps) {
   const [activeTab, setActiveTab] = useState<string>('qr_code')
   const [prepaidFund, setPrepaidFund] = useState<PrepaidFund | null>(null)
+  const [eDepotWalletData, setEDepotWalletData] = useState<{walletCode: string, SoTienKhaDung: number} | null>(null)
   const [qrCodeInfo, setQrCodeInfo] = useState<any>(null)
   const [topUpDialogOpen, setTopUpDialogOpen] = useState(false)
   const [isLoadingFund, setIsLoadingFund] = useState(false)
@@ -64,6 +66,7 @@ export function CodPaymentDialog({
   const [isGeneratingQR, setIsGeneratingQR] = useState(false)
   
   const { toast } = useToast()
+  const { user } = useUser()
 
   // Load prepaid fund info và QR code khi dialog mở
   useEffect(() => {
@@ -86,14 +89,79 @@ export function CodPaymentDialog({
     }
   }, [payment])
 
+  // Clear state when user changes (fix for data persistence across different accounts)
+  useEffect(() => {
+    if (user?.id) {
+      console.log('🔄 User changed, clearing fund data state and reloading if dialog is open')
+      setPrepaidFund(null)
+      setEDepotWalletData(null)
+      setQrCodeInfo(null)
+      setActiveTab('qr_code')
+      setTopUpDialogOpen(false)
+      
+      // If dialog is currently open, reload the data for the new user
+      if (open) {
+        console.log('🔄 Dialog is open, reloading fund data for new user')
+        loadPrepaidFund()
+        if (payment) {
+          generateQRCode()
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id])
+
   const loadPrepaidFund = async () => {
     setIsLoadingFund(true)
     try {
+      // Load local prepaid fund data
       const result = await getPrepaidFund()
       if (result.success) {
         setPrepaidFund(result.data)
       } else {
         console.error('Failed to load prepaid fund:', result.error)
+      }
+
+      // Load eDepot wallet data
+      try {
+        const eDepotResponse = await fetch('/api/edepot/wallet', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        
+        if (eDepotResponse.ok) {
+          const eDepotData = await eDepotResponse.json()
+          console.log('✅ eDepot API Response received successfully')
+          
+          if (eDepotData.success && eDepotData.data && eDepotData.data.length > 0) {
+            const apiData = eDepotData.data[0]
+            
+            // Extract wallet code and balance from API response
+            const walletCode = apiData.walletCode?.v || ''
+            const balance = parseFloat(apiData.SoTienKhaDung?.v || '0')
+            
+            console.log('💰 eDepot Wallet Data:', { 
+              walletCode, 
+              balance: balance.toLocaleString('vi-VN') + ' VNĐ' 
+            })
+            
+            setEDepotWalletData({
+              walletCode: walletCode,
+              SoTienKhaDung: balance
+            })
+          } else {
+            console.warn('⚠️ eDepot API response has no data:', { 
+              success: eDepotData.success, 
+              dataLength: eDepotData.data?.length || 0 
+            })
+          }
+        } else {
+          console.error('❌ Failed to load eDepot wallet data - HTTP status:', eDepotResponse.status)
+        }
+      } catch (eDepotError) {
+        console.error('Error loading eDepot wallet data:', eDepotError)
       }
     } catch (error) {
       console.error('Error loading prepaid fund:', error)
@@ -107,10 +175,24 @@ export function CodPaymentDialog({
     
     setIsGeneratingQR(true)
     try {
+      // Kiểm tra xem payment.id có phải là UUID hợp lệ không
+      const isValidUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(payment.id);
+      
+      // Log thông tin để debug
+      console.log('🔍 generateQRCode debug info:', { 
+        payment_id: payment.id,
+        is_valid_uuid: isValidUUID,
+        cod_fee: payment.cod_fee
+      });
+      
+      // Gọi API để tạo mã QR
       const result = await generateCodPaymentQR(payment.cod_fee, payment.id)
+      
       if (result.success && result.data) {
+        console.log('✅ QR code generated successfully:', result.data);
         setQrCodeInfo(result.data)
       } else {
+        console.error('❌ Failed to generate QR code:', result.error || result.message);
         toast({
           title: "Lỗi",
           description: result.error || "Không thể tạo mã QR",
@@ -118,7 +200,7 @@ export function CodPaymentDialog({
         })
       }
     } catch (error) {
-      console.error('Error generating QR code:', error)
+      console.error('❌ Error generating QR code:', error)
       toast({
         title: "Lỗi", 
         description: "Có lỗi xảy ra khi tạo mã QR",
@@ -186,13 +268,22 @@ export function CodPaymentDialog({
     return amount.toLocaleString('vi-VN') + ' VNĐ';
   }
 
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'dd/MM/yyyy HH:mm', { locale: vi })
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'N/A'
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) return 'N/A'
+      return format(date, 'dd/MM/yyyy HH:mm', { locale: vi })
+    } catch (error) {
+      return 'N/A'
+    }
   }
 
   if (!payment) return null
   
-  const insufficientBalance = prepaidFund && prepaidFund.balance < payment.cod_fee
+  // Use eDepot wallet balance if available, otherwise fallback to local prepaid fund balance
+  const currentBalance = eDepotWalletData?.SoTienKhaDung ?? prepaidFund?.balance ?? 0
+  const insufficientBalance = currentBalance < payment.cod_fee
 
   return (
     <>
@@ -236,7 +327,7 @@ export function CodPaymentDialog({
                     <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <div className="text-xs text-slate-500 mb-1">Điểm giao trả cũ:</div>
+                          <div className="text-xs text-slate-500 mb-1">Nơi trả rỗng cũ:</div>
                           <div className="text-sm font-medium text-slate-800">
                             {payment.original_depot_address || 'Chưa có thông tin'}
                           </div>
@@ -245,7 +336,7 @@ export function CodPaymentDialog({
                           <ArrowRight className="w-5 h-5 text-blue-500" />
                         </div>
                         <div className="flex-1">
-                          <div className="text-xs text-slate-500 mb-1">Điểm giao trả mới:</div>
+                          <div className="text-xs text-slate-500 mb-1">Nơi trả rỗng mới:</div>
                           <div className="text-sm font-medium text-blue-600">
                             {payment.requested_depot_name || 'Chưa có thông tin'}
                           </div>
@@ -393,11 +484,15 @@ export function CodPaymentDialog({
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <Label className="text-xs text-green-700">Mã quỹ</Label>
-                                <p className="font-mono font-bold text-green-800">{prepaidFund.fund_code}</p>
+                                <p className="font-mono font-bold text-green-800">
+                                  {eDepotWalletData?.walletCode || prepaidFund.fund_code}
+                                </p>
                               </div>
                               <div>
                                 <Label className="text-xs text-green-700">Số dư khả dụng</Label>
-                                <p className="font-bold text-green-800">{formatCurrency(prepaidFund.balance)}</p>
+                                <p className="font-bold text-green-800">
+                                  {formatCurrency(eDepotWalletData?.SoTienKhaDung || prepaidFund.balance)}
+                                </p>
                               </div>
                             </div>
                           </CardContent>
@@ -412,7 +507,7 @@ export function CodPaymentDialog({
                           <div className="flex justify-between items-center py-2 border-b">
                             <span className="text-sm text-slate-600">Số dư sau thanh toán:</span>
                             <span className={`font-bold ${insufficientBalance ? 'text-red-600' : 'text-green-600'}`}>
-                              {formatCurrency(prepaidFund.balance - payment.cod_fee)}
+                              {formatCurrency(currentBalance - payment.cod_fee)}
                             </span>
                           </div>
                         </div>
@@ -426,7 +521,7 @@ export function CodPaymentDialog({
                                 <div>
                                   <h5 className="font-medium text-red-800">Số dư không đủ</h5>
                                   <p className="text-sm text-red-700 mt-1">
-                                    Bạn cần nạp thêm {formatCurrency(payment.cod_fee - prepaidFund.balance)} để hoàn tất giao dịch này.
+                                    Bạn cần nạp thêm {formatCurrency(payment.cod_fee - currentBalance)} để hoàn tất giao dịch này.
                                   </p>
                                 </div>
                               </div>

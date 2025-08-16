@@ -2,51 +2,44 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/components/providers/AuthProvider'
 
 export default function HomePage() {
   const router = useRouter()
+  const { user, isLoading, isAuthenticated } = useAuth()
 
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        
-        if (user) {
-          // Get user profile to determine appropriate page
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-
-          if (profile) {
-            switch (profile.role) {
-              case 'DISPATCHER':
-                router.push('/dispatcher')
-                break
-              case 'CARRIER_ADMIN':
-                router.push('/carrier-admin')
-                break
-              default:
-                router.push('/dashboard')
-            }
-          } else {
-            router.push('/dashboard')
-          }
-        } else {
-          router.push('/login')
-        }
-      } catch (error) {
-        console.error('Error checking user:', error)
-        // If there's an error (like missing env vars), redirect to login
-        router.push('/login')
-      }
+    // Don't redirect while still loading
+    if (isLoading) {
+      console.log('HomePage: Still loading authentication...')
+      return
     }
 
-    checkUser()
-  }, [router])
+    console.log('HomePage: Authentication check complete', {
+      isAuthenticated,
+      userRole: user?.role,
+      userSource: user?.source
+    })
+
+    if (isAuthenticated && user) {
+      console.log('HomePage: User authenticated, redirecting based on role:', user.role)
+      
+      // Redirect based on user role
+      switch (user.role) {
+        case 'DISPATCHER':
+          router.push('/dispatcher')
+          break
+        case 'CARRIER_ADMIN':
+          router.push('/carrier-admin')
+          break
+        default:
+          router.push('/reports')
+      }
+    } else {
+      console.log('HomePage: No authenticated user, redirecting to login')
+      router.push('/login')
+    }
+  }, [isLoading, isAuthenticated, user, router])
 
   return (
     <div className="flex items-center justify-center min-h-screen">

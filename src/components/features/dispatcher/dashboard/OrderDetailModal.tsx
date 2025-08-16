@@ -151,35 +151,35 @@ export function OrderDetailModal({
 
   // Status mapping cho container với các trạng thái COD mới
   const containerStatusMap = {
-    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'approved' as const, color: 'text-green-700', bg: 'bg-green-50' },
-    'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending' as const, color: 'text-yellow-700', bg: 'bg-yellow-50' },
-    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
-    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'warning' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
-    'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'warning' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
-    'ON_GOING_COD': { text: 'Đang thực hiện COD', variant: 'info' as const, color: 'text-blue-700', bg: 'bg-blue-50' },
-    'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'info' as const, color: 'text-blue-700', bg: 'bg-blue-50' },
-    'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'secondary' as const, color: 'text-purple-700', bg: 'bg-purple-50' },
-    'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const, color: 'text-green-700', bg: 'bg-green-50' },
-    'REJECTED_COD': { text: 'Từ chối COD', variant: 'destructive' as const, color: 'text-red-700', bg: 'bg-red-50' },
-    'REJECTED_REUSE': { text: 'Từ chối Re-use', variant: 'destructive' as const, color: 'text-red-700', bg: 'bg-red-50' },
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'new-order' as const, color: 'text-green-700', bg: 'bg-green-50' },
+    'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const, color: 'text-yellow-700', bg: 'bg-yellow-50' },
+    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
+    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
+    'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'pending-reuse-payment' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
+    'ON_GOING_COD': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const, color: 'text-blue-700', bg: 'bg-blue-50' },
+    'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'processing-reuse' as const, color: 'text-blue-700', bg: 'bg-blue-50' },
+    'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, color: 'text-purple-700', bg: 'bg-purple-50' },
+    'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const, color: 'text-green-700', bg: 'bg-green-50' },
+    'REJECTED_COD': { text: 'Từ chối COD', variant: 'declined-cod' as const, color: 'text-red-700', bg: 'bg-red-50' },
+    'REJECTED_REUSE': { text: 'Từ chối Re-use', variant: 'declined-reuse' as const, color: 'text-red-700', bg: 'bg-red-50' },
     // Các trạng thái COD mới theo yêu cầu Việt Nam
-    'PENDING': { text: 'Chờ duyệt', variant: 'pending' as const, color: 'text-yellow-700', bg: 'bg-yellow-50' },
-    'APPROVED': { text: 'Đã duyệt', variant: 'approved' as const, color: 'text-green-700', bg: 'bg-green-50' },
-    'DECLINED': { text: 'Từ chối', variant: 'destructive' as const, color: 'text-red-700', bg: 'bg-red-50' },
-    'AWAITING_INFO': { text: 'Chờ thông tin', variant: 'outline' as const, color: 'text-gray-700', bg: 'bg-gray-50' },
-    'EXPIRED': { text: 'Hết hạn', variant: 'destructive' as const, color: 'text-red-700', bg: 'bg-red-50' },
-    'REVERSED': { text: 'Đã hoàn', variant: 'secondary' as const, color: 'text-purple-700', bg: 'bg-purple-50' },
-    'PENDING_PAYMENT': { text: 'Chờ thanh toán', variant: 'warning' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
-    'PAID': { text: 'Đã thanh toán', variant: 'approved' as const, color: 'text-green-700', bg: 'bg-green-50' },
-    'PROCESSING_AT_DEPOT': { text: 'Xử lý tại depot', variant: 'info' as const, color: 'text-blue-700', bg: 'bg-blue-50' },
-    'CANCELLED': { text: 'Đã hủy', variant: 'destructive' as const, color: 'text-red-700', bg: 'bg-red-50' }
+    'PENDING': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, color: 'text-yellow-700', bg: 'bg-yellow-50' },
+    'APPROVED': { text: 'Đã duyệt COD', variant: 'processing-cod' as const, color: 'text-green-700', bg: 'bg-green-50' },
+    'DECLINED': { text: 'Từ chối COD', variant: 'declined-cod' as const, color: 'text-red-700', bg: 'bg-red-50' },
+    'AWAITING_INFO': { text: 'Chờ bổ sung thông tin', variant: 'warning' as const, color: 'text-gray-700', bg: 'bg-gray-50' },
+    'EXPIRED': { text: 'Hết hạn', variant: 'declined-cod' as const, color: 'text-red-700', bg: 'bg-red-50' },
+    'REVERSED': { text: 'Đã hủy COD', variant: 'declined-cod' as const, color: 'text-purple-700', bg: 'bg-purple-50' },
+    'PENDING_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
+    'PAID': { text: 'Đã thanh toán COD', variant: 'completed' as const, color: 'text-green-700', bg: 'bg-green-50' },
+    'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, color: 'text-blue-700', bg: 'bg-blue-50' },
+    'CANCELLED': { text: 'Đã hủy', variant: 'declined-cod' as const, color: 'text-red-700', bg: 'bg-red-50' }
   }
 
   // Status mapping cho booking
   const bookingStatusMap = {
-    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'approved' as const, color: 'text-green-700', bg: 'bg-green-50' },
-    'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const, color: 'text-yellow-700', bg: 'bg-yellow-50' },
-    'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const, color: 'text-blue-700', bg: 'bg-blue-50' }
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'new-order' as const, color: 'text-green-700', bg: 'bg-green-50' },
+    'AWAITING_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const, color: 'text-yellow-700', bg: 'bg-yellow-50' },
+    'CONFIRMED': { text: 'Đã ghép', variant: 'processing-reuse' as const, color: 'text-blue-700', bg: 'bg-blue-50' }
   }
 
   const statusInfo = item ? (isContainer 

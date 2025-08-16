@@ -67,7 +67,7 @@ export function OneStopLogo({
   const textColors = getTextColors()
 
   return (
-    <div className={cn('flex items-center gap-3', className)}>
+    <div className={cn('flex items-center gap-3 pl-4 pt-4', className)}>
       {/* Hexagonal Container Logo */}
       <div className={cn(
         'rounded-lg flex items-center justify-center relative overflow-hidden',

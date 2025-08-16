@@ -35,16 +35,16 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
 
   const getStatusBadge = (status: string) => {
     const statusMap = {
-      'PENDING': { text: 'Chờ duyệt', variant: 'pending' as const, icon: Clock },
-      'APPROVED': { text: 'Đã duyệt', variant: 'approved' as const, icon: CheckCircle },
-      'DECLINED': { text: 'Đã từ chối', variant: 'declined' as const, icon: XCircle },
+      'PENDING': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, icon: Clock },
+      'APPROVED': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const, icon: CheckCircle },
+      'DECLINED': { text: 'Bị từ chối COD', variant: 'declined-cod' as const, icon: XCircle },
       'AWAITING_INFO': { text: 'Chờ bổ sung', variant: 'warning' as const, icon: AlertCircle },
-      'EXPIRED': { text: 'Hết hạn', variant: 'declined' as const, icon: Clock },
-      'REVERSED': { text: 'Đã hủy', variant: 'declined' as const, icon: XCircle },
-      'PENDING_PAYMENT': { text: 'Chờ thanh toán', variant: 'warning' as const, icon: DollarSign },
-      'PAID': { text: 'Đã thanh toán', variant: 'approved' as const, icon: CheckCircle },
-      'PROCESSING_AT_DEPOT': { text: 'Đang xử lý', variant: 'pending' as const, icon: Clock },
-      'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const, icon: CheckCircle },
+      'EXPIRED': { text: 'Hết hạn', variant: 'declined-cod' as const, icon: Clock },
+      'REVERSED': { text: 'Đã hủy', variant: 'declined-cod' as const, icon: XCircle },
+      'PENDING_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, icon: DollarSign },
+      'PAID': { text: 'Đã thanh toán', variant: 'processing-cod' as const, icon: CheckCircle },
+      'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, icon: Clock },
+      'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const, icon: CheckCircle },
     }
     
     const currentStatus = statusMap[status as keyof typeof statusMap] || { 
@@ -310,4 +310,4 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
       />
     </>
   )
-} 
+}

@@ -128,25 +128,29 @@ export function getStatusColor(status: string): string {
     case 'AVAILABLE':
     case 'APPROVED':
     case 'COMPLETED':
-      return 'text-green-700 bg-green-100'
+      return 'text-emerald-700 bg-emerald-50 border-emerald-200'
     case 'PENDING':
     case 'AWAITING_REUSE_APPROVAL':
+      return 'text-amber-700 bg-amber-50 border-amber-200'
     case 'AWAITING_COD_APPROVAL':
-      return 'text-yellow-700 bg-yellow-100'
+      return 'text-orange-700 bg-orange-50 border-orange-200'
     case 'AWAITING_COD_PAYMENT':
+      return 'text-yellow-700 bg-yellow-50 border-yellow-200'
     case 'AWAITING_REUSE_PAYMENT':
-      return 'text-orange-700 bg-orange-100'
+      return 'text-amber-700 bg-amber-50 border-amber-200'
     case 'ON_GOING_COD':
+      return 'text-blue-700 bg-blue-50 border-blue-200'
     case 'ON_GOING_REUSE':
-      return 'text-blue-700 bg-blue-100'
+      return 'text-indigo-700 bg-indigo-50 border-indigo-200'
     case 'DEPOT_PROCESSING':
-      return 'text-purple-700 bg-purple-100'
+      return 'text-purple-700 bg-purple-50 border-purple-200'
     case 'DECLINED':
     case 'COD_REJECTED':
+      return 'text-red-700 bg-red-50 border-red-200'
     case 'REUSE_REJECTED':
-      return 'text-red-700 bg-red-100'
+      return 'text-rose-700 bg-rose-50 border-rose-200'
     default:
-      return 'text-gray-700 bg-gray-100'
+      return 'text-gray-700 bg-gray-50 border-gray-200'
   }
 }
 

@@ -199,7 +199,7 @@ export default function ConfirmCodRequestDialog({
                 <ul className="text-sm text-yellow-700 mt-1 space-y-1">
                   <li>• Yêu cầu sẽ được gửi đến hãng tàu để xem xét</li>
                   <li>• Thời hạn xử lý: 24 giờ</li>
-                  <li>• Container sẽ chuyển sang trạng thái "Chờ duyệt COD"</li>
+                  <li>• Container sẽ chuyển sang trạng thái &quot;Chờ duyệt COD&quot;</li>
                   {codFee?.success && codFee.fee && codFee.fee > 0 && (
                     <li>• Phí COD sẽ được áp dụng nếu được phê duyệt</li>
                   )}

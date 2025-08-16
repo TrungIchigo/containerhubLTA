@@ -366,6 +366,7 @@ export default function LoginForm() {
                       <Link 
                         href="/forgot-password" 
                         className="text-sm text-primary hover:text-primary-dark transition-colors duration-300"
+                        tabIndex={-1}
                       >
                         Quên mật khẩu?
                       </Link>

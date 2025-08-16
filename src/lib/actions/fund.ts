@@ -96,6 +96,47 @@ export async function getPrepaidFund(): Promise<FundResult> {
 }
 
 /**
+ * DEBUG: Lấy thông tin quỹ prepaid với organization_id cụ thể
+ */
+export async function getDebugPrepaidFund(organizationId: string): Promise<FundResult> {
+  try {
+    const supabase = await createClient();
+
+    const { data: fund, error } = await supabase
+      .from('organization_prepaid_funds')
+      .select('*')
+      .eq('organization_id', organizationId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching debug prepaid fund:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+
+    if (!fund) {
+      return {
+        success: false,
+        message: 'Không tìm thấy quỹ prepaid cho organization này.'
+      };
+    }
+
+    return {
+      success: true,
+      data: fund as PrepaidFund
+    };
+  } catch (error) {
+    console.error('Unexpected error in getDebugPrepaidFund:', error);
+    return {
+      success: false,
+      error: 'Có lỗi xảy ra khi lấy thông tin quỹ debug.'
+    };
+  }
+}
+
+/**
  * Lấy lịch sử giao dịch quỹ
  */
 export async function getFundTransactions(limit: number = 10): Promise<FundResult> {
@@ -266,6 +307,60 @@ export async function generateCodPaymentQR(amount: number, codRequestId: string)
     return {
       success: false,
       error: 'Có lỗi xảy ra khi tạo mã QR thanh toán COD.'
+    };
+  }
+}
+
+/**
+ * DEBUG: Tạo mã QR thanh toán COD với organization_id cụ thể
+ */
+export async function generateDebugCodPaymentQR(
+  organizationId: string,
+  amount: number,
+  codRequestId: string
+): Promise<FundResult> {
+  try {
+    if (amount <= 0) {
+      return {
+        success: false,
+        message: 'Số tiền thanh toán phải lớn hơn 0.'
+      };
+    }
+
+    const supabase = await createClient();
+
+    const { data: qrInfo, error } = await supabase
+      .rpc('generate_vietqr_code', {
+        p_organization_id: organizationId,
+        p_amount: amount,
+        p_purpose: 'COD_PAYMENT',
+        p_cod_request_id: codRequestId
+      });
+
+    if (error) {
+      console.error('Error generating debug COD payment QR:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+
+    if (!qrInfo || qrInfo.length === 0) {
+      return {
+        success: false,
+        message: 'Không thể tạo mã QR thanh toán debug. Vui lòng thử lại.'
+      };
+    }
+
+    return {
+      success: true,
+      data: qrInfo[0] as QRCodeInfo
+    };
+  } catch (error) {
+    console.error('Unexpected error in generateDebugCodPaymentQR:', error);
+    return {
+      success: false,
+      error: 'Có lỗi xảy ra khi tạo mã QR thanh toán COD debug.'
     };
   }
 }
@@ -569,4 +664,4 @@ export async function adminConfirmTopUp(
       error: 'Có lỗi xảy ra khi xác nhận nạp tiền.'
     };
   }
-} 
+}

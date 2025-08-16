@@ -115,9 +115,9 @@ export function BillingDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return <Badge variant="outline" className="border-orange-300 text-orange-600">Chờ thanh toán</Badge>
+        return <Badge variant="pending-cod-payment">Chờ thanh toán</Badge>
       case 'PAID':
-        return <Badge variant="default" className="bg-green-100 text-green-800">Đã thanh toán</Badge>
+        return <Badge variant="completed">Đã thanh toán</Badge>
       case 'OVERDUE':
         return <Badge variant="destructive">Quá hạn</Badge>
       case 'UNPAID':
@@ -589,4 +589,4 @@ export function BillingDashboard() {
       />
     </div>
   )
-} 
+}

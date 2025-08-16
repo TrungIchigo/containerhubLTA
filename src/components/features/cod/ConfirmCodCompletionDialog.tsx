@@ -140,7 +140,7 @@ export function ConfirmCodCompletionDialog({
                 <h4 className="font-semibold text-amber-800">Lưu ý quan trọng</h4>
                 <ul className="text-sm text-amber-700 space-y-1">
                   <li>• Hành động này sẽ xác nhận rằng quá trình COD đã hoàn tất thành công</li>
-                  <li>• Container sẽ chuyển sang trạng thái "Hoàn tất" và không thể hoàn tác</li>
+                  <li>• Container sẽ chuyển sang trạng thái &quot;Hoàn tất&quot; và không thể hoàn tác</li>
                   <li>• Vui lòng đảm bảo đã nhận được thanh toán đầy đủ từ khách hàng</li>
                   <li>• Thông tin này sẽ được ghi lại trong hệ thống để kiểm toán</li>
                 </ul>
@@ -154,7 +154,7 @@ export function ConfirmCodCompletionDialog({
             <div className="space-y-2 text-sm text-blue-700">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                <span>Container chuyển sang trạng thái "Hoàn tất"</span>
+                <span>Container chuyển sang trạng thái &quot;Hoàn tất&quot;</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-600 rounded-full"></div>

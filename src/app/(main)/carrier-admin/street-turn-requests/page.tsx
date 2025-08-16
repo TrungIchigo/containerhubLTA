@@ -192,10 +192,10 @@ export default function StreetTurnRequestsPage() {
 
   const getStatusBadge = (status: string) => {
     const statusMap = {
-      'PENDING': { text: 'Chờ duyệt', variant: 'pending' as const },
-      'APPROVED': { text: 'Đã duyệt', variant: 'approved' as const },
-      'REJECTED': { text: 'Từ chối', variant: 'destructive' as const },
-      'COMPLETED': { text: 'Hoàn thành', variant: 'info' as const },
+      'PENDING': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const },
+      'APPROVED': { text: 'Đang thực hiện Re-use', variant: 'processing-reuse' as const },
+      'REJECTED': { text: 'Bị từ chối Re-use', variant: 'declined-reuse' as const },
+      'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const },
     }
     
     const statusInfo = statusMap[status as keyof typeof statusMap] || { text: status, variant: 'outline' as const }

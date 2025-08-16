@@ -26,9 +26,9 @@ export default function ExportBookingsTable({ bookings }: ExportBookingsTablePro
 
   // Status mapping cho booking
   const statusMap = {
-    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const },
-    'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const },
-    'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const },
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'new-order' as const },
+    'AWAITING_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const },
+    'CONFIRMED': { text: 'Đã ghép', variant: 'processing-reuse' as const },
   }
 
   const getStatusBadge = (status: string) => {
@@ -139,4 +139,4 @@ export default function ExportBookingsTable({ bookings }: ExportBookingsTablePro
       )}
     </>
   )
-} 
+}

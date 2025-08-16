@@ -68,41 +68,89 @@ export async function loginWithEdepot(username: string, password: string) {
       // Tìm tổ chức mặc định cho eDepot users hoặc tạo mới
       let defaultOrgId: string
       
-      // Tìm tổ chức eDepot hoặc tạo mới nếu chưa có
-      const { data: existingOrg } = await supabase
+      // Tạo tên tổ chức riêng biệt cho mỗi eDepot user dựa trên username
+      // Vì API eDepot không trả về organizationName đầy đủ, chúng ta tạo tên duy nhất
+      const organizationName = edepotUser.organizationName || `eDepot Company ${username}`
+      
+      // Tạo tax_code duy nhất cho eDepot user
+      const taxCode = `EDEPOT_${username}`
+      
+      // Tìm tổ chức eDepot theo tax_code trước (vì tax_code là unique)
+      const { data: existingOrgByTaxCode } = await supabase
         .from('organizations')
-        .select('id')
-        .eq('name', edepotUser.organizationName || 'eDepot Organization')
-        .eq('type', 'DEPOT')
+        .select('id, name')
+        .eq('tax_code', taxCode)
         .single()
 
-      if (existingOrg) {
-        defaultOrgId = existingOrg.id
+      if (existingOrgByTaxCode) {
+        defaultOrgId = existingOrgByTaxCode.id
+        console.log(`Using existing organization by tax_code: ${existingOrgByTaxCode.name} (${defaultOrgId})`)
       } else {
-        // Tạo tổ chức mới cho eDepot
-        const { data: newOrg, error: orgError } = await supabase
+        // Nếu không tìm thấy theo tax_code, kiểm tra theo name và type
+        const { data: existingOrgByName } = await supabase
           .from('organizations')
-          .insert({
-            name: edepotUser.organizationName || 'eDepot Organization',
-            type: 'DEPOT',
-            status: 'ACTIVE', // eDepot users được tự động kích hoạt
-            tax_code: `EDEPOT_${username}`,
-            address: 'eDepot System',
-            phone_number: '',
-            representative_email: edepotUser.email || `${username}@edepot.user`
-          })
           .select('id')
+          .eq('name', organizationName)
+          .eq('type', 'DEPOT')
           .single()
 
-        if (orgError || !newOrg) {
-          console.error('Error creating eDepot organization:', orgError)
-          return { success: false, error: 'Không thể tạo tổ chức cho người dùng eDepot.' }
+        if (existingOrgByName) {
+          defaultOrgId = existingOrgByName.id
+          console.log(`Using existing organization by name: ${organizationName} (${defaultOrgId})`)
+        } else {
+          // Tạo tổ chức mới cho eDepot user
+          console.log('Creating new organization for eDepot user:', username, 'with name:', organizationName)
+          const orgResult = await supabase
+            .from('organizations')
+            .insert({
+              name: organizationName,
+              type: 'DEPOT',
+              status: 'ACTIVE', // eDepot users được tự động kích hoạt
+              tax_code: taxCode,
+              address: 'eDepot System',
+              phone_number: '',
+              representative_email: edepotUser.email || `${username}@edepot.user`
+            })
+            .select('id')
+            .single()
+          
+          console.log('Organization creation result:', orgResult)
+          const { data: newOrg, error: orgError } = orgResult
+
+          if (orgError) {
+            console.error('Error creating eDepot organization:', orgError)
+            
+            // Handle duplicate constraint error
+            if (orgError.message?.includes('duplicate key value violates unique constraint')) {
+              console.log('Duplicate constraint detected, trying to find existing organization...')
+              
+              // Try to find existing organization by tax_code again
+              const { data: duplicateOrg } = await supabase
+                .from('organizations')
+                .select('id, name')
+                .eq('tax_code', taxCode)
+                .single()
+              
+              if (duplicateOrg) {
+                defaultOrgId = duplicateOrg.id
+                console.log(`Found existing organization after duplicate error: ${duplicateOrg.name} (${defaultOrgId})`)
+              } else {
+                return { success: false, error: 'Không thể tạo hoặc tìm thấy tổ chức cho người dùng eDepot.' }
+              }
+            } else {
+              return { success: false, error: 'Không thể tạo tổ chức cho người dùng eDepot.' }
+            }
+          } else if (!newOrg) {
+            return { success: false, error: 'Không thể tạo tổ chức cho người dùng eDepot.' }
+          } else {
+            defaultOrgId = newOrg.id
+            console.log(`Created new organization: ${organizationName} (${defaultOrgId})`)
+          }
         }
-        
-        defaultOrgId = newOrg.id
       }
 
       const userEmail = edepotUser.email || `${username}@edepot.user`
+      console.log(`Processing eDepot user: ${username}, email: ${userEmail}, organization: ${organizationName}`)
       const randomPassword = randomBytes(16).toString('hex')
 
       // Tìm user theo email trong danh sách đã có (tránh gọi listUsers() lần nữa)
@@ -138,6 +186,7 @@ export async function loginWithEdepot(username: string, password: string) {
         }
       } else {
         // Tạo user mới trên Supabase Auth với admin privileges
+        console.log(`Creating new Supabase user with email: ${userEmail}`)
         const { data: newUser, error: signUpError } = await supabaseAdmin.auth.admin.createUser({
           email: userEmail,
           password: randomPassword,
@@ -155,29 +204,57 @@ export async function loginWithEdepot(username: string, password: string) {
         }
         
         userId = newUser.user.id
+        console.log(`Successfully created Supabase user: ${userId} with email: ${userEmail}`)
       }
 
       // Kiểm tra xem profile đã tồn tại chưa
       const { data: existingProfile } = await supabaseAdmin
         .from('profiles')
-        .select('id, organization_id, role, full_name')
+        .select('id, organization_id, role, full_name, email, edepot_username')
         .eq('id', userId)
         .single()
 
       if (existingProfile) {
-        console.log('Profile already exists, using existing profile')
-        profile = existingProfile
+        console.log('Profile already exists, checking for missing data')
+        
+        // Cập nhật profile nếu thiếu email hoặc edepot_username
+        const needsUpdate = !existingProfile.email || !existingProfile.edepot_username
+        
+        if (needsUpdate) {
+          console.log('Updating existing profile with missing data')
+          const { data: updatedProfile, error: updateError } = await supabaseAdmin
+            .from('profiles')
+            .update({
+              email: existingProfile.email || userEmail,
+              edepot_username: existingProfile.edepot_username || username,
+              full_name: existingProfile.full_name || edepotUser.fullName || `eDepot User ${username}`
+            })
+            .eq('id', userId)
+            .select('id, organization_id, role, full_name, email, edepot_username')
+            .single()
+            
+          if (updateError) {
+            console.error('Error updating existing profile:', updateError)
+          } else {
+            profile = updatedProfile || existingProfile
+          }
+        } else {
+          profile = existingProfile
+        }
       } else {
         // Tạo profile mới cho user bằng admin client để bypass RLS
+        console.log(`Creating new profile for user: ${userId}, email: ${userEmail}, org: ${defaultOrgId}`)
         const { data: newProfile, error: newProfileError } = await supabaseAdmin
           .from('profiles')
           .insert({
             id: userId,
             full_name: edepotUser.fullName || `eDepot User ${username}`,
+            email: userEmail, // Lưu email vào profile
             organization_id: defaultOrgId,
             role: 'DISPATCHER', // Mặc định là DISPATCHER cho eDepot users
+            edepot_username: username // Lưu eDepot username để liên kết
           })
-          .select('id, organization_id, role, full_name')
+          .select('id, organization_id, role, full_name, email, edepot_username')
           .single()
 
         if (newProfileError || !newProfile) {
@@ -185,6 +262,7 @@ export async function loginWithEdepot(username: string, password: string) {
           return { success: false, error: 'Không thể tạo hồ sơ người dùng.' }
         }
         
+        console.log(`Successfully created profile: ${newProfile.id}, email: ${newProfile.email}, org: ${newProfile.organization_id}`)
         profile = newProfile
       }
     }

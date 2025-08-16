@@ -122,25 +122,25 @@ export const USER_ROLES = [
  */
 export const STATUS_OPTIONS = {
   IMPORT_CONTAINER: [
-    { value: 'AVAILABLE', label: 'Lệnh mới tạo', color: 'green' },
-    { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt Re-use', color: 'yellow' },
-    { value: 'AWAITING_COD_APPROVAL', label: 'Chờ duyệt thay đổi địa điểm', color: 'yellow' },
-    { value: 'AWAITING_COD_PAYMENT', label: 'Chờ thanh toán phí thay đổi địa điểm', color: 'orange' },
-    { value: 'AWAITING_REUSE_PAYMENT', label: 'Chờ thanh toán phí Re-use', color: 'orange' },
+    { value: 'AVAILABLE', label: 'Lệnh mới tạo', color: 'emerald' },
+    { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt Re-use', color: 'amber' },
+    { value: 'AWAITING_COD_APPROVAL', label: 'Chờ duyệt thay đổi địa điểm', color: 'orange' },
+    { value: 'AWAITING_COD_PAYMENT', label: 'Chờ thanh toán phí thay đổi địa điểm', color: 'yellow' },
+    { value: 'AWAITING_REUSE_PAYMENT', label: 'Chờ thanh toán phí Re-use', color: 'amber' },
     { value: 'ON_GOING_COD', label: 'Đang thực hiện thay đổi địa điểm', color: 'blue' },
-  { value: 'ON_GOING_REUSE', label: 'Đang thực hiện Re-use', color: 'blue' },
+  { value: 'ON_GOING_REUSE', label: 'Đang thực hiện Re-use', color: 'indigo' },
     { value: 'DEPOT_PROCESSING', label: 'Đang xử lý tại Depot', color: 'purple' },
     { value: 'COMPLETED', label: 'Hoàn tất', color: 'green' },
     { value: 'COD_REJECTED', label: 'Bị từ chối COD', color: 'red' },
-    { value: 'REUSE_REJECTED', label: 'Bị từ chối Re-use', color: 'red' }
+    { value: 'REUSE_REJECTED', label: 'Bị từ chối Re-use', color: 'rose' }
   ],
   EXPORT_BOOKING: [
-    { value: 'PENDING', label: 'Đang chờ', color: 'yellow' },
-    { value: 'MATCHED', label: 'Đã ghép nối', color: 'blue' },
+    { value: 'PENDING', label: 'Đang chờ', color: 'amber' },
+    { value: 'MATCHED', label: 'Đã ghép nối', color: 'indigo' },
     { value: 'FULFILLED', label: 'Đã hoàn thành', color: 'green' }
   ],
   STREET_TURN_REQUEST: [
-    { value: 'PENDING', label: 'Chờ duyệt', color: 'yellow' },
+    { value: 'PENDING', label: 'Chờ duyệt', color: 'amber' },
     { value: 'APPROVED', label: 'Đã duyệt', color: 'green' },
     { value: 'DECLINED', label: 'Bị từ chối', color: 'red' }
   ]

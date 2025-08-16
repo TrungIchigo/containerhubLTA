@@ -32,17 +32,17 @@ export function DropoffOrderCard({
   const [detailModalOpen, setDetailModalOpen] = useState(false)
 
   const statusMap = {
-    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
-    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt thay đổi địa điểm', variant: 'pending' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí thay đổi địa điểm', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'ON_GOING_COD': { text: 'Đang thực hiện thay đổi địa điểm', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
-  'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
-    'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'secondary' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
-    'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'COD_REJECTED': { text: 'Bị từ chối COD', variant: 'destructive' as const, bg: 'bg-red-50', border: 'border-red-200' },
-    'REUSE_REJECTED': { text: 'Bị từ chối Re-use', variant: 'destructive' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'new-order' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
+    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'pending-reuse-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'ON_GOING_COD': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+  'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'processing-reuse' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
+    'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'COD_REJECTED': { text: 'Bị từ chối COD', variant: 'declined-cod' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'REUSE_REJECTED': { text: 'Bị từ chối Re-use', variant: 'declined-reuse' as const, bg: 'bg-red-50', border: 'border-red-200' },
   }
 
   const getStatusInfo = (status: string) => {
@@ -313,17 +313,17 @@ export function BookingCard({
   const [detailModalOpen, setDetailModalOpen] = useState(false)
 
   const statusMap = {
-    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
-    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'ON_GOING_COD': { text: 'Đang thực hiện COD', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
-    'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
-    'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'secondary' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
-    'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'COD_REJECTED': { text: 'Bị từ chối COD', variant: 'destructive' as const, bg: 'bg-red-50', border: 'border-red-200' },
-    'REUSE_REJECTED': { text: 'Bị từ chối Re-use', variant: 'destructive' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'new-order' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
+    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'pending-reuse-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'ON_GOING_COD': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'processing-reuse' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
+    'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'COD_REJECTED': { text: 'Bị từ chối COD', variant: 'declined-cod' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'REUSE_REJECTED': { text: 'Bị từ chối Re-use', variant: 'declined-reuse' as const, bg: 'bg-red-50', border: 'border-red-200' },
   }
 
   const getStatusInfo = (status: string) => {
@@ -525,9 +525,9 @@ export function PickupOrderCard({
   const [detailModalOpen, setDetailModalOpen] = useState(false)
 
   const statusMap = {
-    'AVAILABLE': { text: 'Sẵn sàng', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
-    'CONFIRMED': { text: 'Đã ghép', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'new-order' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'AWAITING_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
+    'CONFIRMED': { text: 'Đã ghép', variant: 'processing-reuse' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
   }
 
   const getStatusInfo = (status: string) => {
@@ -606,7 +606,7 @@ export function PickupOrderCard({
             <div className="flex flex-col items-end gap-2">
               <Badge variant={statusInfo.variant} className="shadow-sm">{statusInfo.text}</Badge>
               {nearDeadline && (
-                <Badge variant="destructive" className="text-xs animate-pulse">Gấp!</Badge>
+                <Badge variant="destructive" className="text-xs animate-pulse px-2 py-1">Gấp!</Badge>
               )}
             </div>
           </div>

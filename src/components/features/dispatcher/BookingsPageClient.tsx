@@ -58,9 +58,9 @@ export default function BookingsPageClient({
   }, [bookings, filters])
 
   const statusMap = {
-    'AVAILABLE': { text: 'Cần container', variant: 'pending' as const },
-    'AWAITING_APPROVAL': { text: 'Chờ duyệt', variant: 'pending' as const },
-    'CONFIRMED': { text: 'Đã ghép', variant: 'approved' as const },
+    'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'new-order' as const },
+    'AWAITING_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const },
+    'CONFIRMED': { text: 'Đã ghép', variant: 'processing-reuse' as const },
   }
 
   const getStatusBadge = (status: string) => {
@@ -190,4 +190,4 @@ export default function BookingsPageClient({
       </Card>
     </>
   )
-} 
+}

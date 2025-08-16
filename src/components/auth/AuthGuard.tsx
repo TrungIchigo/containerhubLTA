@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { User } from '@supabase/supabase-js'
+import { useAuth } from '@/components/providers/AuthProvider'
 import { LtaLoadingFullscreen } from '@/components/ui/ltaloading'
 
 interface AuthGuardProps {
@@ -17,70 +16,50 @@ export default function AuthGuard({
   requireAuth = false, 
   redirectTo = '/login' 
 }: AuthGuardProps) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, isLoading, isAuthenticated } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
-        
-        if (requireAuth && !user) {
-          router.push(redirectTo)
-        } else if (!requireAuth && user && (window.location.pathname === '/login' || window.location.pathname === '/register')) {
-          // Get user profile to redirect to correct dashboard
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-          
-          if (profile?.role === 'DISPATCHER') {
-            router.push('/dispatcher')
-          } else if (profile?.role === 'CARRIER_ADMIN') {
-            router.push('/carrier-admin')
-          } else {
-            router.push('/dashboard')
-          }
-        }
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          (event: any, session: any) => {
-            if (event === 'SIGNED_IN') {
-              setUser(session?.user ?? null)
-            } else if (event === 'SIGNED_OUT') {
-              setUser(null)
-              if (requireAuth) {
-                router.push(redirectTo)
-              }
-            }
-          }
-        )
-
-        return () => subscription.unsubscribe()
-      } catch (error) {
-        console.error('Error checking user:', error)
-        if (requireAuth) {
-          router.push('/login')
-        }
-      } finally {
-        setLoading(false)
-      }
+    // Don't do anything while still loading
+    if (isLoading) {
+      console.log('AuthGuard: Still loading authentication...')
+      return
     }
 
-    checkUser()
-  }, [router, requireAuth, redirectTo])
+    console.log('AuthGuard: Authentication check complete', {
+      requireAuth,
+      isAuthenticated,
+      userRole: user?.role,
+      currentPath: window.location.pathname
+    })
 
-  if (loading) {
+    if (requireAuth && !isAuthenticated) {
+      console.log('AuthGuard: Redirecting to login (no user, auth required)')
+      router.push(redirectTo)
+    } else if (!requireAuth && isAuthenticated && user && (window.location.pathname === '/login' || window.location.pathname === '/register')) {
+      console.log('AuthGuard: User found on auth page, redirecting to dashboard based on role:', user.role)
+      
+      // Redirect based on user role
+      switch (user.role) {
+        case 'DISPATCHER':
+          router.push('/dispatcher')
+          break
+        case 'CARRIER_ADMIN':
+          router.push('/carrier-admin')
+          break
+        default:
+          router.push('/reports')
+      }
+    }
+  }, [isLoading, isAuthenticated, user, requireAuth, redirectTo, router])
+
+  if (isLoading) {
     return <LtaLoadingFullscreen text="Đang xác thực..." />
   }
 
-  if (requireAuth && !user) {
+  if (requireAuth && !isAuthenticated) {
     return null // Will redirect
   }
 
   return <>{children}</>
-} 
+}

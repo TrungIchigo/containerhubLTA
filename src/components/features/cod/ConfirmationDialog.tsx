@@ -205,7 +205,7 @@ export default function ConfirmationDialog({
                 <ul className="text-sm text-orange-800 space-y-1 list-disc list-inside">
                   <li>Yêu cầu sẽ được gửi đến hãng tàu để xem xét và phê duyệt</li>
                   <li>Thời gian xử lý: 24-48 giờ làm việc</li>
-                  <li>Container sẽ chuyển sang trạng thái "Chờ duyệt COD" sau khi gửi yêu cầu</li>
+                  <li>Container sẽ chuyển sang trạng thái &quot;Chờ duyệt COD&quot; sau khi gửi yêu cầu</li>
                   <li>Phí COD sẽ được thanh toán sau khi yêu cầu được phê duyệt</li>
                   <li>Bạn có thể hủy yêu cầu trong vòng 1 giờ sau khi gửi</li>
                 </ul>

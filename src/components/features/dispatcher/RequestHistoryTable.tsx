@@ -38,9 +38,9 @@ interface RequestHistoryTableProps {
 
 // Status mapping cho requests
 const statusMap = {
-  'PENDING': { text: 'Đang chờ', variant: 'pending' as const },
-  'APPROVED': { text: 'Đã duyệt', variant: 'approved' as const },
-  'DECLINED': { text: 'Bị từ chối', variant: 'declined' as const },
+  'PENDING': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const },
+  'APPROVED': { text: 'Đang thực hiện Re-use', variant: 'processing-reuse' as const },
+  'DECLINED': { text: 'Bị từ chối Re-use', variant: 'declined-reuse' as const },
 }
 
 const getStatusBadge = (request: StreetTurnRequest) => {
@@ -51,7 +51,7 @@ const getStatusBadge = (request: StreetTurnRequest) => {
   if (status === 'APPROVED' && auto_approved_by_rule_id) {
     return (
       <div className="flex items-center gap-1">
-        <Badge variant="approved">Tự động duyệt</Badge>
+        <Badge variant="processing-reuse">Tự động duyệt</Badge>
         <span className="text-xs">🤖</span>
       </div>
     )
@@ -59,12 +59,12 @@ const getStatusBadge = (request: StreetTurnRequest) => {
   
   // Marketplace requests with partner approval pending
   if (match_type === 'MARKETPLACE' && dropoff_org_approval_status === 'PENDING') {
-    return <Badge variant="pending">Chờ đối tác</Badge>
+    return <Badge variant="pending-reuse">Chờ đối tác</Badge>
   }
   
   // Marketplace requests with partner declined
   if (match_type === 'MARKETPLACE' && dropoff_org_approval_status === 'DECLINED') {
-    return <Badge variant="declined">Đối tác từ chối</Badge>
+    return <Badge variant="declined-reuse">Đối tác từ chối</Badge>
   }
   
   return <Badge variant={currentStatus.variant}>{currentStatus.text}</Badge>
@@ -196,4 +196,4 @@ export default function RequestHistoryTable({ requests, className, userReviews =
       </div>
     </div>
   )
-} 
+}

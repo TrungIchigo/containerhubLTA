@@ -283,22 +283,25 @@ export function AdminBillingDashboard() {
     )
   }
 
-  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "outline" | "pending-cod" | "pending-cod-payment" | "processing-cod" | "processing-depot" | "completed" | "declined-cod" | "warning" => {
     switch (status) {
       case 'PENDING':
+        return 'pending-cod'
       case 'AWAITING_INFO':
-        return 'outline'
+        return 'warning'
       case 'APPROVED':
+        return 'processing-cod'
       case 'PAID':
       case 'COMPLETED':
-        return 'default'
+        return 'completed'
       case 'DECLINED':
       case 'EXPIRED':
       case 'CANCELLED':
-        return 'destructive'
+        return 'declined-cod'
       case 'PENDING_PAYMENT':
+        return 'pending-cod-payment'
       case 'PROCESSING_AT_DEPOT':
-        return 'secondary'
+        return 'processing-depot'
       default:
         return 'secondary'
     }

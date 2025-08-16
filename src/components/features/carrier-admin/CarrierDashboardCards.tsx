@@ -36,15 +36,15 @@ interface CodRequestCardProps {
 
 export function CodRequestCard({ request }: CodRequestCardProps) {
   const statusMap = {
-    'PENDING': { text: 'Chờ duyệt', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
-    'APPROVED': { text: 'Đã duyệt', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'DECLINED': { text: 'Từ chối', variant: 'declined' as const, bg: 'bg-red-50', border: 'border-red-200' },
-    'PENDING_PAYMENT': { text: 'Chờ thanh toán', variant: 'warning' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'PAID': { text: 'Đã thanh toán', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
-    'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'info' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
-    'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'EXPIRED': { text: 'Hết hạn', variant: 'declined' as const, bg: 'bg-gray-50', border: 'border-gray-200' },
-    'REVERSED': { text: 'Đã hủy', variant: 'declined' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'PENDING': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
+    'APPROVED': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'DECLINED': { text: 'Bị từ chối COD', variant: 'declined-cod' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'PENDING_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'PAID': { text: 'Đã thanh toán COD', variant: 'completed' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'EXPIRED': { text: 'Hết hạn', variant: 'declined-cod' as const, bg: 'bg-gray-50', border: 'border-gray-200' },
+    'REVERSED': { text: 'Đã hủy', variant: 'declined-cod' as const, bg: 'bg-red-50', border: 'border-red-200' },
     'AWAITING_INFO': { text: 'Chờ bổ sung thông tin', variant: 'warning' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
   }
 
@@ -139,10 +139,10 @@ interface StreetTurnRequestCardProps {
 
 export function StreetTurnRequestCard({ request }: StreetTurnRequestCardProps) {
   const statusMap = {
-    'PENDING': { text: 'Chờ duyệt', variant: 'pending' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
-    'APPROVED': { text: 'Đã duyệt', variant: 'approved' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'DECLINED': { text: 'Từ chối', variant: 'declined' as const, bg: 'bg-red-50', border: 'border-red-200' },
-    'REJECTED': { text: 'Từ chối', variant: 'declined' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'PENDING': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
+    'APPROVED': { text: 'Đang thực hiện Re-use', variant: 'processing-reuse' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'DECLINED': { text: 'Bị từ chối Re-use', variant: 'declined-reuse' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'REJECTED': { text: 'Bị từ chối Re-use', variant: 'declined-reuse' as const, bg: 'bg-red-50', border: 'border-red-200' },
   }
 
   const getStatusInfo = (status: string) => {
@@ -244,11 +244,11 @@ interface ApprovedCodRequestCardProps {
 
 export function ApprovedCodRequestCard({ request }: ApprovedCodRequestCardProps) {
   const statusMap = {
-    'APPROVED': { text: 'Đã duyệt', variant: 'approved' as const },
-    'PENDING_PAYMENT': { text: 'Chờ thanh toán', variant: 'warning' as const },
-    'PAID': { text: 'Đã thanh toán', variant: 'info' as const },
-    'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'info' as const },
-    'COMPLETED': { text: 'Hoàn tất', variant: 'approved' as const },
+    'APPROVED': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const },
+    'PENDING_PAYMENT': { text: 'Chờ thanh toán COD', variant: 'pending-cod-payment' as const },
+    'PAID': { text: 'Đã thanh toán COD', variant: 'completed' as const },
+    'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const },
+    'COMPLETED': { text: 'Hoàn tất COD', variant: 'completed' as const },
   }
 
   const getStatusInfo = (status: string) => {
@@ -318,4 +318,4 @@ export function ApprovedCodRequestCard({ request }: ApprovedCodRequestCardProps)
       </CardContent>
     </Card>
   )
-} 
+}

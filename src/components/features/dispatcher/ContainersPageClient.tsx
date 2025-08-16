@@ -74,25 +74,25 @@ export default function ContainersPageClient({
   ] as const;
   type ImportContainerStatus = typeof IMPORT_CONTAINER_STATUS[number];
 
-  const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed" }> = {
-    AVAILABLE: { text: 'Sẵn sàng', variant: 'approved' },
-    AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt Re-use', variant: 'pending' },
-    COD_REJECTED: { text: 'Bị từ chối COD', variant: 'destructive' },
-    AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending' },
-    AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'warning' },
-    AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí Re-use', variant: 'warning' },
-    ON_GOING_COD: { text: 'Đang thực hiện COD', variant: 'info' },
-  ON_GOING_REUSE: { text: 'Đang thực hiện Re-use', variant: 'info' },
-    DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'secondary' },
-    COMPLETED: { text: 'Hoàn tất', variant: 'approved' },
-    REUSE_REJECTED: { text: 'Bị từ chối Re-use', variant: 'destructive' },
+  const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed" | "new-order" | "pending-reuse" | "pending-cod" | "pending-cod-payment" | "pending-reuse-payment" | "processing-cod" | "processing-reuse" | "processing-depot" | "completed" | "declined-cod" | "declined-reuse" }> = {
+    AVAILABLE: { text: 'Lệnh mới tạo', variant: 'new-order' },
+    AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' },
+    COD_REJECTED: { text: 'Bị từ chối COD', variant: 'declined-cod' },
+    AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending-cod' },
+    AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' },
+    AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí Re-use', variant: 'pending-reuse-payment' },
+    ON_GOING_COD: { text: 'Đang thực hiện COD', variant: 'processing-cod' },
+  ON_GOING_REUSE: { text: 'Đang thực hiện Re-use', variant: 'processing-reuse' },
+    DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'processing-depot' },
+    COMPLETED: { text: 'Hoàn tất', variant: 'completed' },
+    REUSE_REJECTED: { text: 'Bị từ chối Re-use', variant: 'declined-reuse' },
     EXPIRED: { text: 'Hết hạn', variant: 'outline' },
     PAYMENT_CANCELLED: { text: 'Đã hủy thanh toán', variant: 'outline' },
   };
 
   const getStatusBadge = (status: string) => {
     const currentStatus = statusMap[status as ImportContainerStatus] || { text: status, variant: 'outline' as const };
-    const variant = currentStatus.variant as "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed";
+    const variant = currentStatus.variant as "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed" | "new-order" | "pending-reuse" | "pending-cod" | "pending-cod-payment" | "pending-reuse-payment" | "processing-cod" | "processing-reuse" | "processing-depot" | "completed" | "declined-cod" | "declined-reuse";
     return <Badge variant={variant}>{currentStatus.text}</Badge>;
   }
 
