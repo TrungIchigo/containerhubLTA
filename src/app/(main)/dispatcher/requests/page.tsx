@@ -121,7 +121,7 @@ async function RequestsContent({ searchParams }: RequestsPageProps) {
 
         <TabsContent value="cod" className="space-y-6">
           {codError ? (
-            <ErrorSection title="Không thể tải danh sách yêu cầu COD" error={codError} />
+            <ErrorSection title="Không thể tải danh sách yêu cầu Thay Đổi Địa Điểm" error={codError} />
           ) : (
             <CodRequestsTable requests={codRequests} />
           )}

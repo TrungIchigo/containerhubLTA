@@ -42,7 +42,7 @@ function calculateComplexityScore(scenario: {
   isStreetTurnOnRoad: boolean
   isDifferentCarrier: boolean
   isSameShippingLine: boolean
-  hasCOD: boolean
+  hasLocationChange: boolean
   hasVAS: boolean
 }): number {
   let score = 0
@@ -51,7 +51,7 @@ function calculateComplexityScore(scenario: {
   else if (scenario.isStreetTurnOnRoad && !scenario.isDifferentCarrier) score += 12
   else if (scenario.isDifferentCarrier && scenario.isSameShippingLine) score += 8
   
-  if (scenario.hasCOD) score += 5
+  if (scenario.hasLocationChange) score += 5
   if (scenario.hasVAS) score += 5
   if (!scenario.isDifferentCarrier && !scenario.isSameShippingLine) score += 2
 
@@ -87,7 +87,7 @@ function calculateMatchingScore(
     isStreetTurnOnRoad: boolean
     isDifferentCarrier: boolean
     isSameShippingLine: boolean
-    hasCOD: boolean
+    hasLocationChange: boolean
     hasVAS: boolean
   }
 ): MatchingScore {
@@ -148,7 +148,7 @@ export function generateMatchingSuggestions(
         isStreetTurnOnRoad: true, // Default to true for now
         isDifferentCarrier: container.trucking_company_org_id !== booking.trucking_company_org_id,
         isSameShippingLine: container.shipping_line_org_id === booking.shipping_line_org_id,
-        hasCOD: false, // Determine based on actual conditions
+        hasLocationChange: false, // Determine based on actual conditions
         hasVAS: false // Removed condition check since we don't have these fields
       }
 
@@ -189,4 +189,4 @@ export function generateMatchingSuggestions(
 
   // Sort suggestions by total savings
   return suggestions.sort((a, b) => b.total_estimated_cost_saving - a.total_estimated_cost_saving)
-} 
+}

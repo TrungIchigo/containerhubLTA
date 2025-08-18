@@ -451,7 +451,7 @@ export default function DispatcherPage() {
       console.error('Error requesting COD:', error)
       toast({
           title: "Lỗi",
-          description: 'Không thể tạo yêu cầu COD',
+          description: 'Không thể tạo yêu cầu Thay Đổi Địa Điểm',
           variant: "destructive"
         })
     }
@@ -468,7 +468,7 @@ export default function DispatcherPage() {
     loadDashboardData()
     toast({
       title: "✅ Thành công",
-      description: 'Yêu cầu COD đã được gửi thành công',
+      description: 'Yêu cầu Thay Đổi Địa Điểm đã được gửi thành công',
       variant: "default"
     })
   }

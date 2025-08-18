@@ -99,7 +99,7 @@ async function CarrierDashboardContent({ user }: { user: any }) {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-text-primary">
-                  Yêu cầu COD Mới Nhất
+                  Yêu cầu Thay Đổi Địa Điểm Mới Nhất
                 </h2>
                 <Button variant="outline" size="sm" asChild className="border-primary text-primary hover:bg-primary hover:text-white">
                   <Link href="/carrier-admin/cod-requests" className="flex items-center gap-2">
@@ -127,7 +127,7 @@ async function CarrierDashboardContent({ user }: { user: any }) {
                           <MapPin className="h-6 w-6 text-primary" />
                         </div>
                         <h3 className="text-lg font-semibold text-text-primary mb-2">
-                          Chưa có Yêu cầu COD
+                          Chưa có Yêu cầu Thay Đổi Địa Điểm
                         </h3>
                         <p className="text-text-secondary text-sm">
                           Chưa có yêu cầu đổi nơi trả nào

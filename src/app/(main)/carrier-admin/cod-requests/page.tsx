@@ -265,11 +265,11 @@ export default function CodRequestsPage() {
 
   const getStatusBadge = (status: string) => {
     const statusMap = {
-      'PENDING': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const },
-      'APPROVED': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const },
-      'DECLINED': { text: 'Bị từ chối COD', variant: 'declined-cod' as const },
-      'PENDING_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const },
-      'PAID': { text: 'Đã thanh toán COD', variant: 'completed' as const },
+      'PENDING': { text: 'Chờ duyệt Thay Đổi Địa Điểm', variant: 'pending-cod' as const },
+      'APPROVED': { text: 'Đang thực hiện Thay Đổi Địa Điểm', variant: 'processing-cod' as const },
+      'DECLINED': { text: 'Bị từ chối Thay Đổi Địa Điểm', variant: 'declined-cod' as const },
+      'PENDING_PAYMENT': { text: 'Chờ thanh toán phí Thay Đổi Địa Điểm', variant: 'pending-cod-payment' as const },
+      'PAID': { text: 'Đã thanh toán Thay Đổi Địa Điểm', variant: 'completed' as const },
       'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const },
       'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const },
       'EXPIRED': { text: 'Hết hạn', variant: 'declined-cod' as const },
@@ -361,7 +361,7 @@ export default function CodRequestsPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-text-primary mb-4">Có lỗi xảy ra</h1>
-          <p className="text-text-secondary mb-6">Không thể tải dữ liệu yêu cầu COD.</p>
+          <p className="text-text-secondary mb-6">Không thể tải dữ liệu yêu cầu thay đổi địa điểm.</p>
           <p className="text-sm text-text-secondary">Chi tiết lỗi: {error}</p>
         </div>
       </div>
@@ -381,9 +381,9 @@ export default function CodRequestsPage() {
               </Link>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-text-primary">Yêu cầu COD</h1>
+              <h1 className="text-3xl font-bold text-text-primary">Yêu cầu Thay Đổi Địa Điểm</h1>
               <p className="text-text-secondary">
-                Danh sách chi tiết tất cả yêu cầu đổi nơi trả ({totalCount} kết quả)
+                Danh sách chi tiết tất cả yêu cầu thay đổi địa điểm ({totalCount} kết quả)
               </p>
             </div>
           </div>
@@ -548,8 +548,8 @@ export default function CodRequestsPage() {
             {filteredRequests.length === 0 && (
               <div className="text-center py-12">
                 <div className="mx-auto h-12 w-12 text-gray-400 mb-4">📋</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Không có yêu cầu COD</h3>
-                <p className="text-gray-600">Chưa có yêu cầu COD nào phù hợp với bộ lọc của bạn.</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Không có yêu cầu Thay Đổi Địa Điểm</h3>
+                <p className="text-gray-600">Chưa có yêu cầu thay đổi địa điểm nào phù hợp với bộ lọc của bạn.</p>
               </div>
             )}
           </CardContent>
@@ -584,12 +584,12 @@ export default function CodRequestsPage() {
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <div className="flex items-center gap-2 mb-4">
               <XCircle className="h-5 w-5 text-red-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Từ chối yêu cầu COD</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Từ chối yêu cầu Thay Đổi Địa Điểm</h2>
             </div>
             
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-3">
-                Bạn đang từ chối yêu cầu COD cho container <strong>{selectedRequest?.import_container?.container_number}</strong>
+                Bạn đang từ chối yêu cầu Thay Đổi Địa Điểm cho container <strong>{selectedRequest?.import_container?.container_number}</strong>
               </p>
               
               <label className="block text-sm font-medium text-gray-700 mb-2">

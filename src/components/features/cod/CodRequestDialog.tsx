@@ -252,7 +252,7 @@ export default function CodRequestDialog({ isOpen, onClose, container, onSuccess
                 ) : codFee?.success && codFee.fee ? (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">Phí COD:</span>
+                      <span className="font-medium">Phí thay đổi địa điểm giao trả:</span>
                       <span className="text-lg font-semibold text-primary" data-testid="cod-fee">
                         {formatCodFee(codFee.fee)}
                       </span>
@@ -264,7 +264,7 @@ export default function CodRequestDialog({ isOpen, onClose, container, onSuccess
                 ) : codFee && !codFee.success ? (
                   <div className="space-y-2">
                     <div className="text-sm text-red-600 font-medium">
-                      ❌ Lỗi tính phí COD
+                      ❌ Lỗi tính phí thay đổi địa điểm giao trả
                     </div>
                     <div className="text-sm text-red-600">
                       {codFee.message || 'Không thể tính phí cho tuyến này'}
@@ -275,7 +275,7 @@ export default function CodRequestDialog({ isOpen, onClose, container, onSuccess
                   </div>
                 ) : (
                   <div className="text-sm text-gray-500">
-                    Chọn depot để xem phí COD
+                    Chọn depot để xem phí thay đổi địa điểm giao trả
                   </div>
                 )}
               </div>

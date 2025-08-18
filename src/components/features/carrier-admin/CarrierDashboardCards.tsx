@@ -36,11 +36,11 @@ interface CodRequestCardProps {
 
 export function CodRequestCard({ request }: CodRequestCardProps) {
   const statusMap = {
-    'PENDING': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
-    'APPROVED': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'DECLINED': { text: 'Bị từ chối COD', variant: 'declined-cod' as const, bg: 'bg-red-50', border: 'border-red-200' },
-    'PENDING_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'PAID': { text: 'Đã thanh toán COD', variant: 'completed' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'PENDING': { text: 'Chờ duyệt thay đổi địa điểm', variant: 'pending-cod' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
+    'APPROVED': { text: 'Đang thực hiện thay đổi địa điểm', variant: 'processing-cod' as const, bg: 'bg-green-50', border: 'border-green-200' },
+    'DECLINED': { text: 'Bị từ chối thay đổi địa điểm', variant: 'declined-cod' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'PENDING_PAYMENT': { text: 'Chờ thanh toán phí thay đổi địa điểm', variant: 'pending-cod-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'PAID': { text: 'Đã thanh toán phí thay đổi địa điểm', variant: 'completed' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
     'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
     'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const, bg: 'bg-green-50', border: 'border-green-200' },
     'EXPIRED': { text: 'Hết hạn', variant: 'declined-cod' as const, bg: 'bg-gray-50', border: 'border-gray-200' },
@@ -111,7 +111,7 @@ export function CodRequestCard({ request }: CodRequestCardProps) {
                 <DollarSign className="w-4 h-4 text-yellow-600" />
               </div>
               <div>
-                <div className="text-xs text-gray-500">Phí COD</div>
+                <div className="text-xs text-gray-500">Phí thay đổi địa điểm</div>
                 <div className="font-medium text-yellow-600">{request.fee_amount?.toLocaleString('vi-VN')} VNĐ</div>
               </div>
             </div>
@@ -244,11 +244,11 @@ interface ApprovedCodRequestCardProps {
 
 export function ApprovedCodRequestCard({ request }: ApprovedCodRequestCardProps) {
   const statusMap = {
-    'APPROVED': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const },
-    'PENDING_PAYMENT': { text: 'Chờ thanh toán COD', variant: 'pending-cod-payment' as const },
-    'PAID': { text: 'Đã thanh toán COD', variant: 'completed' as const },
+    'APPROVED': { text: 'Đang thực hiện thay đổi địa điểm', variant: 'processing-cod' as const },
+    'PENDING_PAYMENT': { text: 'Chờ thanh toán phí thay đổi địa điểm', variant: 'pending-cod-payment' as const },
+    'PAID': { text: 'Đã thanh toán phí thay đổi địa điểm', variant: 'completed' as const },
     'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const },
-    'COMPLETED': { text: 'Hoàn tất COD', variant: 'completed' as const },
+    'COMPLETED': { text: 'Hoàn tất thay đổi địa điểm', variant: 'completed' as const },
   }
 
   const getStatusInfo = (status: string) => {

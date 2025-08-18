@@ -85,10 +85,10 @@ export async function createCodServiceFee(
   });
 
   const description = containerNumber 
-    ? `Phí dịch vụ xử lý yêu cầu COD cho container ${containerNumber}`
-    : `Phí dịch vụ xử lý yêu cầu COD`;
+    ? `Phí dịch vụ xử lý yêu cầu Thay Đổi Địa Điểm cho container ${containerNumber}`
+    : `Phí dịch vụ xử lý yêu cầu Thay Đổi Địa Điểm`;
 
-  console.log('Creating COD transaction with description:', description);
+  console.log('Creating Thay Đổi Địa Điểm transaction with description:', description);
 
   const result = await createTransaction(
     payerOrgId,
@@ -98,7 +98,7 @@ export async function createCodServiceFee(
     description
   );
 
-  console.log('COD transaction creation result:', result);
+  console.log('Thay Đổi Địa Điểm transaction creation result:', result);
   return result;
 }
 

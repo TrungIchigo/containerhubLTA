@@ -17,11 +17,11 @@ interface ConfirmCodCompletionDialogProps {
 }
 
 /**
- * Dialog xác nhận hoàn tất COD với thông tin chi tiết container
+ * Dialog xác nhận hoàn tất thay đổi địa điểm giao trả với thông tin chi tiết container
  * @param open - Trạng thái mở/đóng dialog
  * @param onOpenChange - Callback khi thay đổi trạng thái dialog
  * @param container - Thông tin container cần xác nhận
- * @param onConfirm - Callback khi xác nhận hoàn tất COD
+ * @param onConfirm - Callback khi xác nhận hoàn tất thay đổi địa điểm
  * @param isLoading - Trạng thái loading khi đang xử lý
  */
 export function ConfirmCodCompletionDialog({
@@ -51,13 +51,13 @@ export function ConfirmCodCompletionDialog({
     switch (status) {
       case 'ON_GOING_COD':
         return {
-          text: 'Đang thực hiện COD',
+          text: 'Đang thực hiện thay đổi địa điểm',
           variant: 'info' as const,
           icon: Package
         }
       case 'AWAITING_COD_PAYMENT':
         return {
-          text: 'Chờ thanh toán phí COD',
+          text: 'Chờ thanh toán phí thay đổi địa điểm',
           variant: 'warning' as const,
           icon: Clock
         }
@@ -79,7 +79,7 @@ export function ConfirmCodCompletionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <CheckCircle className="h-6 w-6 text-green-600" />
-            Xác nhận hoàn tất COD
+            Xác nhận hoàn tất thay đổi địa điểm giao trả
           </DialogTitle>
         </DialogHeader>
 

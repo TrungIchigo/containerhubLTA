@@ -130,7 +130,7 @@ export function BillingDashboard() {
   const getTransactionTypeBadge = (type: string) => {
     switch (type) {
       case 'COD_SERVICE_FEE':
-        return <Badge variant="outline" className="border-blue-300 text-blue-600">Phí COD</Badge>
+        return <Badge variant="outline" className="border-blue-300 text-blue-600">Phí thay đổi địa điểm</Badge>
       case 'MARKETPLACE_FEE':
         return <Badge variant="outline" className="border-purple-300 text-purple-600">Phí Marketplace</Badge>
       default:
@@ -255,7 +255,7 @@ export function BillingDashboard() {
 
         <Card className="relative overflow-hidden p-3 border-0 bg-gradient-to-br from-purple-50 to-purple-100 shadow-md hover:shadow-lg transition-all duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-800">Phí COD</CardTitle>
+            <CardTitle className="text-sm font-medium text-purple-800">Phí thay đổi địa điểm</CardTitle>
             <div className="p-2 rounded-full bg-purple-500/10">
               <CheckCircle className="h-4 w-4 text-purple-600" />
             </div>
@@ -324,10 +324,10 @@ export function BillingDashboard() {
               </div>
               <div>
                 <CardTitle className="bg-gradient-to-r from-orange-700 to-pink-700 bg-clip-text text-transparent font-bold">
-                  Phí COD Chờ Thanh Toán
+                  Phí Thay Đổi Địa Điểm Chờ Thanh Toán
                 </CardTitle>
                 <CardDescription className="text-gray-600 font-medium">
-                  Các khoản phí COD cần được thanh toán sau khi giao trả thành công
+                  Các khoản phí thay đổi địa điểm cần được thanh toán sau khi giao trả thành công
                 </CardDescription>
               </div>
             </div>

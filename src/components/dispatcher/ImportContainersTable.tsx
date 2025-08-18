@@ -71,11 +71,11 @@ export default function ImportContainersTable({
     AWAITING_APPROVAL: { text: 'Chờ duyệt', variant: 'pending-reuse' },
     CONFIRMED: { text: 'Đã xác nhận', variant: 'processing-reuse' },
     AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' },
-    COD_REJECTED: { text: 'Bị từ chối COD', variant: 'declined-cod' },
-    AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending-cod' },
-    AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' },
+    COD_REJECTED: { text: 'Bị từ chối Thay Đổi Địa Điểm', variant: 'declined-reuse' },
+    AWAITING_COD_APPROVAL: { text: 'Chờ duyệt Thay Đổi Địa Điểm', variant: 'pending-cod' },
+    AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí Thay Đổi Địa Điểm', variant: 'pending-cod-payment' },
     AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí Re-use', variant: 'pending-reuse-payment' },
-    ON_GOING_COD: { text: 'Đang thực hiện COD', variant: 'processing-cod' },
+    ON_GOING_COD: { text: 'Đang thực hiện Thay Đổi Địa Điểm', variant: 'processing-cod' },
     ON_GOING_REUSE: { text: 'Đang thực hiện Re-use', variant: 'processing-reuse' },
     DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'processing-depot' },
     COMPLETED: { text: 'Hoàn tất', variant: 'completed' },
@@ -119,7 +119,7 @@ export default function ImportContainersTable({
         if ((result.data || []).length > 0) {
           toast({ title: "Không tìm thấy phí COD cần thanh toán phù hợp. Vui lòng liên hệ admin để kiểm tra lại trạng thái trên hệ thống.", variant: "destructive" })
         } else {
-          toast({ title: "Không tìm thấy yêu cầu COD nào cho container này.", variant: "destructive" })
+          toast({ title: "Không tìm thấy yêu cầu Thay Đổi Địa Điểm nào cho container này.", variant: "destructive" })
         }
         return
       }
@@ -160,14 +160,14 @@ export default function ImportContainersTable({
       })
       
       if (!response.ok) {
-        throw new Error('Không thể tìm thấy yêu cầu COD cho container này')
+        throw new Error('Không thể tìm thấy yêu cầu Thay Đổi Địa Điểm cho container này')
       }
       
       const result = await response.json()
       const codRequest = result.data?.[0]
       
       if (!codRequest) {
-        throw new Error('Không tìm thấy yêu cầu COD liên quan')
+        throw new Error('Không tìm thấy yêu cầu Thay Đổi Địa Điểm liên quan')
       }
       
       // Confirm COD completion

@@ -30,7 +30,7 @@ export function CarrierKPICardsInline({
             <MapPin className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="text-blue-100 text-xs font-medium uppercase tracking-wide">Yêu cầu COD</div>
+            <div className="text-blue-100 text-xs font-medium uppercase tracking-wide">Yêu cầu Thay Đổi Địa Điểm</div>
             <div className="text-2xl font-bold">{pendingCodRequests}</div>
           </div>
         </div>
@@ -49,14 +49,14 @@ export function CarrierKPICardsInline({
         </div>
       </div>
 
-      {/* COD Đã Duyệt Chưa Thanh Toán */}
+      {/* Thay đổi địa điểm đã duyệt chưa thanh toán */}
       <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
             <CheckCircle className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="text-emerald-100 text-xs font-medium uppercase tracking-wide">COD Đã Duyệt</div>
+            <div className="text-emerald-100 text-xs font-medium uppercase tracking-wide">Thay đổi địa điểm đã duyệt</div>
             <div className="text-2xl font-bold">{approvedButUnpaidCodRequests}</div>
           </div>
         </div>

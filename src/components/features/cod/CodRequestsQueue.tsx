@@ -56,7 +56,7 @@ export default function CodRequestsQueue() {
       })
       toast({
         title: "❌ Lỗi",
-        description: `Không thể tải danh sách yêu cầu COD: ${error?.message || 'Unknown error'}`,
+        description: `Không thể tải danh sách yêu cầu Thay Đổi Địa Điểm: ${error?.message || 'Unknown error'}`,
         variant: "destructive"
       })
     } finally {
@@ -127,7 +127,7 @@ export default function CodRequestsQueue() {
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-text-secondary">Đang tải yêu cầu COD...</p>
+          <p className="text-text-secondary">Đang tải yêu cầu Thay Đổi Địa Điểm...</p>
         </div>
       </div>
     )
@@ -138,7 +138,7 @@ export default function CodRequestsQueue() {
       {requests.length === 0 ? (
         <div className="text-center py-12 text-text-secondary">
           <MessageSquare className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-          <p className="text-body">Chưa có yêu cầu COD nào.</p>
+          <p className="text-body">Chưa có yêu cầu Thay Đổi Địa Điểm nào.</p>
           <p className="text-body-small mt-2">Các yêu cầu mới sẽ xuất hiện tại đây.</p>
         </div>
       ) : (

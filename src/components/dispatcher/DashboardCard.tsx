@@ -34,14 +34,14 @@ export function DropoffOrderCard({
   const statusMap = {
     'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'new-order' as const, bg: 'bg-green-50', border: 'border-green-200' },
     'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
-    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt thay đổi địa điểm', variant: 'pending-cod' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí thay đổi địa điểm', variant: 'pending-cod-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
     'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'pending-reuse-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'ON_GOING_COD': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'ON_GOING_COD': { text: 'Đang thực hiện thay đổi địa điểm', variant: 'processing-cod' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
   'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'processing-reuse' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
     'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
     'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'COD_REJECTED': { text: 'Bị từ chối COD', variant: 'declined-cod' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'COD_REJECTED': { text: 'Bị từ chối thay đổi địa điểm', variant: 'declined-cod' as const, bg: 'bg-red-50', border: 'border-red-200' },
     'REUSE_REJECTED': { text: 'Bị từ chối Re-use', variant: 'declined-reuse' as const, bg: 'bg-red-50', border: 'border-red-200' },
   }
 
@@ -68,7 +68,7 @@ export function DropoffOrderCard({
         if (onRequestCod) {
           actions.push({
             id: 'request-cod',
-            label: 'Yêu cầu COD',
+            label: 'Yêu cầu thay đổi địa điểm',
             variant: 'default' as const,
             icon: MapPinIcon,
             onClick: () => onRequestCod(container),
@@ -91,7 +91,7 @@ export function DropoffOrderCard({
         if (onPayCodFee) {
           actions.push({
             id: 'pay-cod-fee',
-            label: 'Thanh toán COD',
+            label: 'Thanh toán phí thay đổi địa điểm',
             variant: 'default' as const,
             icon: CreditCard,
             onClick: async () => {
@@ -115,7 +115,7 @@ export function DropoffOrderCard({
         if (onConfirmCodDelivery) {
           actions.push({
             id: 'confirm-delivery',
-            label: 'Xác nhận hoàn tất COD',
+            label: 'Xác nhận hoàn tất thay đổi địa điểm',
             variant: 'default' as const,
             icon: CheckCircle,
             onClick: () => {
@@ -152,7 +152,7 @@ export function DropoffOrderCard({
         if (onRequestCod) {
           actions.push({
             id: 'request-cod-again',
-            label: 'Yêu cầu COD lại',
+            label: 'Yêu cầu thay đổi địa điểm lại',
             variant: 'outline' as const,
             icon: MapPinIcon,
             onClick: () => onRequestCod(container),
@@ -315,14 +315,14 @@ export function BookingCard({
   const statusMap = {
     'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'new-order' as const, bg: 'bg-green-50', border: 'border-green-200' },
     'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const, bg: 'bg-yellow-50', border: 'border-yellow-200' },
-    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt thay đổi địa điểm', variant: 'pending-cod' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
+    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí thay đổi địa điểm', variant: 'pending-cod-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
     'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'pending-reuse-payment' as const, bg: 'bg-orange-50', border: 'border-orange-200' },
-    'ON_GOING_COD': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
+    'ON_GOING_COD': { text: 'Đang thực hiện thay đổi địa điểm', variant: 'processing-cod' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
     'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'processing-reuse' as const, bg: 'bg-blue-50', border: 'border-blue-200' },
     'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, bg: 'bg-purple-50', border: 'border-purple-200' },
     'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const, bg: 'bg-green-50', border: 'border-green-200' },
-    'COD_REJECTED': { text: 'Bị từ chối COD', variant: 'declined-cod' as const, bg: 'bg-red-50', border: 'border-red-200' },
+    'COD_REJECTED': { text: 'Bị từ chối thay đổi địa điểm', variant: 'declined-cod' as const, bg: 'bg-red-50', border: 'border-red-200' },
     'REUSE_REJECTED': { text: 'Bị từ chối Re-use', variant: 'declined-reuse' as const, bg: 'bg-red-50', border: 'border-red-200' },
   }
 
@@ -347,7 +347,7 @@ export function BookingCard({
         if (onRequestCod) {
           actions.push({
             id: 'request-cod',
-            label: 'Yêu cầu COD',
+            label: 'Yêu cầu thay đổi địa điểm',
             variant: 'default' as const,
             icon: MapPinIcon,
             onClick: () => onRequestCod(booking),
@@ -370,7 +370,7 @@ export function BookingCard({
         if (onPayCodFee) {
           actions.push({
             id: 'pay-cod',
-            label: 'Thanh toán phí COD',
+            label: 'Thanh toán phí thay đổi địa điểm',
             variant: 'default' as const,
             icon: CreditCard,
             onClick: () => onPayCodFee(booking),

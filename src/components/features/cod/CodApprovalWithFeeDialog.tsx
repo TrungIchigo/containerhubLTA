@@ -22,7 +22,7 @@ interface CodApprovalWithFeeDialogProps {
 
 // Form validation schema
 const approvalWithFeeSchema = z.object({
-  cod_fee: z.number().min(0, 'Phí COD phải >= 0').max(100000000, 'Phí COD quá lớn')
+  cod_fee: z.number().min(0, 'Phí thay đổi địa điểm phải >= 0').max(100000000, 'Phí thay đổi địa điểm quá lớn')
 })
 
 type ApprovalWithFeeFormData = z.infer<typeof approvalWithFeeSchema>
@@ -55,7 +55,7 @@ export default function CodApprovalWithFeeDialog({ isOpen, onClose, request }: C
         throw new Error(result.message)
       }
     } catch (error: any) {
-      console.error('Error approving COD request with fee:', error)
+      console.error('Error approving thay đổi địa điểm request with fee:', error)
       toast({
         title: "❌ Lỗi",
         description: error.message || 'Có lỗi xảy ra khi phê duyệt yêu cầu',
@@ -83,7 +83,7 @@ export default function CodApprovalWithFeeDialog({ isOpen, onClose, request }: C
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-text-primary flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-blue-600" />
-            Phê Duyệt Yêu Cầu COD (Kèm Phí)
+            Phê Duyệt Yêu Cầu Thay Đổi Địa Điểm (Kèm Phí)
           </DialogTitle>
         </DialogHeader>
 

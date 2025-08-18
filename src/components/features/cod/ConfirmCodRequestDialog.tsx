@@ -61,18 +61,18 @@ export default function ConfirmCodRequestDialog({
 
       if (result.success) {
         const feeMessage = result.data?.codFee 
-          ? ` Phí COD: ${result.data.codFee.toLocaleString('vi-VN')} VNĐ.`
+          ? ` Phí thay đổi địa điểm: ${result.data.codFee.toLocaleString('vi-VN')} VNĐ.`
           : ' Không có phí bổ sung.'
           
         showSuccessToast(
-          "Yêu Cầu COD Đã Được Gửi",
+          "Yêu Cầu Thay Đổi Địa Điểm Đã Được Gửi",
           `Đã gửi yêu cầu thay đổi nơi giao trả thành công!${feeMessage}`
         )
         
         onSuccess()
         onClose()
       } else {
-        throw new Error(result.message || 'Có lỗi xảy ra khi tạo yêu cầu COD')
+        throw new Error(result.message || 'Có lỗi xảy ra khi tạo yêu cầu thay đổi địa điểm')
       }
     } catch (error: any) {
       console.error('Error in handleConfirm:', {
@@ -97,7 +97,7 @@ export default function ConfirmCodRequestDialog({
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-text-primary flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-yellow-600" />
-            Xác Nhận Yêu Cầu COD
+            Xác Nhận Yêu Cầu Thay Đổi Địa Điểm Giao Trả
           </DialogTitle>
         </DialogHeader>
 
@@ -150,7 +150,7 @@ export default function ConfirmCodRequestDialog({
           {/* Phí COD */}
           <div className="space-y-3">
             <h3 className="text-base font-semibold text-text-primary border-b pb-2">
-              Phí COD
+              Phí Thay Đổi Địa Điểm Giao Trả
             </h3>
             
             <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
@@ -158,9 +158,9 @@ export default function ConfirmCodRequestDialog({
                 <DollarSign className="h-4 w-4 text-blue-600" />
                 <span className="font-medium text-blue-800">
                   {codFee?.success && codFee.fee !== undefined ? (
-                    <>Phí COD: {formatCodFee(codFee.fee)}</>
+                    <>Phí thay đổi địa điểm giao trả: {formatCodFee(codFee.fee)}</>
                   ) : (
-                    <>Phí COD: Miễn phí</>
+                    <>Phí thay đổi địa điểm giao trả: Miễn phí</>
                   )}
                 </span>
               </div>

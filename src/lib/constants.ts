@@ -124,14 +124,14 @@ export const STATUS_OPTIONS = {
   IMPORT_CONTAINER: [
     { value: 'AVAILABLE', label: 'Lệnh mới tạo', color: 'emerald' },
     { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt Re-use', color: 'amber' },
-    { value: 'AWAITING_COD_APPROVAL', label: 'Chờ duyệt thay đổi địa điểm', color: 'orange' },
-    { value: 'AWAITING_COD_PAYMENT', label: 'Chờ thanh toán phí thay đổi địa điểm', color: 'yellow' },
+    { value: 'AWAITING_COD_APPROVAL', label: 'Chờ duyệt thay đổi địa điểm giao trả', color: 'orange' },
+    { value: 'AWAITING_COD_PAYMENT', label: 'Chờ thanh toán phí thay đổi địa điểm giao trả', color: 'yellow' },
     { value: 'AWAITING_REUSE_PAYMENT', label: 'Chờ thanh toán phí Re-use', color: 'amber' },
-    { value: 'ON_GOING_COD', label: 'Đang thực hiện thay đổi địa điểm', color: 'blue' },
+    { value: 'ON_GOING_COD', label: 'Đang thực hiện thay đổi địa điểm giao trả', color: 'blue' },
   { value: 'ON_GOING_REUSE', label: 'Đang thực hiện Re-use', color: 'indigo' },
     { value: 'DEPOT_PROCESSING', label: 'Đang xử lý tại Depot', color: 'purple' },
     { value: 'COMPLETED', label: 'Hoàn tất', color: 'green' },
-    { value: 'COD_REJECTED', label: 'Bị từ chối COD', color: 'red' },
+    { value: 'COD_REJECTED', label: 'Bị từ chối thay đổi địa điểm giao trả', color: 'red' },
     { value: 'REUSE_REJECTED', label: 'Bị từ chối Re-use', color: 'rose' }
   ],
   EXPORT_BOOKING: [

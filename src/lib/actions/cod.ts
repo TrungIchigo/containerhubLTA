@@ -51,7 +51,7 @@ export async function createCodRequest(data: CreateCodRequestData): Promise<CodR
       })
       return {
         success: false,
-        message: 'Unauthorized: Chỉ Dispatcher mới có thể tạo yêu cầu COD'
+        message: 'Unauthorized: Chỉ Dispatcher mới có thể tạo yêu cầu Thay Đổi Địa Điểm'
       }
     }
 
@@ -97,7 +97,7 @@ export async function createCodRequest(data: CreateCodRequestData): Promise<CodR
     if (existingRequest) {
       return {
         success: false,
-        message: 'Container này đã có yêu cầu COD đang được xử lý. Không thể tạo yêu cầu mới.'
+        message: 'Container này đã có yêu cầu Thay Đổi Địa Điểm đang được xử lý. Không thể tạo yêu cầu mới.'
       }
     }
     
@@ -108,7 +108,7 @@ export async function createCodRequest(data: CreateCodRequestData): Promise<CodR
       console.error('Container missing shipping_line_org_id:', container)
       return {
         success: false,
-        message: 'Container này chưa được gán hãng tàu. Không thể tạo yêu cầu COD.'
+        message: 'Container này chưa được gán hãng tàu. Không thể tạo yêu cầu Thay Đổi Địa Điểm.'
       }
     }
 
@@ -250,15 +250,15 @@ export async function createCodRequest(data: CreateCodRequestData): Promise<CodR
       })
       
       // Return more specific error message
-      let errorMessage = 'Không thể tạo yêu cầu COD.'
+      let errorMessage = 'Không thể tạo yêu cầu Thay Đổi Địa Điểm.'
       
       // Handle specific error codes
       if (codError.code === '23505') {
-        errorMessage = 'Yêu cầu COD đã tồn tại cho container này.'
+        errorMessage = 'Yêu cầu Thay Đổi Địa Điểm đã tồn tại cho container này.'
       } else if (codError.code === '23503') {
         errorMessage = 'Dữ liệu tham chiếu không hợp lệ (depot hoặc organization).'
       } else if (codError.code === '42501') {
-        errorMessage = 'Không có quyền tạo yêu cầu COD. Vui lòng kiểm tra vai trò người dùng.'
+        errorMessage = 'Không có quyền tạo yêu cầu Thay Đổi Địa Điểm. Vui lòng kiểm tra vai trò người dùng.'
       } else if (codError.message?.includes('row-level security')) {
         errorMessage = 'Vi phạm chính sách bảo mật. Vui lòng kiểm tra quyền truy cập.'
       } else if (codError.message) {
@@ -514,7 +514,7 @@ export async function handleCodDecision(
     if (fetchError || !codRequest) {
       return {
         success: false,
-        message: 'Không tìm thấy yêu cầu COD'
+        message: 'Không tìm thấy yêu cầu Thay Đổi Địa Điểm'
       }
     }
 
@@ -680,7 +680,7 @@ export async function handleCodDecision(
       // Success message for approved COD
       return {
         success: true,
-        message: `Đã phê duyệt yêu cầu COD cho container ${container?.container_number}${finalCodFee > 0 ? ` với phí ${finalCodFee.toLocaleString('vi-VN')} VNĐ` : ' miễn phí'}. Container đang chờ xác nhận giao hàng.`
+        message: `Đã phê duyệt yêu cầu Thay Đổi Địa Điểm cho container ${container?.container_number}${finalCodFee > 0 ? ` với phí ${finalCodFee.toLocaleString('vi-VN')} VNĐ` : ' miễn phí'}. Container đang chờ xác nhận giao hàng.`
       }
     }
 
@@ -713,7 +713,7 @@ export async function handleCodDecision(
 
     return {
       success: true,
-      message: `Đã từ chối yêu cầu COD cho container ${container?.container_number}`
+      message: `Đã từ chối yêu cầu Thay Đổi Địa Điểm cho container ${container?.container_number}`
     }
 
   } catch (error: any) {
@@ -763,7 +763,7 @@ export async function requestMoreInfo(requestId: string, carrierComment: string)
     if (fetchError || !codRequest) {
       return {
         success: false,
-        message: 'Không tìm thấy yêu cầu COD'
+        message: 'Không tìm thấy yêu cầu Thay Đổi Địa Điểm'
       }
     }
 
@@ -871,7 +871,7 @@ export async function submitAdditionalInfo(requestId: string, additionalInfo: st
     if (fetchError || !codRequest) {
       return {
         success: false,
-        message: 'Không tìm thấy yêu cầu COD'
+        message: 'Không tìm thấy yêu cầu Thay Đổi Địa Điểm'
       }
     }
 
@@ -974,7 +974,7 @@ export async function cancelCodRequest(requestId: string): Promise<CodRequestRes
     if (fetchError || !codRequest) {
       return {
         success: false,
-        message: 'Không tìm thấy yêu cầu COD'
+        message: 'Không tìm thấy yêu cầu Thay Đổi Địa Điểm'
       }
     }
 
@@ -1043,7 +1043,7 @@ export async function cancelCodRequest(requestId: string): Promise<CodRequestRes
 
     return {
       success: true,
-      message: 'Đã hủy yêu cầu COD thành công'
+      message: 'Đã hủy yêu cầu Thay Đổi Địa Điểm thành công'
     }
 
   } catch (error: any) {
@@ -1201,7 +1201,7 @@ export async function confirmCodPaymentByRequestId(requestId: string): Promise<C
     console.log('[DEBUG] confirmCodPaymentByRequestId - cod request query result:', { codRequest, codError })
     if (codError || !codRequest) {
       console.error('[DEBUG] confirmCodPaymentByRequestId - Không tìm thấy COD request', codError)
-      return { success: false, message: 'Không tìm thấy yêu cầu COD' }
+      return { success: false, message: 'Không tìm thấy yêu cầu Thay Đổi Địa Điểm' }
     }
     
     // Gọi function confirmCodPayment với containerId
@@ -1239,7 +1239,7 @@ export async function confirmCodPayment(containerId: string): Promise<CodRequest
     }
     if (container.status !== 'AWAITING_COD_PAYMENT') {
       console.error('[DEBUG] confirmCodPayment - Trạng thái không hợp lệ:', container.status)
-      return { success: false, message: 'Chỉ có thể xác nhận thanh toán cho lệnh đang chờ thanh toán phí COD' }
+      return { success: false, message: 'Chỉ có thể xác nhận thanh toán cho lệnh đang chờ thanh toán phí Thay Đổi Địa Điểm' }
     }
     const { error: updateError } = await supabase
       .from('import_containers')

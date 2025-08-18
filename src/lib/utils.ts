@@ -161,13 +161,13 @@ export function getStatusLabel(status: string): string {
     case 'AWAITING_REUSE_APPROVAL':
       return 'Chờ duyệt Re-use'
     case 'AWAITING_COD_APPROVAL':
-      return 'Chờ duyệt COD'
+      return 'Chờ duyệt thay đổi địa điểm giao trả'
     case 'AWAITING_COD_PAYMENT':
-      return 'Chờ thanh toán phí COD'
+      return 'Chờ thanh toán phí thay đổi địa điểm giao trả'
     case 'AWAITING_REUSE_PAYMENT':
       return 'Chờ thanh toán phí Re-use'
     case 'ON_GOING_COD':
-      return 'Đang thực hiện COD'
+      return 'Đang thực hiện thay đổi địa điểm giao trả'
     case 'ON_GOING_REUSE':
       return 'Đang thực hiện Re-use'
     case 'DEPOT_PROCESSING':
@@ -175,7 +175,7 @@ export function getStatusLabel(status: string): string {
     case 'COMPLETED':
       return 'Hoàn tất'
     case 'COD_REJECTED':
-      return 'Bị từ chối COD'
+      return 'Bị từ chối thay đổi địa điểm giao trả'
     case 'REUSE_REJECTED':
       return 'Bị từ chối Re-use'
     case 'PENDING':

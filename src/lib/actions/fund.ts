@@ -306,7 +306,8 @@ export async function generateCodPaymentQR(amount: number, codRequestId: string)
     console.error('Unexpected error in generateCodPaymentQR:', error);
     return {
       success: false,
-      error: 'Có lỗi xảy ra khi tạo mã QR thanh toán COD.'
+      error: 'Có lỗi xảy ra khi tạo mã QR thanh toán Phí Thay Đổi Địa Điểm.'
+
     };
   }
 }
@@ -360,7 +361,7 @@ export async function generateDebugCodPaymentQR(
     console.error('Unexpected error in generateDebugCodPaymentQR:', error);
     return {
       success: false,
-      error: 'Có lỗi xảy ra khi tạo mã QR thanh toán COD debug.'
+      error: 'Có lỗi xảy ra khi tạo mã QR thanh toán Phí Thay Đổi Địa Điểm debug.'
     };
   }
 }
@@ -441,7 +442,7 @@ export async function processPaymentWithFund(
       // Rollback giao dịch nếu có thể (cần implement rollback logic)
       return {
         success: false,
-        error: 'Có lỗi khi cập nhật trạng thái yêu cầu COD.'
+        error: 'Có lỗi khi cập nhật trạng thái yêu cầu Thay Đổi Địa Điểm.'
       };
     }
 

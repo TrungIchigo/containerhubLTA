@@ -79,9 +79,9 @@ export default function ContainerDetailDialog({
   const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed" | "new-order" | "pending-reuse" | "pending-cod" | "pending-cod-payment" | "pending-reuse-payment" | "processing-cod" | "processing-reuse" | "processing-depot" | "completed" | "declined-cod" | "declined-reuse"; color: string }> = {
     AVAILABLE: { text: 'Lệnh mới tạo', variant: 'new-order', color: 'text-green-600' },
     AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt Re-use', variant: 'pending-reuse', color: 'text-yellow-600' },
-    COD_REJECTED: { text: 'Bị từ chối COD', variant: 'declined-cod', color: 'text-red-600' },
-    AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending-cod', color: 'text-orange-600' },
-    AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment', color: 'text-orange-600' },
+    COD_REJECTED: { text: 'Bị từ chối Thay Đổi Địa Điểm', variant: 'declined-cod', color: 'text-red-600' },
+    AWAITING_COD_APPROVAL: { text: 'Chờ duyệt Thay Đổi Địa Điểm', variant: 'pending-cod', color: 'text-orange-600' },
+    AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí Thay Đổi Địa Điểm', variant: 'pending-cod-payment', color: 'text-orange-600' },
     AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí Re-use', variant: 'pending-reuse-payment', color: 'text-orange-600' },
     ON_GOING_COD: { text: 'Đang thực hiện COD', variant: 'processing-cod', color: 'text-blue-600' },
   ON_GOING_REUSE: { text: 'Đang thực hiện Re-use', variant: 'processing-reuse', color: 'text-blue-600' },

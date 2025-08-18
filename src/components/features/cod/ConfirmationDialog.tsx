@@ -87,15 +87,15 @@ export default function ConfirmationDialog({
       })
 
       if (result.success) {
-        toast.success('Yêu cầu COD đã được gửi thành công!')
+        toast.success('Yêu cầu Thay Đổi Địa Điểm đã được gửi thành công!')
         onOpenChange(false)
         router.push('/dispatcher/containers')
       } else {
-        toast.error(result.message || 'Có lỗi xảy ra khi gửi yêu cầu')
+        toast.error(result.message || 'Có lỗi xảy ra khi gửi yêu cầu Thay Đổi Địa Điểm')
       }
     } catch (error) {
       console.error('Error submitting COD request:', error)
-      toast.error('Có lỗi xảy ra khi gửi yêu cầu')
+      toast.error('Có lỗi xảy ra khi gửi yêu cầu Thay Đổi Địa Điểm')
     } finally {
       setIsSubmitting(false)
     }
@@ -110,7 +110,7 @@ export default function ConfirmationDialog({
             Xác nhận Yêu cầu Thay đổi Nơi Trả Container
           </DialogTitle>
           <DialogDescription>
-            Vui lòng kiểm tra lại thông tin trước khi gửi yêu cầu COD
+            Vui lòng kiểm tra lại thông tin trước khi gửi yêu cầu Thay Đổi Địa Điểm
           </DialogDescription>
         </DialogHeader>
 

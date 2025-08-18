@@ -79,7 +79,7 @@ export default function SubmitInfoDialog({ isOpen, onClose, request }: SubmitInf
         <DialogHeader>
           <DialogTitle className="text-text-primary flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-blue-600" />
-            Cập Nhật Thông Tin Yêu Cầu COD
+            Cập Nhật Thông Tin Yêu Cầu Thay Đổi Địa Điểm
           </DialogTitle>
         </DialogHeader>
 
@@ -198,7 +198,7 @@ export default function SubmitInfoDialog({ isOpen, onClose, request }: SubmitInf
               <div>
                 <h4 className="font-medium text-blue-800">Gửi thông tin bổ sung</h4>
                 <p className="text-sm text-blue-700 mt-1">
-                  Yêu cầu COD sẽ chuyển về trạng thái &quot;Chờ duyệt&quot; và hãng tàu sẽ nhận được thông báo.
+                  Yêu cầu Thay Đổi Địa Điểm sẽ chuyển về trạng thái &quot;Chờ duyệt&quot; và hãng tàu sẽ nhận được thông báo.
                   Họ sẽ xem xét thông tin bổ sung và đưa ra quyết định cuối cùng.
                 </p>
               </div>

@@ -36,7 +36,7 @@ export default function CodApprovalDialog({ isOpen, onClose, request }: CodAppro
         throw new Error(result.message)
       }
     } catch (error: any) {
-      console.error('Error approving COD request:', error)
+      console.error('Error approving thay đổi địa điểm giao trả request:', error)
       toast({
         title: "❌ Lỗi",
         description: error.message || 'Có lỗi xảy ra khi phê duyệt yêu cầu',
@@ -59,7 +59,7 @@ export default function CodApprovalDialog({ isOpen, onClose, request }: CodAppro
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-text-primary flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-600" />
-            Phê Duyệt Yêu Cầu COD
+            Phê Duyệt Yêu Cầu Thay Đổi Địa Điểm Giao Trả
           </DialogTitle>
         </DialogHeader>
 
@@ -151,7 +151,7 @@ export default function CodApprovalDialog({ isOpen, onClose, request }: CodAppro
                 </h4>
                 <p className="text-sm text-green-700 mt-1">
                   {request.cod_fee 
-                    ? `Bạn đang phê duyệt yêu cầu này với phí COD ${request.cod_fee.toLocaleString('vi-VN')} VNĐ đã được tính tự động.`
+                    ? `Bạn đang phê duyệt yêu cầu này với phí thay đổi địa điểm ${request.cod_fee.toLocaleString('vi-VN')} VNĐ đã được tính tự động.`
                     : 'Bạn đang phê duyệt yêu cầu thay đổi nơi trả container này mà không tính phí bổ sung.'
                   }
                   {' '}Container sẽ được cập nhật địa điểm mới và sẵn sàng cho các hoạt động tiếp theo.

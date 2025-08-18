@@ -96,7 +96,7 @@ function determineScenarioType(
       return 'Street-turn + VAS (Chất lượng)'
     }
     if (timeGapHours > 24) {
-      return 'Street-turn + COD (Thời gian)'
+      return 'Street-turn + Thay đổi địa điểm (Thời gian)'
     }
     return 'Street-turn Marketplace Hiệu quả'
   }
@@ -132,10 +132,10 @@ function calculateAdditionalCosts(
     required_actions.push('Kiểm tra và xử lý chất lượng container')
   }
   
-  // COD costs for time mismatch
-  if (timeGapHours > 48) {
-    additional_fees.push({ type: 'Phí COD (Thay đổi điểm giao)', amount: 300000 })
-    required_actions.push('Tạo yêu cầu COD đến depot tạm trữ')
+  // Phí thay đổi địa điểm cho time mismatch
+      if (timeGapHours > 24) {
+        additional_fees.push({ type: 'Phí thay đổi địa điểm giao', amount: 300000 })
+        required_actions.push('Tạo yêu cầu thay đổi địa điểm đến depot tạm trữ')
   }
   
   // Storage costs for long delays

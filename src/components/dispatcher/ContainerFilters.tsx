@@ -41,14 +41,14 @@ interface ShippingLine {
 const STATUS_OPTIONS = [
   { value: 'AVAILABLE', label: 'Lệnh mới tạo', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   { value: 'AWAITING_REUSE_APPROVAL', label: 'Chờ duyệt Re-use', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  { value: 'AWAITING_COD_APPROVAL', label: 'Chờ duyệt COD', color: 'bg-orange-50 text-orange-700 border-orange-200' },
-  { value: 'AWAITING_COD_PAYMENT', label: 'Chờ thanh toán phí COD', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+  { value: 'AWAITING_COD_APPROVAL', label: 'Chờ duyệt Thay Đổi Địa Điểm', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+  { value: 'AWAITING_COD_PAYMENT', label: 'Chờ thanh toán phí Thay Đổi Địa Điểm', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
   { value: 'AWAITING_REUSE_PAYMENT', label: 'Chờ thanh toán phí Re-use', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-  { value: 'ON_GOING_COD', label: 'Đang thực hiện COD', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { value: 'ON_GOING_COD', label: 'Đang thực hiện Thay Đổi Địa Điểm', color: 'bg-blue-50 text-blue-700 border-blue-200' },
   { value: 'ON_GOING_REUSE', label: 'Đang thực hiện Re-use', color: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
   { value: 'DEPOT_PROCESSING', label: 'Đang xử lý tại Depot', color: 'bg-purple-50 text-purple-700 border-purple-200' },
   { value: 'COMPLETED', label: 'Hoàn tất', color: 'bg-green-50 text-green-700 border-green-200' },
-  { value: 'COD_REJECTED', label: 'Bị từ chối COD', color: 'bg-red-50 text-red-700 border-red-200' },
+  { value: 'COD_REJECTED', label: 'Bị từ chối Thay Đổi Địa Điểm', color: 'bg-red-50 text-red-700 border-red-200' },
   { value: 'REUSE_REJECTED', label: 'Bị từ chối Re-use', color: 'bg-rose-50 text-rose-700 border-rose-200' },
 ]
 

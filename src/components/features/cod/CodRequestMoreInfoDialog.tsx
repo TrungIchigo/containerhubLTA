@@ -176,7 +176,7 @@ export default function CodRequestMoreInfoDialog({ isOpen, onClose, request }: C
               <div>
                 <h4 className="font-medium text-orange-800">Yêu cầu bổ sung thông tin</h4>
                 <p className="text-sm text-orange-700 mt-1">
-                  Yêu cầu COD sẽ chuyển sang trạng thái &quot;Chờ bổ sung thông tin&quot;.
+                  Yêu cầu Thay Đổi Địa Điểm sẽ chuyển sang trạng thái &quot;Chờ bổ sung thông tin&quot;.
                   Công ty vận tải sẽ nhận được thông báo và có thể cung cấp thêm chi tiết.
                 </p>
               </div>

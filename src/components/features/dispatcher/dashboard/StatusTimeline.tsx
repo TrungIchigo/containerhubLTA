@@ -69,7 +69,7 @@ function generateSmartTimeline(status: string, containerType?: string, container
     case 'AWAITING_COD_APPROVAL':
       baseSteps.push({
         id: 'cod_requested',
-        title: 'Yêu cầu COD',
+        title: 'Yêu cầu Thay Đổi Địa Điểm',
         description: 'Đã tạo yêu cầu đổi nơi trả container',
         status: 'current',
         icon: MapPin,
@@ -82,19 +82,19 @@ function generateSmartTimeline(status: string, containerType?: string, container
       baseSteps.push(
         {
           id: 'cod_approved',
-          title: 'COD đã được duyệt',
-          description: 'Carrier Admin đã phê duyệt yêu cầu COD',
+          title: 'Thay Đổi Địa Điểm đã được duyệt',
+          description: 'Carrier Admin đã phê duyệt yêu cầu Thay Đổi Địa Điểm',
           status: 'completed',
           icon: CheckCircle
         },
         {
           id: 'payment_pending',
           title: 'Chờ thanh toán phí',
-          description: 'Cần thanh toán phí COD để tiếp tục',
+          description: 'Cần thanh toán phí Thay Đổi Địa Điểm để tiếp tục',
           status: 'current',
           icon: CreditCard,
           actionRequired: true,
-          nextAction: 'Thực hiện thanh toán phí COD'
+          nextAction: 'Thực hiện thanh toán phí Thay Đổi Địa Điểm'
         }
       )
       break
@@ -124,15 +124,15 @@ function generateSmartTimeline(status: string, containerType?: string, container
       baseSteps.push(
         {
           id: 'cod_approved',
-          title: 'COD đã được duyệt',
-          description: 'Carrier Admin đã phê duyệt yêu cầu COD',
+          title: 'Thay Đổi Địa Điểm đã được duyệt',
+          description: 'Carrier Admin đã phê duyệt yêu cầu Thay Đổi Địa Điểm',
           status: 'completed',
           icon: CheckCircle
         },
         {
           id: 'payment_completed',
           title: 'Đã thanh toán',
-          description: 'Phí COD đã được thanh toán thành công',
+          description: 'Phí Thay Đổi Địa Điểm đã được thanh toán thành công',
           status: 'completed',
           icon: CreditCard
         },

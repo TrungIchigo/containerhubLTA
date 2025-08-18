@@ -35,13 +35,13 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
 
   const getStatusBadge = (status: string) => {
     const statusMap = {
-      'PENDING': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, icon: Clock },
-      'APPROVED': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const, icon: CheckCircle },
-      'DECLINED': { text: 'Bị từ chối COD', variant: 'declined-cod' as const, icon: XCircle },
+      'PENDING': { text: 'Chờ duyệt Thay Đổi Địa Điểm', variant: 'pending-cod' as const, icon: Clock },
+      'APPROVED': { text: 'Đang thực hiện Thay Đổi Địa Điểm', variant: 'processing-cod' as const, icon: CheckCircle },
+      'DECLINED': { text: 'Bị từ chối Thay Đổi Địa Điểm', variant: 'declined-cod' as const, icon: XCircle },
       'AWAITING_INFO': { text: 'Chờ bổ sung', variant: 'warning' as const, icon: AlertCircle },
       'EXPIRED': { text: 'Hết hạn', variant: 'declined-cod' as const, icon: Clock },
       'REVERSED': { text: 'Đã hủy', variant: 'declined-cod' as const, icon: XCircle },
-      'PENDING_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, icon: DollarSign },
+      'PENDING_PAYMENT': { text: 'Chờ thanh toán phí Thay Đổi Địa Điểm', variant: 'pending-cod-payment' as const, icon: DollarSign },
       'PAID': { text: 'Đã thanh toán', variant: 'processing-cod' as const, icon: CheckCircle },
       'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, icon: Clock },
       'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const, icon: CheckCircle },
@@ -82,7 +82,7 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
   }
 
   const handleCancelRequest = async (requestId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn hủy yêu cầu COD này?')) {
+    if (!confirm('Bạn có chắc chắn muốn hủy yêu cầu Thay Đổi Địa Điểm này?')) {
       return
     }
 
@@ -154,7 +154,7 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
         <CardHeader>
           <CardTitle className="text-h3 text-text-primary flex items-center gap-2">
             <MapPin className="h-5 w-5 text-primary" />
-            Yêu Cầu Đổi Nơi Trả (COD)
+            Yêu Cầu Thay Đổi Địa Điểm Giao Trả
           </CardTitle>
         </CardHeader>
         
@@ -162,7 +162,7 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
           {requests.length === 0 ? (
             <div className="text-center py-12 text-text-secondary">
               <MapPin className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-body">Chưa có yêu cầu COD nào.</p>
+              <p className="text-body">Chưa có yêu cầu thay đổi địa điểm nào.</p>
               <p className="text-body-small mt-2">Các yêu cầu thay đổi nơi trả container sẽ xuất hiện tại đây.</p>
             </div>
           ) : (
@@ -176,7 +176,7 @@ export default function CodRequestsTable({ requests }: CodRequestsTableProps) {
                     <th className="table-header">Nơi trả mới</th>
                     <th className="table-header">Ngày gửi</th>
                     <th className="table-header">Hết hạn</th>
-                    <th className="table-header">Phí COD (VNĐ)</th>
+                    <th className="table-header">Phí thay đổi địa điểm (VNĐ)</th>
                     <th className="table-header text-center w-32">Trạng thái</th>
                     <th className="table-header text-center w-24">Hành động</th>
                   </tr>

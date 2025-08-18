@@ -153,24 +153,24 @@ export function OrderDetailModal({
   const containerStatusMap = {
     'AVAILABLE': { text: 'Lệnh mới tạo', variant: 'new-order' as const, color: 'text-green-700', bg: 'bg-green-50' },
     'AWAITING_REUSE_APPROVAL': { text: 'Chờ duyệt Re-use', variant: 'pending-reuse' as const, color: 'text-yellow-700', bg: 'bg-yellow-50' },
-    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
-    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
+    'AWAITING_COD_APPROVAL': { text: 'Chờ duyệt thay đổi địa điểm', variant: 'pending-cod' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
+    'AWAITING_COD_PAYMENT': { text: 'Chờ thanh toán phí thay đổi địa điểm', variant: 'pending-cod-payment' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
     'AWAITING_REUSE_PAYMENT': { text: 'Chờ thanh toán phí Re-use', variant: 'pending-reuse-payment' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
-    'ON_GOING_COD': { text: 'Đang thực hiện COD', variant: 'processing-cod' as const, color: 'text-blue-700', bg: 'bg-blue-50' },
+    'ON_GOING_COD': { text: 'Đang thực hiện thay đổi địa điểm', variant: 'processing-cod' as const, color: 'text-blue-700', bg: 'bg-blue-50' },
     'ON_GOING_REUSE': { text: 'Đang thực hiện Re-use', variant: 'processing-reuse' as const, color: 'text-blue-700', bg: 'bg-blue-50' },
     'DEPOT_PROCESSING': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, color: 'text-purple-700', bg: 'bg-purple-50' },
     'COMPLETED': { text: 'Hoàn tất', variant: 'completed' as const, color: 'text-green-700', bg: 'bg-green-50' },
-    'REJECTED_COD': { text: 'Từ chối COD', variant: 'declined-cod' as const, color: 'text-red-700', bg: 'bg-red-50' },
+    'REJECTED_COD': { text: 'Từ chối thay đổi địa điểm', variant: 'declined-cod' as const, color: 'text-red-700', bg: 'bg-red-50' },
     'REJECTED_REUSE': { text: 'Từ chối Re-use', variant: 'declined-reuse' as const, color: 'text-red-700', bg: 'bg-red-50' },
     // Các trạng thái COD mới theo yêu cầu Việt Nam
-    'PENDING': { text: 'Chờ duyệt COD', variant: 'pending-cod' as const, color: 'text-yellow-700', bg: 'bg-yellow-50' },
-    'APPROVED': { text: 'Đã duyệt COD', variant: 'processing-cod' as const, color: 'text-green-700', bg: 'bg-green-50' },
-    'DECLINED': { text: 'Từ chối COD', variant: 'declined-cod' as const, color: 'text-red-700', bg: 'bg-red-50' },
+    'PENDING': { text: 'Chờ duyệt thay đổi địa điểm', variant: 'pending-cod' as const, color: 'text-yellow-700', bg: 'bg-yellow-50' },
+    'APPROVED': { text: 'Đã duyệt thay đổi địa điểm', variant: 'processing-cod' as const, color: 'text-green-700', bg: 'bg-green-50' },
+    'DECLINED': { text: 'Từ chối thay đổi địa điểm', variant: 'declined-cod' as const, color: 'text-red-700', bg: 'bg-red-50' },
     'AWAITING_INFO': { text: 'Chờ bổ sung thông tin', variant: 'warning' as const, color: 'text-gray-700', bg: 'bg-gray-50' },
     'EXPIRED': { text: 'Hết hạn', variant: 'declined-cod' as const, color: 'text-red-700', bg: 'bg-red-50' },
-    'REVERSED': { text: 'Đã hủy COD', variant: 'declined-cod' as const, color: 'text-purple-700', bg: 'bg-purple-50' },
-    'PENDING_PAYMENT': { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
-    'PAID': { text: 'Đã thanh toán COD', variant: 'completed' as const, color: 'text-green-700', bg: 'bg-green-50' },
+    'REVERSED': { text: 'Đã hủy thay đổi địa điểm', variant: 'declined-cod' as const, color: 'text-purple-700', bg: 'bg-purple-50' },
+    'PENDING_PAYMENT': { text: 'Chờ thanh toán phí thay đổi địa điểm', variant: 'pending-cod-payment' as const, color: 'text-orange-700', bg: 'bg-orange-50' },
+    'PAID': { text: 'Đã thanh toán thay đổi địa điểm', variant: 'completed' as const, color: 'text-green-700', bg: 'bg-green-50' },
     'PROCESSING_AT_DEPOT': { text: 'Đang xử lý tại Depot', variant: 'processing-depot' as const, color: 'text-blue-700', bg: 'bg-blue-50' },
     'CANCELLED': { text: 'Đã hủy', variant: 'declined-cod' as const, color: 'text-red-700', bg: 'bg-red-50' }
   }
@@ -198,13 +198,13 @@ export function OrderDetailModal({
       switch (containerItem.status) {
         case 'AVAILABLE':
           actions.push(
-            { id: 'request-cod', label: 'Yêu cầu COD', icon: CreditCard, variant: 'default' as const, onClick: () => onRequestCod?.(containerItem) },
+            { id: 'request-cod', label: 'Yêu cầu thay đổi địa điểm', icon: CreditCard, variant: 'default' as const, onClick: () => onRequestCod?.(containerItem) },
             { id: 'request-reuse', label: 'Yêu cầu Re-use', icon: RotateCcw, variant: 'outline' as const, onClick: () => onRequestReuse?.(containerItem) }
           )
           break
         case 'AWAITING_COD_PAYMENT':
           actions.push(
-            { id: 'pay-cod', label: 'Thanh toán COD', icon: DollarSign, variant: 'default' as const, onClick: () => onPayCodFee?.(containerItem) }
+            { id: 'pay-cod', label: 'Thanh toán phí thay đổi địa điểm', icon: DollarSign, variant: 'default' as const, onClick: () => onPayCodFee?.(containerItem) }
           )
           break
         case 'ON_GOING_COD':
@@ -219,7 +219,7 @@ export function OrderDetailModal({
           break
         case 'COD_REJECTED':
           actions.push(
-            { id: 'request-cod-again', label: 'Yêu cầu COD lại', icon: CreditCard, variant: 'outline' as const, onClick: () => onRequestCod?.(containerItem) }
+            { id: 'request-cod-again', label: 'Yêu cầu thay đổi địa điểm lại', icon: CreditCard, variant: 'outline' as const, onClick: () => onRequestCod?.(containerItem) }
           )
           break
         case 'REUSE_REJECTED':

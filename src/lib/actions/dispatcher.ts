@@ -600,9 +600,9 @@ function generateMatchingSuggestions(containers: any[], bookings: any[]) {
             fees: []
           },
           {
-            type: 'Kết hợp COD + Street-turn',
-            actions: ['Yêu cầu COD', 'Đổi nơi trả về Depot khác'],
-            fees: [{ type: 'COD_FEE', amount: 350000 }]
+            type: 'Kết hợp thay đổi địa điểm + Street-turn',
+      actions: ['Yêu cầu thay đổi địa điểm', 'Đổi nơi trả về Depot khác'],
+      fees: [{ type: 'CHANGE_LOCATION_FEE', amount: 350000 }]
           },
           {
             type: 'Cùng NVT - Khác Hãng Tàu',

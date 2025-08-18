@@ -42,11 +42,11 @@ type ImportContainerStatus = typeof IMPORT_CONTAINER_STATUS[number];
 const statusMap: Record<ImportContainerStatus, { text: string; variant: "default" | "warning" | "info" | "secondary" | "accent" | "destructive" | "approved" | "outline" | "pending" | "declined" | "confirmed" | "new-order" | "pending-reuse" | "pending-cod" | "pending-cod-payment" | "pending-reuse-payment" | "processing-cod" | "processing-reuse" | "processing-depot" | "completed" | "declined-cod" | "declined-reuse"; bg: string; border: string }> = {
   AVAILABLE: { text: 'Lệnh mới tạo', variant: 'new-order', bg: 'bg-green-50', border: 'border-green-200' },
   AWAITING_REUSE_APPROVAL: { text: 'Chờ duyệt Re-use', variant: 'pending-reuse', bg: 'bg-yellow-50', border: 'border-yellow-200' },
-  COD_REJECTED: { text: 'Bị từ chối COD', variant: 'declined-cod', bg: 'bg-red-50', border: 'border-red-200' },
-  AWAITING_COD_APPROVAL: { text: 'Chờ duyệt COD', variant: 'pending-cod', bg: 'bg-orange-50', border: 'border-orange-200' },
-  AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí COD', variant: 'pending-cod-payment', bg: 'bg-orange-50', border: 'border-orange-200' },
+  COD_REJECTED: { text: 'Bị từ chối Thay Đổi Địa Điểm', variant: 'declined-cod', bg: 'bg-red-50', border: 'border-red-200' },
+  AWAITING_COD_APPROVAL: { text: 'Chờ duyệt Thay Đổi Địa Điểm', variant: 'pending-cod', bg: 'bg-orange-50', border: 'border-orange-200' },
+  AWAITING_COD_PAYMENT: { text: 'Chờ thanh toán phí Thay Đổi Địa Điểm', variant: 'pending-cod-payment', bg: 'bg-orange-50', border: 'border-orange-200' },
   AWAITING_REUSE_PAYMENT: { text: 'Chờ thanh toán phí Re-use', variant: 'pending-reuse-payment', bg: 'bg-orange-50', border: 'border-orange-200' },
-  ON_GOING_COD: { text: 'Đang thực hiện COD', variant: 'processing-cod', bg: 'bg-blue-50', border: 'border-blue-200' },
+  ON_GOING_COD: { text: 'Đang thực hiện Thay Đổi Địa Điểm', variant: 'processing-cod', bg: 'bg-blue-50', border: 'border-blue-200' },
   ON_GOING_REUSE: { text: 'Đang thực hiện Re-use', variant: 'processing-reuse', bg: 'bg-blue-50', border: 'border-blue-200' },
   DEPOT_PROCESSING: { text: 'Đang xử lý tại Depot', variant: 'processing-depot', bg: 'bg-purple-50', border: 'border-purple-200' },
   COMPLETED: { text: 'Hoàn tất', variant: 'completed', bg: 'bg-green-50', border: 'border-green-200' },
@@ -99,7 +99,7 @@ export function FullDropOffOrdersTable({
         if (onRequestCod) {
           actions.push({
             id: 'request-cod',
-            label: 'Yêu cầu COD',
+            label: 'Yêu cầu Thay Đổi Địa Điểm',
             variant: 'default' as const,
             icon: MapPinIcon,
             onClick: () => onRequestCod(container),
@@ -122,7 +122,7 @@ export function FullDropOffOrdersTable({
         if (onPayCodFee) {
           actions.push({
             id: 'pay-cod-fee',
-            label: 'Thanh toán COD',
+            label: 'Thanh toán Phí Thay Đổi Địa Điểm',
             variant: 'default' as const,
             icon: CreditCard,
             onClick: async () => {
@@ -184,7 +184,7 @@ export function FullDropOffOrdersTable({
         if (onRequestCod) {
           actions.push({
             id: 'request-cod-again',
-            label: 'Yêu cầu COD lại',
+            label: 'Yêu cầu Thay Đổi Địa Điểm lại',
             variant: 'outline' as const,
             icon: MapPinIcon,
             onClick: () => onRequestCod(container),
@@ -389,10 +389,11 @@ export function FullDropOffOrdersTable({
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className="truncate block max-w-xs">{container.drop_off_location || 'Chưa xác định'}</span>
+                            <span className="truncate block max-w-xs">{container.original_depot_name}</span>
+
                           </TooltipTrigger>
                           <TooltipContent>
-                            <span>{container.drop_off_location || 'Chưa xác định'}</span>
+                            <span>{container.original_depot_name}</span>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>

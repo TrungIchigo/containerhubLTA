@@ -390,8 +390,8 @@ export function AdminBillingDashboard() {
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="cod-payments">COD Chờ Thanh Toán</TabsTrigger>
-          <TabsTrigger value="invoices">Hóa Đơn COD/Reuse</TabsTrigger>
+          <TabsTrigger value="cod-payments">Thay Đổi Địa Điểm Chờ Thanh Toán</TabsTrigger>
+          <TabsTrigger value="invoices">Hóa Đơn Thay Đổi Địa Điểm/Reuse</TabsTrigger>
           <TabsTrigger value="summary">Tóm Tắt Tổ Chức</TabsTrigger>
         </TabsList>
 
@@ -403,19 +403,19 @@ export function AdminBillingDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Receipt className="h-5 w-5" />
-                Hóa Đơn COD/Reuse
+                Hóa Đơn Thay Đổi Địa Điểm/Reuse
               </CardTitle>
               <CardDescription>
-                Danh sách tất cả các hóa đơn liên quan đến phí COD và phí reuse
+                Danh sách tất cả các hóa đơn liên quan đến phí thay đổi địa điểm và phí reuse
               </CardDescription>
             </CardHeader>
             <CardContent>
               {codRelatedInvoices.length === 0 ? (
                 <div className="text-center py-8">
                   <Receipt className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-2 text-sm font-semibold">Chưa có hóa đơn COD/Reuse</h3>
+                  <h3 className="mt-2 text-sm font-semibold">Chưa có hóa đơn thay đổi địa điểm/Reuse</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Hóa đơn liên quan COD và reuse sẽ xuất hiện ở đây
+                    Hóa đơn liên quan thay đổi địa điểm và reuse sẽ xuất hiện ở đây
                   </p>
                 </div>
               ) : (
@@ -442,7 +442,7 @@ export function AdminBillingDashboard() {
                         </TableCell>
                         <TableCell>
                           <Badge variant={invoice.fee_type === 'COD' ? 'default' : 'secondary'}>
-                            {invoice.fee_type === 'COD' ? 'Phí COD' : 'Phí Reuse'}
+                            {invoice.fee_type === 'COD' ? 'Phí thay đổi địa điểm' : 'Phí Reuse'}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -477,10 +477,10 @@ export function AdminBillingDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                COD Requests Chờ Thanh Toán
+                Yêu Cầu Thay Đổi Địa Điểm Chờ Thanh Toán
               </CardTitle>
               <CardDescription>
-                Danh sách các yêu cầu COD đã hoàn thành giao hàng và đang chờ xác nhận thanh toán
+                Danh sách các yêu cầu thay đổi địa điểm đã hoàn thành giao hàng và đang chờ xác nhận thanh toán
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -491,9 +491,9 @@ export function AdminBillingDashboard() {
               ) : codPaymentRequests.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckCircle className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-2 text-sm font-semibold">Không có COD chờ thanh toán</h3>
+                  <h3 className="mt-2 text-sm font-semibold">Không có yêu cầu thay đổi địa điểm chờ thanh toán</h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Tất cả COD requests đã được thanh toán hoặc chưa hoàn thành giao hàng
+                    Tất cả yêu cầu thay đổi địa điểm đã được thanh toán hoặc chưa hoàn thành giao hàng
                   </p>
                 </div>
               ) : (
@@ -502,7 +502,7 @@ export function AdminBillingDashboard() {
                     <TableRow>
                       <TableHead>Container</TableHead>
                       <TableHead>Công ty</TableHead>
-                      <TableHead>Phí COD</TableHead>
+                      <TableHead>Phí thay đổi địa điểm</TableHead>
                       <TableHead>Ngày giao hàng</TableHead>
                       <TableHead>Trạng thái</TableHead>
                       <TableHead>Hành động</TableHead>
@@ -664,9 +664,9 @@ export function AdminBillingDashboard() {
       <Dialog open={codPaymentDialogOpen} onOpenChange={setCodPaymentDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Xác Nhận Thanh Toán COD</DialogTitle>
+            <DialogTitle>Xác Nhận Thanh Toán Phí Thay Đổi Địa Điểm</DialogTitle>
             <DialogDescription>
-              Xác nhận rằng phí COD đã được thanh toán cho yêu cầu này?
+              Xác nhận rằng phí thay đổi địa điểm đã được thanh toán cho yêu cầu này?
             </DialogDescription>
           </DialogHeader>
           {selectedCodRequest && (
@@ -677,7 +677,7 @@ export function AdminBillingDashboard() {
                   <div className="font-mono">{selectedCodRequest.container_number}</div>
                   <div>Công ty:</div>
                   <div>{selectedCodRequest.requesting_org_name}</div>
-                  <div>Phí COD:</div>
+                  <div>Phí thay đổi địa điểm:</div>
                   <div className="font-mono">{formatCurrency(selectedCodRequest.cod_fee)}</div>
                   <div>Ngày giao hàng:</div>
                   <div>{formatDate(selectedCodRequest.delivery_confirmed_at)}</div>
@@ -690,7 +690,7 @@ export function AdminBillingDashboard() {
                   <div>
                     <h4 className="font-medium text-blue-800">Xác nhận thanh toán</h4>
                     <p className="text-sm text-blue-700 mt-1">
-                      Sau khi xác nhận, COD request sẽ chuyển sang trạng thái "Đã thanh toán" 
+                      Sau khi xác nhận, yêu cầu thay đổi địa điểm sẽ chuyển sang trạng thái "Đã thanh toán" 
                       và transaction liên quan sẽ được đánh dấu là PAID.
                     </p>
                   </div>

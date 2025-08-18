@@ -224,13 +224,13 @@ export function CodPaymentDialog({
       const result = await processPaymentWithFund(
         payment.id,
         payment.cod_fee,
-        `Thanh toán phí COD cho container ${payment.container_number}`
+        `Thanh toán phí thay đổi địa điểm giao trả cho container ${payment.container_number}`
       )
 
       if (result.success) {
         toast({
           title: "Thành công",
-          description: "Thanh toán phí COD thành công!",
+          description: "Thanh toán phí thay đổi địa điểm giao trả thành công!",
           variant: "default"
         })
         onOpenChange(false)
@@ -295,7 +295,7 @@ export function CodPaymentDialog({
                 <CreditCard className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div>Thanh Toán Phí COD</div>
+                <div>Thanh Toán Phí Thay Đổi Địa Điểm Giao Trả</div>
                 <DialogDescription className="text-sm text-muted-foreground mt-1">
                   Container {payment.container_number} • {payment.delivery_confirmed_at ? formatDate(payment.delivery_confirmed_at) : 'N/A'}
                 </DialogDescription>
@@ -346,7 +346,7 @@ export function CodPaymentDialog({
                   </div>
 
                   <div className="flex justify-between items-center py-2 border-b border-slate-200">
-                    <div className="text-sm text-slate-600">Thời gian duyệt COD:</div>
+                    <div className="text-sm text-slate-600">Thời gian duyệt thay đổi địa điểm:</div>
                     <span className="text-sm">{formatDate(payment.delivery_confirmed_at)}</span>
                   </div>
 
