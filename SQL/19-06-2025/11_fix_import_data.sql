@@ -8,17 +8,17 @@ WITH distance_calc AS (
         gd.id as destination_depot_id,
         -- Tính khoảng cách đường chim bay theo km (nhân với 111.111 để chuyển độ sang km)
         ROUND(
-            (ST_DistanceSphere(
-                ST_MakePoint(d.longitude, d.latitude),
-                ST_MakePoint(gd.longitude, gd.latitude)
+            (extensions.st_distancesphere(
+                extensions.st_makepoint(d.longitude, d.latitude),
+                extensions.st_makepoint(gd.longitude, gd.latitude)
             ) / 1000)::numeric,
             2
         ) as distance_km,
         -- Tính khoảng cách đường bộ (ước tính bằng 1.5 lần khoảng cách đường chim bay)
         ROUND(
-            (ST_DistanceSphere(
-                ST_MakePoint(d.longitude, d.latitude),
-                ST_MakePoint(gd.longitude, gd.latitude)
+            (extensions.st_distancesphere(
+                extensions.st_makepoint(d.longitude, d.latitude),
+                extensions.st_makepoint(gd.longitude, gd.latitude)
             ) * 1.5 / 1000)::numeric,
             2
         ) as road_distance_km
@@ -46,4 +46,4 @@ SELECT
         ELSE 1000000 + (road_distance_km - 200) * 3000                    -- >200km: +3k/km
     END as fee
 FROM distance_calc
-ORDER BY road_distance_km; 
+ORDER BY road_distance_km;

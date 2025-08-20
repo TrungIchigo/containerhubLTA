@@ -50,6 +50,20 @@ export function formatStoredDateTimeVN(utcDateTime: string | Date): string {
   })
 }
 
+// Format datetime without seconds - for dashboard cards display
+export function formatDateTimeVNNoSeconds(dateTime: string | Date): string {
+  if (!dateTime) return ''
+  
+  const date = new Date(dateTime)
+  return date.toLocaleString('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
 export function formatDateVN(date: string | Date): string {
   const d = new Date(date)
   return d.toLocaleDateString('vi-VN', {

@@ -163,7 +163,7 @@ export function LtaLoading({
     
     switch (variant) {
       case 'fullscreen':
-        return `${baseClasses} fixed inset-0 bg-white/95 backdrop-blur-sm z-50`
+        return `${baseClasses} fixed inset-0 bg-white/95 backdrop-blur-sm z-50 top-0 left-0`
       case 'inline':
         return `${baseClasses} w-full h-full`
       default:

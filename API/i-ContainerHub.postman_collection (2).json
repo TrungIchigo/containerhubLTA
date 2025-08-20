@@ -1,0 +1,402 @@
+{
+	"info": {
+		"_postman_id": "2df98b42-5845-4f93-9270-a945406244d6",
+		"name": "i-ContainerHub",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9026647"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"pm.environment.set(\"accessToken\", jsonData.token);\r",
+							"pm.environment.set(\"username\", jsonData.username);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user\": \"212839986\",\r\n    \"password\": \"123456\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://apiedepottest.gsotgroup.vn/api/Users/Login",
+					"protocol": "https",
+					"host": [
+						"apiedepottest",
+						"gsotgroup",
+						"vn"
+					],
+					"path": [
+						"api",
+						"Users",
+						"Login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get default wallet",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// 1. Lấy API key\r",
+							"let url = pm.request.url.toString();\r",
+							"let apiKey = url.split(\"/\");\r",
+							"// 2. Lấy body\r",
+							"let bodyRaw = JSON.parse(pm.request.body.raw);\r",
+							"\r",
+							"// 3. Gọi để lấy mã hóa\r",
+							"pm.sendRequest({\r",
+							"    url: 'https://apiedepottest.gsotgroup.vn/api/data/util/gettokenNonAid', \r",
+							"    method: 'POST',\r",
+							"    header: {\r",
+							"        'Content-Type': 'application/json',\r",
+							"        'Authorization': 'Bearer ' + pm.environment.get(\"accessToken\")\r",
+							"    },\r",
+							"    body: {\r",
+							"        mode: 'raw',\r",
+							"        raw: JSON.stringify({\r",
+							"            \"reqid\": apiKey[apiKey.length - 1],\r",
+							"            \"data\": bodyRaw.data,\r",
+							"            \"appversion\": \"2023\"\r",
+							"        })\r",
+							"    }\r",
+							"}, function (err, res) {\r",
+							"    if (!err) {\r",
+							"        let data = res.json();\r",
+							"        pm.environment.set(\"dataToken\", data.token);\r",
+							"        pm.environment.set(\"reqTime\", data.reqtime);\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();\r",
+							"pm.environment.set(\"ID_Vi\", response.data[0].ID)"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"data\": {\r\n        \"appversion\": \"2023\"\r\n    },\r\n    \"reqtime\": \"{{reqTime}}\",\r\n    \"token\": \"{{dataToken}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "apiedepottest.gsotgroup.vn/api/data/process/ViLTA_GetDefaultWallet",
+					"host": [
+						"apiedepottest",
+						"gsotgroup",
+						"vn"
+					],
+					"path": [
+						"api",
+						"data",
+						"process",
+						"ViLTA_GetDefaultWallet"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get list wallet",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// 1. Lấy API key\r",
+							"let url = pm.request.url.toString();\r",
+							"let apiKey = url.split(\"/\");\r",
+							"// 2. Lấy body\r",
+							"let bodyRaw = JSON.parse(pm.request.body.raw);\r",
+							"\r",
+							"// 3. Gọi để lấy mã hóa\r",
+							"pm.sendRequest({\r",
+							"    url: 'https://apiedepottest.gsotgroup.vn/api/data/util/gettokenNonAid', \r",
+							"    method: 'POST',\r",
+							"    header: {\r",
+							"        'Content-Type': 'application/json',\r",
+							"        'Authorization': 'Bearer ' + pm.environment.get(\"accessToken\")\r",
+							"    },\r",
+							"    body: {\r",
+							"        mode: 'raw',\r",
+							"        raw: JSON.stringify({\r",
+							"            \"reqid\": apiKey[apiKey.length - 1],\r",
+							"            \"data\": bodyRaw.data,\r",
+							"            \"appversion\": \"2023\"\r",
+							"        })\r",
+							"    }\r",
+							"}, function (err, res) {\r",
+							"    if (!err) {\r",
+							"        let data = res.json();\r",
+							"        pm.environment.set(\"dataToken\", data.token);\r",
+							"        pm.environment.set(\"reqTime\", data.reqtime);\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"data\": {\r\n        \"appversion\": \"2023\",\r\n        \"Type\": \"1\",\r\n        \"Type_Comment\": \"Loại quỹ 1-Cá nhân 2-Doanh nghiệp\",\r\n        \"DichVu\": \"5\",\r\n        \"DichVu_Comment\": \"Loại dịch vụ quỹ\",\r\n        \"searchText\": \"\",\r\n        \"searchText_Comment\": \"Tìm quỹ theo mã, MST cty, tên cty\",\r\n        \"order\": \"ID DESC\",\r\n        \"order_Comment\": \"Sắp xếp thứ tự\",\r\n        \"current_index\": \"0\",\r\n        \"current_index_Comment\": \"Trang hiện tại\",\r\n        \"next_row\": \"10\",\r\n        \"next_row_Comment\": \"Số dòng mỗi trang\"\r\n    },\r\n    \"reqtime\": \"{{reqTime}}\",\r\n    \"token\": \"{{dataToken}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "apiedepottest.gsotgroup.vn/api/data/process/ViLTA_GetListWallets",
+					"host": [
+						"apiedepottest",
+						"gsotgroup",
+						"vn"
+					],
+					"path": [
+						"api",
+						"data",
+						"process",
+						"ViLTA_GetListWallets"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create top-up request",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// 1. Lấy API key\r",
+							"let url = pm.request.url.toString();\r",
+							"let apiKey = url.split(\"/\");\r",
+							"// 2. Lấy body\r",
+							"let raw = JSON.parse(pm.request.body.raw);\r",
+							"let bodyRaw = pm.variables.replaceIn(raw);\r",
+							"\r",
+							"// 3. Gọi để lấy mã hóa\r",
+							"pm.sendRequest({\r",
+							"    url: 'https://apiedepottest.gsotgroup.vn/api/data/util/gettokenNonAid', \r",
+							"    method: 'POST',\r",
+							"    header: {\r",
+							"        'Content-Type': 'application/json',\r",
+							"        'Authorization': 'Bearer ' + pm.environment.get(\"accessToken\")\r",
+							"    },\r",
+							"    body: {\r",
+							"        mode: 'raw',\r",
+							"        raw: JSON.stringify({\r",
+							"            \"reqid\": apiKey[apiKey.length - 1],\r",
+							"            \"data\": bodyRaw.data,\r",
+							"            \"appversion\": \"2023\"\r",
+							"        })\r",
+							"    }\r",
+							"}, function (err, res) {\r",
+							"    if (!err) {\r",
+							"        let data = res.json();\r",
+							"        pm.environment.set(\"dataToken\", data.token);\r",
+							"        pm.environment.set(\"reqTime\", data.reqtime);\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"data\": {\r\n        \"appversion\": \"2023\",\r\n        \"dataid\": \"-1\",\r\n        \"Type\": \"1\",\r\n        \"TrangThaiGiaoDich\": \"-1\",\r\n        \"ID_eDepot_ViLTA_Vi\": \"{{ID_Vi}}\",\r\n        \"SoTien\": \"100000\",\r\n        \"tbname\": \"Qiu5/cH4+qhcISefupOmqETCSJ1ZX5w4Z6HrgV80kqSgTwjoqI9vBQ==\"\r\n    },\r\n    \"reqtime\": \"{{reqTime}}\",\r\n    \"token\": \"{{dataToken}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "apiedepottest.gsotgroup.vn/api/data/process/AddData",
+					"host": [
+						"apiedepottest",
+						"gsotgroup",
+						"vn"
+					],
+					"path": [
+						"api",
+						"data",
+						"process",
+						"AddData"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get payment info",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// 1. Lấy API key\r",
+							"let url = pm.request.url.toString();\r",
+							"let apiKey = url.split(\"/\");\r",
+							"// 2. Lấy body\r",
+							"let raw = JSON.parse(pm.request.body.raw);\r",
+							"let bodyRaw = pm.variables.replaceIn(raw);\r",
+							"\r",
+							"// 3. Gọi để lấy mã hóa\r",
+							"pm.sendRequest({\r",
+							"    url: 'https://apiedepottest.gsotgroup.vn/api/data/util/gettokenNonAid', \r",
+							"    method: 'POST',\r",
+							"    header: {\r",
+							"        'Content-Type': 'application/json',\r",
+							"        'Authorization': 'Bearer ' + pm.environment.get(\"accessToken\")\r",
+							"    },\r",
+							"    body: {\r",
+							"        mode: 'raw',\r",
+							"        raw: JSON.stringify({\r",
+							"            \"reqid\": apiKey[apiKey.length - 1],\r",
+							"            \"data\": bodyRaw.data,\r",
+							"            \"appversion\": \"2023\"\r",
+							"        })\r",
+							"    }\r",
+							"}, function (err, res) {\r",
+							"    if (!err) {\r",
+							"        let data = res.json();\r",
+							"        pm.environment.set(\"dataToken\", data.token);\r",
+							"        pm.environment.set(\"reqTime\", data.reqtime);\r",
+							"    }\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"data\": {\r\n        \"appversion\": \"2023\",\r\n        \"ID_Vi\": \"{{ID_Vi}}\"\r\n    },\r\n    \"reqtime\": \"{{reqTime}}\",\r\n    \"token\": \"{{dataToken}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "apiedepottest.gsotgroup.vn/api/data/process/ViLTA_GetPaymentInfo",
+					"host": [
+						"apiedepottest",
+						"gsotgroup",
+						"vn"
+					],
+					"path": [
+						"api",
+						"data",
+						"process",
+						"ViLTA_GetPaymentInfo"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

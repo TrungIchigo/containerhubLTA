@@ -9,6 +9,7 @@ import { StatusTimeline } from './StatusTimeline'
 import { SuggestedActions } from './SuggestedActions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Container, ArrowRightLeft, MapPin, Clock } from 'lucide-react'
+import { formatDateTimeVNNoSeconds } from '@/lib/utils'
 
 interface ContextualSidebarProps {
   importContainers: any[]
@@ -180,7 +181,7 @@ export function ContextualSidebar({
                   <p>Trạng thái: {booking.status}</p>
                   <p>Cần trước: {
                     booking.needed_by_datetime 
-                      ? new Date(booking.needed_by_datetime).toLocaleString('vi-VN')
+                      ? formatDateTimeVNNoSeconds(booking.needed_by_datetime)
                       : 'Linh hoạt'
                   }</p>
                 </div>

@@ -20,11 +20,11 @@ BEGIN
     WHERE 
         latitude IS NOT NULL 
         AND longitude IS NOT NULL
-        AND ST_DWithin(
+        AND extensions.st_dwithin(
             -- Container location
-            ST_MakePoint(longitude, latitude)::geography,
+            extensions.st_makepoint(longitude, latitude)::geography,
             -- Search center point
-            ST_MakePoint(start_lon, start_lat)::geography,
+            extensions.st_makepoint(start_lon, start_lat)::geography,
             -- Radius in meters (convert km to meters)
             radius_km * 1000
         );
@@ -101,9 +101,9 @@ BEGIN
         RETURN NULL;
     END IF;
     
-    RETURN ST_Distance(
-        ST_MakePoint(lon1, lat1)::geography,
-        ST_MakePoint(lon2, lat2)::geography
+    RETURN extensions.st_distance(
+        extensions.st_makepoint(lon1, lat1)::geography,
+        extensions.st_makepoint(lon2, lat2)::geography
     ) / 1000; -- Convert meters to kilometers
 END;
 $$ LANGUAGE plpgsql;
@@ -130,4 +130,4 @@ $$ LANGUAGE plpgsql;
 -- 1. find_containers_within_radius: Use this when user selects a max distance filter
 -- 2. get_marketplace_listings_with_rating: Use this when user selects a minimum rating filter  
 -- 3. calculate_distance_km: Use this for sorting results by distance
--- 4. get_shipping_lines_for_filter: Use this to populate the shipping line combobox 
+-- 4. get_shipping_lines_for_filter: Use this to populate the shipping line combobox

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Truck, MapPin, Calendar, Clock, Package, Eye, ArrowRightLeft } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { vi } from 'date-fns/locale'
+import { formatDateTimeVNNoSeconds } from '@/lib/utils'
 import { useState } from 'react'
 
 interface FullPickupOrdersTableProps {
@@ -270,7 +271,7 @@ export function FullPickupOrdersTable({
                       <p className="text-sm font-medium text-text-secondary">Thời gian cần</p>
                       <p className={`font-semibold ${nearDeadline ? 'text-red-600' : 'text-text-primary'}`}>
                         {booking.needed_by_datetime 
-                          ? new Date(booking.needed_by_datetime).toLocaleString('vi-VN')
+                          ? formatDateTimeVNNoSeconds(booking.needed_by_datetime)
                           : 'Linh hoạt'
                         }
                       </p>

@@ -8,6 +8,7 @@ import { Container, MapPin, Calendar, Clock, Building, Eye, MapPin as MapPinIcon
 import { formatDistanceToNow } from 'date-fns'
 import { vi } from 'date-fns/locale'
 import { formatDistanceStrict, differenceInHours, isAfter } from 'date-fns'
+import { formatDateTimeVNNoSeconds } from '@/lib/utils'
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { useState } from 'react'
 import { ConfirmCodCompletionDialog } from '@/components/features/cod/ConfirmCodCompletionDialog'
@@ -404,7 +405,7 @@ export function FullDropOffOrdersTable({
                       <span className="font-medium text-text-primary">Hạn trả rỗng:</span>
                       <span className="text-text-primary">
                         {container.available_from_datetime 
-                          ? new Date(container.available_from_datetime).toLocaleString('vi-VN')
+                          ? formatDateTimeVNNoSeconds(container.available_from_datetime)
                           : 'Linh hoạt'
                         }
                       </span>

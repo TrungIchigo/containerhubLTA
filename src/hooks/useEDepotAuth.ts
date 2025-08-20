@@ -5,6 +5,8 @@ import { hybridAuthService } from '@/lib/services/hybrid-auth'
 import type { EDepotUserData } from '@/lib/services/edepot'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import { usePageVisibility } from './usePageVisibility'
+import { SessionManager } from '@/lib/utils/session-manager'
 
 export interface AuthUser {
   id: string
@@ -57,17 +59,38 @@ const withTimeout = async <T>(
 }
 
 export function useEDepotAuth(): UseEDepotAuthReturn {
-  const [user, setUser] = useState<AuthUser | null>(null)
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    // Try to restore session from localStorage on initial load
+    if (typeof window !== 'undefined') {
+      return SessionManager.getSession()
+    }
+    return null
+  })
   const [isLoading, setIsLoading] = useState(true)
   const supabase = createClient()
   const abortControllerRef = useRef<AbortController | null>(null)
   const isLoadingRef = useRef(false)
+  const { isVisible, wasHidden } = usePageVisibility()
+  const lastVisibilityChangeRef = useRef<number>(Date.now())
 
   /**
    * Loads user authentication data from Supabase or eDepot
    * Handles timeouts and errors gracefully
+   * Skips loading if page is not visible to prevent unnecessary requests
    */
-  const loadUser = useCallback(async () => {
+  const loadUser = useCallback(async (forceLoad = false) => {
+    // Skip loading if page is not visible and not forced
+    if (!forceLoad && !isVisible) {
+      console.log('useEDepotAuth: Skipping loadUser - page not visible')
+      return
+    }
+    
+    // Check if we have a valid cached session and don't need refresh
+    if (!forceLoad && SessionManager.hasValidSession() && !SessionManager.needsRefresh()) {
+      console.log('useEDepotAuth: Using cached session, skipping auth check')
+      return
+    }
+    
     // Prevent multiple concurrent loadUser calls
     if (isLoadingRef.current) {
       return
@@ -106,11 +129,14 @@ export function useEDepotAuth(): UseEDepotAuthReturn {
       // No authentication found
       if (!signal.aborted) {
         setUser(null)
+        SessionManager.clearSession()
       }
     } catch (error) {
       if (!signal.aborted) {
         console.error('useEDepotAuth: Error loading user:', error)
         setUser(null)
+        // Clear invalid session from storage
+        SessionManager.clearSession()
       }
     } finally {
       if (!signal.aborted) {
@@ -118,7 +144,7 @@ export function useEDepotAuth(): UseEDepotAuthReturn {
       }
       isLoadingRef.current = false
     }
-  }, [])
+  }, [isVisible])
 
   /**
    * Loads Supabase user and profile data
@@ -185,6 +211,18 @@ export function useEDepotAuth(): UseEDepotAuthReturn {
         supabaseUser: data.user
       })
       
+      // Save session to localStorage
+      SessionManager.saveSession({
+        id: data.user.id,
+        email: data.user.email || '',
+        fullName: profile?.full_name || data.user.user_metadata?.full_name,
+        role: profile?.role,
+        organizationId: profile?.organization_id,
+        organizationName: profile?.organization_name,
+        source: 'supabase',
+        supabaseUser: data.user
+      })
+      
       return true
     } catch (error) {
       if (!signal.aborted) {
@@ -224,6 +262,18 @@ export function useEDepotAuth(): UseEDepotAuthReturn {
         eDepotUser: eDepotSession.user
       })
       
+      // Save session to localStorage
+      SessionManager.saveSession({
+        id: eDepotSession.user.id,
+        email: eDepotSession.user.email,
+        fullName: eDepotSession.user.fullName,
+        role: eDepotSession.user.role,
+        organizationId: eDepotSession.user.organizationId,
+        organizationName: eDepotSession.user.organizationName,
+        source: 'edepot',
+        eDepotUser: eDepotSession.user
+      })
+      
       return true
     } catch (error) {
       if (!signal.aborted) {
@@ -247,8 +297,9 @@ export function useEDepotAuth(): UseEDepotAuthReturn {
       }
       isLoadingRef.current = false
       
-      // Clear user state immediately for better UX
+      // Clear user state and session immediately for better UX
       setUser(null)
+      SessionManager.clearSession()
       
       // Attempt to logout from Supabase with timeout
       try {
@@ -287,12 +338,20 @@ export function useEDepotAuth(): UseEDepotAuthReturn {
    * Useful for manual refresh after authentication changes
    */
   const refreshUser = useCallback(async () => {
-    await loadUser()
+    await loadUser(true) // Force load even if page is not visible
   }, [loadUser])
 
-  // Load user on mount
+  // Load user on mount and when page becomes visible after being hidden
   useEffect(() => {
-    loadUser()
+    // Check if we already have a valid session
+    const cachedUser = SessionManager.getSession()
+    if (cachedUser && !SessionManager.needsRefresh()) {
+      setUser(cachedUser)
+      setIsLoading(false)
+      console.log('useEDepotAuth: Restored user from cache')
+    } else {
+      loadUser(true) // Force initial load if no valid cache
+    }
     
     // Cleanup on unmount
     return () => {
@@ -303,12 +362,30 @@ export function useEDepotAuth(): UseEDepotAuthReturn {
     }
   }, [])
 
+  // Handle page visibility changes
+  useEffect(() => {
+    if (isVisible && wasHidden) {
+      const timeSinceLastChange = Date.now() - lastVisibilityChangeRef.current
+      
+      // Only reload if page was hidden for more than 30 seconds
+      if (timeSinceLastChange > 30000) {
+        console.log('useEDepotAuth: Page visible after being hidden, refreshing auth')
+        loadUser(true)
+      }
+    }
+    
+    lastVisibilityChangeRef.current = Date.now()
+  }, [isVisible, wasHidden, loadUser])
+
   // Listen to Supabase auth changes
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-          await loadUser()
+          // Only reload if page is visible or if it's a sign out event
+          if (isVisible || event === 'SIGNED_OUT') {
+            await loadUser(true)
+          }
         }
       }
     )
@@ -316,13 +393,16 @@ export function useEDepotAuth(): UseEDepotAuthReturn {
     return () => {
       subscription.unsubscribe()
     }
-  }, [supabase])
+  }, [supabase, isVisible, loadUser])
 
   // Listen to eDepot session changes (via storage events)
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'edepot_session' || e.key === 'edepot_user') {
-        loadUser()
+        // Only reload if page is visible
+        if (isVisible) {
+          loadUser(true)
+        }
       }
     }
 
@@ -330,7 +410,7 @@ export function useEDepotAuth(): UseEDepotAuthReturn {
     return () => {
       window.removeEventListener('storage', handleStorageChange)
     }
-  }, [])
+  }, [isVisible, loadUser])
 
   return {
     user,
